@@ -595,13 +595,30 @@ export default function App() {
       <AnimatePresence>
         {mobileMenuOpen && (
           <motion.div 
-            initial={{ opacity: 0 }} 
-            animate={{ opacity: 1 }} 
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-[var(--on-surface)]/80 backdrop-blur-md z-[100] p-8"
+            initial={{ opacity: 0, x: '100%' }} 
+            animate={{ opacity: 1, x: 0 }} 
+            exit={{ opacity: 0, x: '100%' }}
+            transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+            className="fixed inset-0 bg-[var(--surface)]/95 backdrop-blur-2xl z-[100] flex flex-col pt-24"
           >
-             <button onClick={() => setMobileMenuOpen(false)} className="absolute top-8 right-8 text-white"><X size={32}/></button>
-             <div className="flex flex-col gap-6 mt-20">
+             <button 
+               onClick={() => setMobileMenuOpen(false)} 
+               className="absolute top-6 right-6 w-14 h-14 bg-[var(--surface-card)] border border-[var(--outline)] rounded-2xl flex items-center justify-center text-[var(--on-surface)] shadow-lg hover:rotate-90 transition-all duration-300 active:scale-90"
+             >
+               <X size={24}/>
+             </button>
+
+             <div className="px-8 mb-12">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center shadow-inner">
+                    <Newspaper className="text-primary" size={24} />
+                  </div>
+                  <h1 className="text-2xl font-display font-black tracking-tighter text-[var(--on-surface)]">AdManager<span className="text-primary">.</span></h1>
+                </div>
+                <p className="text-[var(--on-surface-variant)] text-xs font-bold tracking-widest uppercase opacity-60">Gestión Editorial Profesional</p>
+             </div>
+
+             <div className="flex flex-col gap-2 px-6 overflow-y-auto pb-10">
                 {(() => {
                   const menuItems = [
                     { id: 'CAMPAÑAS', label: 'Campañas', icon: Megaphone },
@@ -611,16 +628,43 @@ export default function App() {
                     { id: 'CONFIG', label: 'Ajustes', icon: Settings },
                   ];
                   return menuItems.map(item => (
-                    <button 
+                    <motion.button 
                       key={item.id}
+                      whileTap={{ scale: 0.98 }}
                       onClick={() => { setCurrentScreen(item.id as Screen); setMobileMenuOpen(false); }}
-                      className="text-3xl font-black text-white text-left"
+                      className={`flex items-center gap-5 px-6 py-5 rounded-[2rem] transition-all border ${
+                        currentScreen === item.id 
+                        ? 'bg-primary border-primary text-white shadow-xl shadow-primary/30' 
+                        : 'bg-[var(--surface-card)] border-[var(--outline)] text-[var(--on-surface)] hover:border-primary/30'
+                      }`}
                     >
-                      {item.label}
-                    </button>
+                      <item.icon size={24} className={currentScreen === item.id ? 'text-white' : 'text-primary'} />
+                      <span className="text-xl font-display font-black tracking-tight">{item.label}</span>
+                    </motion.button>
                   ));
                 })()}
-                <button onClick={logout} className="text-3xl font-black text-red-400 text-left mt-8">Logout</button>
+
+                <div className="h-px bg-[var(--outline)] mx-4 my-6 opacity-50" />
+
+                <button 
+                  onClick={logout} 
+                  className="flex items-center gap-5 px-6 py-5 rounded-[2rem] bg-rose-500/10 border border-rose-500/20 text-rose-500 font-display font-black text-xl"
+                >
+                  <LogOut size={24} />
+                  Cerrar Sesión
+                </button>
+             </div>
+
+             <div className="mt-auto p-8 border-t border-[var(--outline)] bg-[var(--surface-card)]/30">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-black text-sm">
+                    {user.username.substring(0, 2).toUpperCase()}
+                  </div>
+                  <div>
+                    <p className="text-sm font-display font-black text-[var(--on-surface)] uppercase">{user.username}</p>
+                    <p className="text-[10px] font-black text-primary uppercase tracking-widest opacity-70">Sístema {user.role}</p>
+                  </div>
+                </div>
              </div>
           </motion.div>
         )}
