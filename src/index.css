@@ -1,0 +1,141 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Plus Jakarta Sans", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--on-primary);
+}
+
+@layer base {
+  :root {
+    --surface: #fcfdfe;
+    --surface-card: #ffffff;
+    --on-surface: #1e293b;
+    --on-surface-variant: #64748b;
+    --outline: #f1f5f9;
+    --primary: #4f46e5;
+    --on-primary: #ffffff;
+    --radius: 20px;
+    --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+  }
+
+  [data-dark='true'] {
+    --surface: #020617;
+    --surface-card: #0f172a;
+    --on-surface: #f1f5f9;
+    --on-surface-variant: #94a3b8;
+    --outline: #1e293b;
+    --primary: #6366f1;
+    --on-primary: #ffffff;
+  }
+
+  /* Sapphire Pro - Modern Blue Business */
+  [data-theme='blue'] {
+    --primary: #2563eb;
+    --on-primary: #ffffff;
+  }
+  [data-theme='blue'][data-dark='true'] {
+    --primary: #3b82f6;
+    --surface: #020617;
+    --surface-card: #0f172a;
+  }
+
+  /* Crimson Luxury - Sophisticated Warm */
+  [data-theme='rust'] {
+    --surface: #fffafb;
+    --surface-card: #ffffff;
+    --on-surface: #450a0a;
+    --on-surface-variant: #7f1d1d;
+    --outline: #fee2e2;
+    --primary: #be123c;
+    --on-primary: #ffffff;
+  }
+  [data-theme='rust'][data-dark='true'] {
+    --surface: #1a0505;
+    --surface-card: #2d0a0a;
+    --on-surface: #fff1f2;
+    --on-surface-variant: #fda4af;
+    --outline: #4c0505;
+    --primary: #f43f5e;
+    --on-primary: #ffffff;
+  }
+
+  /* Midnight - Pure Technical Noir */
+  [data-theme='slate'] {
+    --surface: #fcfcfc;
+    --surface-card: #ffffff;
+    --on-surface: #000000;
+    --on-surface-variant: #111827;
+    --outline: #000000;
+    --primary: #111827;
+    --on-primary: #ffffff;
+  }
+  [data-theme='slate'][data-dark='true'] {
+    --surface: #000000;
+    --surface-card: #0a0a0a;
+    --on-surface: #ffffff;
+    --on-surface-variant: #d1d5db;
+    --outline: #ffffff;
+    --primary: #ffffff;
+    --on-primary: #000000;
+  }
+
+  body {
+    @apply bg-[var(--surface)] text-[var(--on-surface)] transition-colors duration-300 antialiased selection:bg-primary/20;
+  }
+}
+
+@layer components {
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    @apply bg-[var(--on-surface)]/10 rounded-full hover:bg-primary/40 transition-colors;
+  }
+
+  /* Remove number input spinners */
+  input[type="number"]::-webkit-inner-spin-button,
+  input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  input[type="number"] {
+    -moz-appearance: textfield;
+    appearance: textfield;
+  }
+
+  .glass-card {
+    @apply bg-[var(--surface-card)] border border-[var(--outline)] rounded-[var(--radius)] shadow-[var(--shadow-sm)] backdrop-blur-sm;
+  }
+  
+  .modern-input {
+    @apply w-full bg-[var(--surface-card)] border border-[var(--outline)] rounded-xl px-4 py-3 outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all font-medium text-[var(--on-surface)];
+  }
+
+  .modern-button-primary {
+    @apply bg-primary text-primary-foreground px-6 py-3 rounded-xl font-bold shadow-lg shadow-primary/20 hover:shadow-primary/40 hover:-translate-y-0.5 active:translate-y-0 active:scale-95 transition-all text-sm;
+  }
+
+  .modern-button-secondary {
+    @apply bg-transparent border border-[var(--outline)] text-[var(--on-surface)] px-6 py-3 rounded-xl font-bold hover:bg-[var(--outline)] transition-all text-sm;
+  }
+
+  .nav-item {
+    @apply flex items-center gap-4 px-5 py-3.5 rounded-2xl font-bold transition-all relative;
+  }
+
+  .nav-item-active {
+    @apply bg-primary text-primary-foreground shadow-xl shadow-primary/30;
+  }
+
+  .nav-item-inactive {
+    @apply text-[var(--on-surface-variant)] hover:text-primary hover:bg-primary/5;
+  }
+}
