@@ -1484,6 +1484,10 @@ export function ScreenClientes({ clientes, campañas, onNavigateToCampaña, onUp
 
 // --- CONFIG ---
 export function ScreenConfig({ user, onUpdateUser, onBatchGenerate, feriados, onAddFeriado, onDeleteFeriado, onBulkAddFeriados, ediciones, onLoadDemo }: any) {
+  const sortedFeriados = useMemo(() => {
+    return [...feriados].sort((a: any, b: any) => a.fecha.localeCompare(b.fecha));
+  }, [feriados]);
+
   // Calcular el siguiente número de edición sugerido
   const nextNumber = useMemo(() => {
     if (!ediciones || ediciones.length === 0) return '1';
@@ -1623,7 +1627,7 @@ export function ScreenConfig({ user, onUpdateUser, onBatchGenerate, feriados, on
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-50">
-                  {feriados.sort((a:any, b:any) => a.fecha.localeCompare(b.fecha)).map((f: any) => (
+                  {sortedFeriados.map((f: any) => (
                     <tr key={f.id} className="hover:bg-[var(--surface)] transition-colors">
                       <td className="px-6 py-3 font-mono font-bold text-sm whitespace-nowrap">{formatDateES(f.fecha)}</td>
                       <td className="px-6 py-3 text-sm text-[var(--on-surface)] font-medium">{f.nombre || '-'}</td>
