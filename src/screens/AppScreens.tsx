@@ -1207,7 +1207,6 @@ export function ScreenEdiciones({ ediciones, onExportPDF, clientes, avisos, onNa
 
 // --- CLIENTES ---
 export function ScreenClientes({ clientes, campañas, onNavigateToCampaña, onUpsert, onDelete }: any) {
-  const [view, setView] = useState<'LIST' | 'GRID'>('LIST');
   const [search, setSearch] = useState('');
   const [editing, setEditing] = useState<any>(null);
   const [viewDetail, setViewDetail] = useState<any>(null);
@@ -1226,22 +1225,6 @@ export function ScreenClientes({ clientes, campañas, onNavigateToCampaña, onUp
             <p className="text-[var(--on-surface-variant)] font-medium">Anunciantes, agencias y contactos comerciales.</p>
           </div>
           <div className="flex items-center gap-4">
-            <div className="flex bg-[var(--surface)] p-1 rounded-2xl border border-[var(--outline)]">
-              <button 
-                onClick={() => setView('LIST')}
-                className={`p-2 rounded-xl transition-all ${view === 'LIST' ? 'bg-primary text-white shadow-lg' : 'text-[var(--on-surface-variant)] hover:bg-primary/5'}`}
-                title="Vista de Lista"
-              >
-                <Layout size={18} />
-              </button>
-              <button 
-                onClick={() => setView('GRID')}
-                className={`p-2 rounded-xl transition-all ${view === 'GRID' ? 'bg-primary text-white shadow-lg' : 'text-[var(--on-surface-variant)] hover:bg-primary/5'}`}
-                title="Vista de Cuadrícula"
-              >
-                <Database size={18} />
-              </button>
-            </div>
             <button 
               onClick={() => setEditing({ id: '', nombre: '', email: '', phone: '' })}
               className="modern-button-primary flex items-center gap-2"
@@ -1262,101 +1245,44 @@ export function ScreenClientes({ clientes, campañas, onNavigateToCampaña, onUp
               />
           </div>
 
-          {view === 'LIST' ? (
-             <div className="bg-[var(--surface-card)] border border-[var(--outline)] rounded-[2rem] overflow-hidden shadow-sm">
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left border-collapse">
-                    <thead>
-                      <tr className="bg-[var(--surface)] border-b border-[var(--outline)]">
-                        <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-[var(--on-surface-variant)]">Cliente</th>
-                        <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-[var(--on-surface-variant)]">Email</th>
-                        <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-[var(--on-surface-variant)]">Teléfono</th>
-                        <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-[var(--on-surface-variant)] text-center">Campañas</th>
-                        <th className="px-8 py-5 text-[10px] font-black uppercase tracking-widest text-[var(--on-surface-variant)] text-right">Acción</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-[var(--outline)]">
-                      {filtered.map((c: any) => {
-                        const clientCampañas = campañas.filter((camp: any) => camp.cliente_id === c.id);
-                        return (
-                          <tr key={c.id} className="group hover:bg-[var(--surface)] transition-all cursor-pointer" onClick={() => setViewDetail(c)}>
-                            <td className="px-8 py-5">
-                               <div className="flex items-center gap-4">
-                                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[var(--on-surface)] to-[var(--on-surface-variant)] text-white flex items-center justify-center font-black text-sm shadow-sm">
-                                    {c.nombre.charAt(0)}
-                                  </div>
-                                  <span className="font-display font-black text-[var(--on-surface)] text-sm">{c.nombre}</span>
-                               </div>
-                            </td>
-                            <td className="px-8 py-5 text-xs text-[var(--on-surface-variant)] font-bold">
-                              {c.email || '-'}
-                            </td>
-                            <td className="px-8 py-5 text-xs text-[var(--on-surface-variant)] font-bold">
-                              {c.phone || '-'}
-                            </td>
-                            <td className="px-8 py-5 text-center">
-                               <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-[var(--surface)] rounded-xl text-[10px] font-black text-[var(--on-surface-variant)] whitespace-nowrap">
-                                  <Megaphone size={12} className="text-primary" />
-                                  {clientCampañas.length}
-                               </span>
-                            </td>
-                            <td className="px-8 py-5 text-right">
-                               <div className="flex justify-end gap-1" onClick={(e) => e.stopPropagation()}>
-                                  <button onClick={()=>setEditing(c)} className="p-2 text-[var(--on-surface-variant)] hover:text-primary transition-all">
-                                    <Edit3 size={18} />
-                                  </button>
-                                  <button onClick={()=>onDelete(c.id)} className="p-2 text-[var(--on-surface-variant)] hover:text-rose-500 transition-all">
-                                    <Trash2 size={18} />
-                                  </button>
-                               </div>
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
-             </div>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-               {filtered.map((c: any) => {
-                 const clientCampañas = campañas.filter((camp: any) => camp.cliente_id === c.id);
-                 return (
-                   <motion.div 
-                    key={c.id} 
-                    initial={{ opacity: 0, scale: 0.98 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                     className="p-6 bg-[var(--surface-card)] border border-[var(--outline)] rounded-[2rem] flex justify-between items-center shadow-sm hover:shadow-xl hover:translate-y-[-2px] transition-all"
-                    >
-                      <div className="flex items-center gap-5 cursor-pointer flex-grow" onClick={() => setViewDetail(c)}>
-                         <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[var(--on-surface)] to-[var(--on-surface-variant)] text-white flex items-center justify-center font-black text-xl shadow-lg ring-4 ring-[var(--surface)] shrink-0">
-                            {c.nombre.charAt(0)}
-                         </div>
-                         <div className="flex flex-col">
-                            <span className="font-display font-bold text-[var(--on-surface)] text-lg leading-tight">{c.nombre}</span>
-                            <div className="flex items-center gap-3 mt-1">
-                               <div className="flex items-center gap-1.5 px-2 py-0.5 bg-[var(--surface)] rounded-lg text-[10px] font-black text-[var(--on-surface-variant)] uppercase tracking-tighter">
-                                 <Megaphone size={10} className="text-primary" />
-                                 {clientCampañas.length} Campañas
-                               </div>
-                               {c.phone && <span className="text-[10px] text-[var(--on-surface-variant)] font-bold">{c.phone}</span>}
-                            </div>
-                         </div>
-                      </div>
-                      
-                      <div className="flex gap-2">
-                         <button onClick={()=>setEditing(c)} className="w-10 h-10 flex items-center justify-center text-[var(--on-surface-variant)] hover:text-primary transition-all rounded-xl hover:bg-primary/5">
-                           <Edit3 size={18} />
-                         </button>
-                         <button onClick={()=>onDelete(c.id)} className="w-10 h-10 flex items-center justify-center text-[var(--on-surface-variant)] hover:text-rose-500 transition-all rounded-xl hover:bg-rose-50 dark:hover:bg-rose-500/10">
-                           <Trash2 size={18} />
-                         </button>
-                      </div>
-                   </motion.div>
-                 );
-               })}
-            </div>
-          )}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+             {filtered.map((c: any) => {
+               const clientCampañas = campañas.filter((camp: any) => camp.cliente_id === c.id);
+               return (
+                 <motion.div
+                  key={c.id}
+                  initial={{ opacity: 0, scale: 0.98 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                   className="p-6 bg-[var(--surface-card)] border border-[var(--outline)] rounded-[2rem] flex justify-between items-center shadow-sm hover:shadow-xl hover:translate-y-[-2px] transition-all"
+                  >
+                    <div className="flex items-center gap-5 cursor-pointer flex-grow" onClick={() => setViewDetail(c)}>
+                       <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[var(--on-surface)] to-[var(--on-surface-variant)] text-white flex items-center justify-center font-black text-xl shadow-lg ring-4 ring-[var(--surface)] shrink-0">
+                          {c.nombre.charAt(0)}
+                       </div>
+                       <div className="flex flex-col">
+                          <span className="font-display font-bold text-[var(--on-surface)] text-lg leading-tight">{c.nombre}</span>
+                          <div className="flex items-center gap-3 mt-1">
+                             <div className="flex items-center gap-1.5 px-2 py-0.5 bg-[var(--surface)] rounded-lg text-[10px] font-black text-[var(--on-surface-variant)] uppercase tracking-tighter">
+                               <Megaphone size={10} className="text-primary" />
+                               {clientCampañas.length} Campañas
+                             </div>
+                             {c.phone && <span className="text-[10px] text-[var(--on-surface-variant)] font-bold">{c.phone}</span>}
+                          </div>
+                       </div>
+                    </div>
+
+                    <div className="flex gap-2">
+                       <button onClick={()=>setEditing(c)} className="w-10 h-10 flex items-center justify-center text-[var(--on-surface-variant)] hover:text-primary transition-all rounded-xl hover:bg-primary/5">
+                         <Edit3 size={18} />
+                       </button>
+                       <button onClick={()=>onDelete(c.id)} className="w-10 h-10 flex items-center justify-center text-[var(--on-surface-variant)] hover:text-rose-500 transition-all rounded-xl hover:bg-rose-50 dark:hover:bg-rose-500/10">
+                         <Trash2 size={18} />
+                       </button>
+                    </div>
+                 </motion.div>
+               );
+             })}
+          </div>
           
           {filtered.length === 0 && (
             <div className="py-20 text-center">
@@ -1440,10 +1366,10 @@ export function ScreenClientes({ clientes, campañas, onNavigateToCampaña, onUp
             <motion.div 
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              className="bg-white dark:bg-slate-900 rounded-[2.5rem] w-full max-w-lg shadow-2xl p-10 border border-white/20"
+              className="bg-[var(--surface-card)] rounded-[2.5rem] w-full max-w-lg shadow-2xl p-10 border border-[var(--outline)]"
             >
-               <h3 className="text-3xl font-display font-black mb-2 text-slate-900 dark:text-white">Perfil Cliente</h3>
-               <p className="text-slate-500 font-medium mb-8">Administre los datos legales del anunciante.</p>
+               <h3 className="text-3xl font-display font-black mb-2 text-[var(--on-surface)]">Perfil Cliente</h3>
+               <p className="text-[var(--on-surface-variant)] font-medium mb-8">Administre los datos legales del anunciante.</p>
                
                <div className="space-y-6">
                   <div className="space-y-2">
@@ -1836,61 +1762,56 @@ export function ScreenUsuarios({ users, onUpsert, onDelete }: any) {
             />
         </div>
 
-        <div className="bg-[var(--surface-card)] rounded-[2.5rem] border border-[var(--outline)] shadow-sm overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="bg-[var(--surface)] border-b border-[var(--outline)]">
-                  <th className="px-10 py-6 text-[10px] font-black uppercase tracking-[0.2em] text-[var(--on-surface-variant)]">Usuario</th>
-                  <th className="px-10 py-6 text-[10px] font-black uppercase tracking-[0.2em] text-[var(--on-surface-variant)]">Rol</th>
-                  <th className="px-10 py-6 text-[10px] font-black uppercase tracking-[0.2em] text-[var(--on-surface-variant)] text-right">Acciones</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-[var(--outline)]">
-                {filtered.map((u: any) => (
-                  <tr key={u.id} className="group hover:bg-[var(--surface)] transition-all font-bold text-[var(--on-surface)]">
-                    <td className="px-10 py-6">
-                      <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 rounded-2xl bg-[var(--surface)] flex items-center justify-center text-primary font-black uppercase transition-all group-hover:bg-primary group-hover:text-white shadow-sm border border-[var(--outline)]">
-                          {u.username[0]}
-                        </div>
-                        <span className="text-lg font-display font-black text-[var(--on-surface)]">{u.username}</span>
-                      </div>
-                    </td>
-                    <td className="px-10 py-6 text-xs uppercase tracking-[0.2em] font-black text-[var(--on-surface-variant)]">
-                      <span className={`px-4 py-2 rounded-xl ${u.role === Role.ADMIN ? 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20' : 'bg-[var(--surface)] text-[var(--on-surface-variant)] border border-[var(--outline)]'}`}>
-                          {u.role}
-                      </span>
-                    </td>
-                    <td className="px-10 py-6 text-right">
-                      <div className="flex justify-end gap-3 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <button 
-                            onClick={() => {
-                              setEditingId(u.id);
-                              setEditUsername(u.username);
-                              setEditRole(u.role);
-                              setShowAddForm(true);
-                            }}
-                            className="p-3 bg-[var(--surface-card)] rounded-xl text-[var(--on-surface-variant)] hover:text-primary transition-all border border-[var(--outline)] shadow-sm"
-                          >
-                            <Edit3 size={18} />
-                          </button>
-                          <button 
-                            onClick={() => {
-                              if(confirm(`¿Eliminar al usuario ${u.username}?`)) onDelete(u.id);
-                            }}
-                            className="p-3 bg-[var(--surface-card)] rounded-xl text-[var(--on-surface-variant)] hover:text-rose-500 transition-all border border-[var(--outline)] shadow-sm"
-                          >
-                            <Trash2 size={18} />
-                          </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filtered.map((u: any) => (
+            <motion.div
+              key={u.id}
+              initial={{ opacity: 0, scale: 0.98 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="p-6 bg-[var(--surface-card)] border border-[var(--outline)] rounded-[2rem] flex flex-col justify-between shadow-sm hover:shadow-xl hover:translate-y-[-2px] transition-all gap-6"
+            >
+              <div className="flex items-center gap-4">
+                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[var(--on-surface)] to-[var(--on-surface-variant)] text-white flex items-center justify-center font-black text-xl shadow-lg ring-4 ring-[var(--surface)] shrink-0 uppercase">
+                  {u.username[0]}
+                </div>
+                <div>
+                  <span className="text-xl font-display font-black text-[var(--on-surface)] block leading-tight">{u.username}</span>
+                  <span className={`inline-block mt-2 px-3 py-1 rounded-xl text-[10px] uppercase tracking-[0.2em] font-black ${u.role === Role.ADMIN ? 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20' : 'bg-[var(--surface)] text-[var(--on-surface-variant)] border border-[var(--outline)]'}`}>
+                      {u.role}
+                  </span>
+                </div>
+              </div>
+
+              <div className="flex gap-2 justify-end mt-auto pt-4 border-t border-[var(--outline)]">
+                  <button
+                    onClick={() => {
+                      setEditingId(u.id);
+                      setEditUsername(u.username);
+                      setEditRole(u.role);
+                      setShowAddForm(true);
+                    }}
+                    className="w-10 h-10 flex items-center justify-center text-[var(--on-surface-variant)] hover:text-primary transition-all rounded-xl hover:bg-primary/5"
+                  >
+                    <Edit3 size={18} />
+                  </button>
+                  <button
+                    onClick={() => {
+                      if(confirm(`¿Eliminar al usuario ${u.username}?`)) onDelete(u.id);
+                    }}
+                    className="w-10 h-10 flex items-center justify-center text-[var(--on-surface-variant)] hover:text-rose-500 transition-all rounded-xl hover:bg-rose-50 dark:hover:bg-rose-500/10"
+                  >
+                    <Trash2 size={18} />
+                  </button>
+              </div>
+            </motion.div>
+          ))}
         </div>
+
+        {filtered.length === 0 && (
+          <div className="py-20 text-center">
+            <p className="text-slate-400 font-black uppercase tracking-widest">No hay resultados</p>
+          </div>
+        )}
       </div>
     </div>
   );
