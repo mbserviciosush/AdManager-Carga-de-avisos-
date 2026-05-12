@@ -1715,20 +1715,6 @@ export function ScreenConfig({ user, onUpdateUser, onBatchGenerate, feriados, on
           </div>
        </Card>
 
-       <Card title="Restablecer Datos">
-          <div className="space-y-6">
-            <p className="text-[var(--on-surface-variant)] text-sm font-medium">Si desea ver un ejemplo completo del funcionamiento del sistema, puede cargar un lote de datos de prueba (clientes, campañas y avisos).</p>
-            <button 
-              onClick={() => {
-                onLoadDemo();
-              }}
-              className="w-full h-14 bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 rounded-2xl font-black text-sm flex items-center justify-center gap-3 hover:bg-amber-500/20 transition-all"
-            >
-              <Database size={20} /> Cargar Lote de Datos Demo
-            </button>
-          </div>
-       </Card>
-
     </div>
   );
 }
