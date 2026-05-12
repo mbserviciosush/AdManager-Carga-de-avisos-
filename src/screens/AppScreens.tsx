@@ -462,6 +462,16 @@ export function ScreenCampañas({ campañas, avisos, clientes, onAddCliente, edi
   );
 }
 
+interface ScreenNuevaCampañaProps {
+  clientes: Cliente[];
+  onAddCliente: (nombre: string) => Cliente;
+  ediciones: Edición[];
+  feriados: Feriado[];
+  onSaveCampaña: (campaña: Omit<Campaña, 'id'>, avisos: Aviso[]) => void;
+  initialCampaña?: Partial<Campaña>;
+  initialAvisos?: Aviso[];
+}
+
 // --- CAMPAÑA GENERATOR (Old Component Renamed) ---
 export function ScreenNuevaCampaña({ 
   clientes, 
@@ -471,7 +481,7 @@ export function ScreenNuevaCampaña({
   onSaveCampaña,
   initialCampaña,
   initialAvisos
-}: any) {
+}: ScreenNuevaCampañaProps) {
   const [nombreCamp, setNombreCamp] = useState(initialCampaña?.nombre_campaña || '');
   const [clienteId, setClienteId] = useState(initialCampaña?.cliente_id || '');
   const [fechaInicio, setFechaInicio] = useState(initialCampaña?.fecha_inicio || new Date(Date.now() + 86400000).toISOString().split('T')[0]);
