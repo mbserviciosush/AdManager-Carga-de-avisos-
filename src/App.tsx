@@ -365,14 +365,19 @@ export default function App() {
       data-dark={isDark}
     >
       {/* Dynamic Atmospheric Background */}
-      <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
+      <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none bg-[var(--surface)]">
+        {/* Abstract blur shapes using primary color */}
+        <div className="absolute -top-40 -left-40 w-96 h-96 bg-primary/20 rounded-full blur-3xl opacity-60 dark:opacity-40 animate-pulse" style={{ animationDuration: '8s' }} />
+        <div className="absolute top-1/3 -right-20 w-80 h-80 bg-primary/30 rounded-full blur-3xl opacity-50 dark:opacity-30" />
+        <div className="absolute -bottom-40 left-1/4 w-[500px] h-[500px] bg-primary/10 rounded-full blur-3xl opacity-70 dark:opacity-40 animate-pulse" style={{ animationDuration: '12s' }} />
+
         <img 
           src="https://excursionesenushuaia.com/wp-content/uploads/2023/10/1-85-2-e1700135504863.jpg" 
-          className="w-full h-full object-cover blur-3xl opacity-40 dark:opacity-20 transition-opacity duration-1000"
+          className="w-full h-full object-cover blur-3xl opacity-20 dark:opacity-10 transition-opacity duration-1000 mix-blend-overlay"
           alt="Background Texture"
           referrerPolicy="no-referrer"
         />
-        <div className="absolute inset-0 bg-gradient-to-tr from-[var(--surface)] via-[var(--surface)]/80 to-[var(--surface)]/40" />
+        <div className="absolute inset-0 bg-gradient-to-tr from-[var(--surface)] via-[var(--surface)]/60 to-transparent" />
       </div>
 
       <AnimatePresence mode="wait">
