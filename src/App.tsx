@@ -44,7 +44,10 @@ export default function App() {
   const [password, setPassword] = useState('');
   
   // --- VISUAL STATE (PERMANENT) ---
-  const [isDark, setIsDark] = useState(() => localStorage.getItem(DARK_MODE_KEY) === 'true');
+  const [isDark, setIsDark] = useState(() => {
+    const stored = localStorage.getItem(DARK_MODE_KEY);
+    return stored !== null ? stored === 'true' : true;
+  });
   const [theme, setTheme] = useState(() => localStorage.getItem(THEME_KEY) || 'blue');
 
   // --- APP STATE ---
