@@ -18,6 +18,7 @@ import {
   Newspaper,
   Megaphone,
   Settings,
+  AlertCircle,
   Database
 } from 'lucide-react';
 import { 
@@ -45,7 +46,7 @@ const Card = ({ children, title, action, className = "" }: any) => (
     className={`glass-card bg-[var(--surface-card)] border border-transparent shadow-sm ${className}`}
   >
     {(title || action) && (
-      <div className="px-4 md:px-8 py-4 md:py-6 border-b border-[#374151]/30 flex justify-between items-center bg-[var(--surface)] rounded-t-[1.5rem] md:rounded-t-[2.5rem]">
+      <div className="px-4 md:px-8 py-4 md:py-6 border-b border-[#374151]/30 flex justify-between items-center bg-[var(--surface)] rounded-t-[inherit]">
         <h3 className="font-display font-extrabold text-base md:text-lg text-[var(--on-surface)] tracking-tight">{title}</h3>
         {action}
       </div>
@@ -55,7 +56,7 @@ const Card = ({ children, title, action, className = "" }: any) => (
 );
 
 // --- CAMPAÑAS ---
-export function ScreenCampañas({ campañas, avisos, clientes, onAddCliente, ediciones, feriados, onSaveCampaña, onDeleteCampaña, onUpdateAvisos, onUpdateCampaña, initialSelectedId, onClearInitialId }: any) {
+export function ScreenCampañas({ campañas, avisos, clientes, onAddCliente, ediciones, feriados, onSaveCampaña, onDeleteCampaña, onUpdateAvisos, onUpdateCampaña, initialSelectedId, onClearInitialId, appLogo }: any) {
   const [view, setView] = useState<'LIST' | 'CREATE' | 'DETAIL'>('LIST');
   const [selectedID, setSelectedID] = useState<string | null>(null);
 
@@ -169,7 +170,7 @@ export function ScreenCampañas({ campañas, avisos, clientes, onAddCliente, edi
               <Trash2 size={18} /> Eliminar Campaña
             </button>
             <button 
-              onClick={() => exportCampañaPDF({ ...selectedCampaña, nombre_campaña: editNombre, cliente_id: editClienteId, fecha_inicio: editFechaInicio } as any, editingAvisos, cliente?.nombre || 'Desconocido')} 
+              onClick={() => exportCampañaPDF({ ...selectedCampaña, nombre_campaña: editNombre, cliente_id: editClienteId, fecha_inicio: editFechaInicio } as any, editingAvisos, cliente?.nombre || 'Desconocido', appLogo)} 
               className="modern-button-secondary bg-[var(--surface-card)] flex items-center gap-2"
             >
               <FileText size={18} /> Exportar PDF
@@ -233,7 +234,7 @@ export function ScreenCampañas({ campañas, avisos, clientes, onAddCliente, edi
                         placeholder="Buscar aviso..."
                         value={searchAvisos}
                         onChange={e => setSearchAvisos(e.target.value)}
-                        className="pl-9 pr-4 py-2 bg-[var(--surface)] border border-transparent rounded-xl text-xs font-bold focus:ring-2 focus:ring-primary/20 outline-none w-48"
+                        className="modern-input !w-48 pl-9"
                       />
                     </div>
                   )}
@@ -280,20 +281,20 @@ export function ScreenCampañas({ campañas, avisos, clientes, onAddCliente, edi
                   const idx = editingAvisos.findIndex((a: any) => a.id === aviso.id);
                   const edicion = ediciones.find((e: any) => e.id === aviso.edicion_id);
                   return (
-                    <motion.div
+                    <motion.div 
                       key={aviso.id}
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
-                      className="p-6 bg-[var(--surface)] border border-transparent rounded-[var(--radius)] flex flex-col lg:flex-row items-center gap-6 group hover:border-primary/30 transition-all shadow-sm hover:shadow-md"
+                      className="p-4 bg-[var(--surface)]/50 border border-transparent rounded-2xl flex flex-col lg:flex-row items-center gap-4 group hover:border-primary/30 transition-all shadow-sm"
                     >
-                      <div className="flex items-center gap-6 w-full lg:w-1/3">
-                        <span className="w-12 h-12 rounded-xl bg-primary/10 text-primary font-black flex items-center justify-center shrink-0">
+                      <div className="flex items-center gap-4 w-full lg:flex-grow">
+                        <span className="w-9 h-9 rounded-lg bg-primary/10 text-primary font-black flex items-center justify-center shrink-0 text-xs">
                           {idx + 1}
                         </span>
                         <div className="flex-grow">
-                          <label className="text-[10px] font-black uppercase tracking-widest text-[var(--on-surface-variant)] mb-1 block">Aviso</label>
+                          <label className="text-[9px] font-black uppercase tracking-widest text-[var(--on-surface-variant)] mb-0.5 block">Aviso</label>
                           <input
-                            className="w-full bg-transparent border-none outline-none font-bold text-lg text-[var(--on-surface)]"
+                            className="w-full bg-transparent border-none outline-none font-bold text-base text-[var(--on-surface)]"
                             value={aviso.nombre}
                             onChange={(e) => {
                               const newArr = [...editingAvisos];
@@ -305,9 +306,10 @@ export function ScreenCampañas({ campañas, avisos, clientes, onAddCliente, edi
                         </div>
                       </div>
 
-                      <div className="w-full lg:w-1/4">
-                        <label className="text-[10px] font-black uppercase tracking-widest text-[var(--on-surface-variant)] mb-1 block">Producto</label>
+                      <div className="w-full lg:w-32 shrink-0">
+                        <label className="text-[9px] font-black uppercase tracking-widest text-[var(--on-surface-variant)] mb-0.5 block">Producto</label>
                         <CustomSelect
+                          className="text-sm font-bold"
                           options={PRODUCTOS}
                           value={aviso.producto}
                           onChange={val => {
@@ -319,35 +321,34 @@ export function ScreenCampañas({ campañas, avisos, clientes, onAddCliente, edi
                         />
                       </div>
 
-                      <div className="w-full lg:w-1/4">
-                        <label className="text-[10px] font-black uppercase tracking-widest text-[var(--on-surface-variant)] mb-1 block">Publicación</label>
-                        <div className="flex flex-col gap-2">
-                           <CustomDatePicker
-                              value={aviso.fecha_publicacion}
-                              onChange={val => {
-                                const newArr = [...editingAvisos];
-                                newArr[idx].fecha_publicacion = val;
-                                const ed = ediciones.find((x: any) => x.fecha === val);
-                                newArr[idx].edicion_id = ed?.id || '';
-                                setEditingAvisos(newArr);
-                                setHasChanges(true);
-                              }}
-                            />
-                            {edicion && (
-                              <span className="text-[10px] font-bold text-primary px-3 py-1 bg-primary/10 rounded-lg inline-block text-center uppercase tracking-widest w-fit">
-                                Edición #{edicion.numero}
-                              </span>
-                            )}
-                        </div>
+                      <div className="w-full lg:w-48 shrink-0">
+                        <label className="text-[9px] font-black uppercase tracking-widest text-[var(--on-surface-variant)] mb-0.5 block">Publicación</label>
+                        <CustomDatePicker
+                          className={edicion ? "text-sm font-bold pl-10" : "text-base font-bold pl-10"}
+                          value={aviso.fecha_publicacion}
+                          onChange={val => {
+                            const newArr = [...editingAvisos];
+                            newArr[idx].fecha_publicacion = val;
+                            const ed = ediciones.find((x: any) => x.fecha === val);
+                            newArr[idx].edicion_id = ed?.id || '';
+                            setEditingAvisos(newArr);
+                            setHasChanges(true);
+                          }}
+                        />
                       </div>
 
-                      <div className="w-full lg:w-auto flex justify-end">
+                      <div className="w-full lg:w-16 shrink-0 flex flex-col items-center justify-center gap-1.5 self-center lg:self-stretch pt-4 lg:pt-0">
+                        {edicion && (
+                          <span className="text-[10px] font-black text-primary px-2 py-0.5 bg-primary/10 rounded-md uppercase tracking-tighter">
+                            #{edicion.numero}
+                          </span>
+                        )}
                         <button
                           onClick={() => {
                             setEditingAvisos(prev => prev.filter((_, i) => i !== idx));
                             setHasChanges(true);
                           }}
-                          className="p-3 bg-rose-50 dark:bg-rose-500/10 text-rose-500 hover:bg-rose-500 hover:text-white rounded-xl transition-all"
+                          className="w-10 h-10 flex items-center justify-center text-[var(--on-surface-variant)] hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-xl transition-all"
                         >
                           <Trash2 size={18} />
                         </button>
@@ -399,7 +400,7 @@ export function ScreenCampañas({ campañas, avisos, clientes, onAddCliente, edi
           </div>
         </div>
 
-        <div className="bg-[var(--surface-card)] rounded-[1.5rem] md:rounded-[2.5rem] border border-transparent shadow-sm">
+        <div className="bg-[var(--surface-card)] rounded-[1.5rem] md:rounded-[2.5rem] border border-transparent shadow-sm overflow-hidden">
           <div className="overflow-x-auto md:overflow-visible min-h-[500px]">
             <table className="w-full text-left border-collapse min-w-[800px] md:min-w-0">
               <thead>
@@ -775,26 +776,35 @@ export function ScreenNuevaCampaña({
                       />
                     </div>
                     <div className="space-y-2">
-                       <span className="text-[10px] font-black uppercase text-[var(--on-surface-variant)] ml-1">Días Permitidos</span>
-                       <div className="flex gap-1">
-                          {['L', 'M', 'X', 'J', 'V'].map((d, i) => {
-                            const day = i + 1;
-                            const isActive = diasSemana.includes(day);
+                       <span className="text-[10px] font-black uppercase text-[var(--on-surface-variant)] ml-1">Selección de Días</span>
+                       <div className="flex gap-1.5">
+                          {[
+                            { label: 'L', value: 1 },
+                            { label: 'M', value: 2 },
+                            { label: 'M', value: 3 },
+                            { label: 'J', value: 4 },
+                            { label: 'V', value: 5 }
+                          ].map((d, idx) => {
+                            const isActive = diasSemana.includes(d.value);
                             return (
                               <button 
-                                key={i}
+                                key={idx}
                                 onClick={() => {
-                                  if (diasSemana.includes(day)) setDiasSemana(diasSemana.filter(x => x !== day));
-                                  else setDiasSemana([...diasSemana, day].sort());
+                                  if (diasSemana.includes(d.value)) {
+                                    setDiasSemana(diasSemana.filter(x => x !== d.value));
+                                  } else {
+                                    setDiasSemana([...diasSemana, d.value].sort());
+                                  }
                                 }}
                                 type="button"
-                                className={`w-8 h-8 rounded-lg font-black text-[9px] transition-all border ${
+                                className={`flex-1 h-11 rounded-xl font-black text-xs transition-all border ${
                                   isActive 
-                                  ? 'bg-primary text-white border-primary' 
-                                  : 'bg-[var(--surface)] text-[var(--on-surface-variant)] border-[var(--outline)]'
+                                  ? 'bg-primary text-white border-primary shadow-md shadow-primary/20' 
+                                  : 'bg-[var(--surface)] text-[var(--on-surface-variant)] border-transparent hover:bg-[var(--outline)]'
                                 }`}
+                                title={['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes'][idx]}
                               >
-                                {d}
+                                {d.label}
                               </button>
                             );
                           })}
@@ -870,11 +880,10 @@ export function ScreenNuevaCampaña({
                   <thead className="bg-[var(--surface)] border-y border-[var(--outline)]">
                     <tr>
                       <th className="px-8 py-4 text-[10px] font-black uppercase tracking-widest text-[var(--on-surface-variant)]">Orden</th>
-                      <th className="px-8 py-4 text-[10px] font-black uppercase tracking-widest text-[var(--on-surface-variant)]">Nombre Aviso</th>
-                      <th className="px-8 py-4 text-[10px] font-black uppercase tracking-widest text-[var(--on-surface-variant)]">Formato / Producto</th>
-                      <th className="px-8 py-4 text-[10px] font-black uppercase tracking-widest text-[var(--on-surface-variant)] text-center">Fecha Publicación</th>
-                      <th className="px-8 py-4 text-[10px] font-black uppercase tracking-widest text-[var(--on-surface-variant)]">Edición</th>
-                      <th className="px-8 py-4 text-[10px] font-black uppercase tracking-widest text-[var(--on-surface-variant)] text-right">Acción</th>
+                      <th className="px-8 py-4 text-[10px] font-black uppercase tracking-widest text-[var(--on-surface-variant)] w-[40%]">Nombre Aviso</th>
+                      <th className="px-8 py-4 text-[10px] font-black uppercase tracking-widest text-[var(--on-surface-variant)] w-[20%]">Formato / Producto</th>
+                      <th className="px-8 py-4 text-[10px] font-black uppercase tracking-widest text-[var(--on-surface-variant)] text-center w-[30%]">Fecha Publicación</th>
+                      <th className="px-8 py-4 text-[10px] font-black uppercase tracking-widest text-[var(--on-surface-variant)] text-right w-[10%]">Control</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-[#374151]/30">
@@ -898,6 +907,7 @@ export function ScreenNuevaCampaña({
                         </td>
                         <td className="px-8 py-4">
                            <CustomSelect 
+                            className="text-sm font-bold"
                             options={PRODUCTOS}
                             value={aviso.producto}
                             onChange={(val) => {
@@ -909,6 +919,7 @@ export function ScreenNuevaCampaña({
                         </td>
                         <td className="px-8 py-4 text-center">
                            <CustomDatePicker 
+                            className={aviso.edicion_id ? "text-xs font-bold pl-10" : "text-sm font-bold pl-10"}
                             value={aviso.fecha_publicacion}
                             onChange={(val) => {
                               const newArr = [...avisosGenerated];
@@ -919,24 +930,24 @@ export function ScreenNuevaCampaña({
                             }}
                            />
                         </td>
-                        <td className="px-8 py-4">
-                          {aviso.edicion_id ? (
-                            <div className="badge badge-vigente">
-                              #{ediciones.find((e:any)=>e.id === aviso.edicion_id)?.numero}
-                            </div>
-                          ) : (
-                            <div className="badge badge-vencido">
-                              Huerfano
-                            </div>
-                          )}
-                        </td>
                         <td className="px-8 py-4 text-right">
-                           <button 
-                             onClick={() => setAvisosGenerated(prev => prev.filter((_, i) => i !== idx))}
-                             className="p-3 text-slate-300 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-xl transition-all"
-                           >
-                             <Trash2 size={18} />
-                           </button>
+                           <div className="flex flex-col items-center justify-center gap-1.5 min-w-[60px]">
+                              {aviso.edicion_id ? (
+                                <span className="text-[10px] font-black text-primary px-2 py-0.5 bg-primary/10 rounded-md uppercase tracking-tighter">
+                                  #{ediciones.find((e:any)=>e.id === aviso.edicion_id)?.numero}
+                                </span>
+                              ) : (
+                                <span className="text-[10px] font-black text-rose-500 px-2 py-0.5 bg-rose-500/10 rounded-md uppercase tracking-tighter">
+                                  HUERFANO
+                                </span>
+                              )}
+                              <button 
+                                onClick={() => setAvisosGenerated(prev => prev.filter((_, i) => i !== idx))}
+                                className="p-2 text-slate-300 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-xl transition-all"
+                              >
+                                <Trash2 size={18} />
+                              </button>
+                           </div>
                         </td>
                       </tr>
                     ))}
@@ -964,8 +975,9 @@ export function ScreenEdiciones({ ediciones, onExportPDF, clientes, avisos, onNa
   const [viewDetail, setViewDetail] = useState<any>(null);
 
   const filtered = ediciones.filter((e: any) => 
-    e.numero.includes(search) || e.fecha.includes(search)
-  ).sort((a:any, b:any) => b.fecha.localeCompare(a.fecha));
+    (e.numero || '').toString().includes(search) || 
+    (e.fecha || '').toString().includes(search)
+  ).sort((a:any, b:any) => (b.fecha || '').localeCompare(a.fecha || ''));
 
   return (
     <div className="max-w-7xl mx-auto space-y-12 pb-20">
@@ -1035,13 +1047,13 @@ export function ScreenEdiciones({ ediciones, onExportPDF, clientes, avisos, onNa
                           <FileText size={24} />
                        </button>
                     </div>
-                    <div className="flex justify-between items-center bg-[var(--surface)] p-4 rounded-2xl">
-                       <span className="font-black text-[var(--on-surface-variant)] text-sm"> {edAvisos.length} AVISOS PROGRAMADOS</span>
+                    <div className="flex justify-between items-center gap-4 bg-[var(--surface)] p-5 rounded-2xl border border-white/5">
+                       <span className="font-black text-[var(--on-surface-variant)] text-[10px] uppercase tracking-widest leading-none"> {edAvisos.length} Avisos Programados</span>
                        <button 
                          onClick={() => setViewDetail(ed)}
-                         className="text-primary font-black text-xs uppercase tracking-tighter flex items-center gap-1 group-hover:translate-x-1 transition-transform"
+                         className="text-primary font-black text-[10px] uppercase tracking-widest flex items-center gap-2 group-hover:translate-x-1 transition-transform bg-primary/10 px-4 py-2 rounded-xl"
                        >
-                          Detalles <ChevronRight size={16} />
+                          Detalles <ChevronRight size={14} />
                        </button>
                     </div>
                  </motion.div>
@@ -1049,7 +1061,7 @@ export function ScreenEdiciones({ ediciones, onExportPDF, clientes, avisos, onNa
              })}
           </div>
         ) : (
-          <div className="bg-[var(--surface-card)] rounded-[var(--radius)] border border-transparent shadow-sm">
+          <div className="bg-[var(--surface-card)] rounded-[var(--radius)] border border-transparent shadow-sm overflow-hidden">
             <div className="overflow-x-auto md:overflow-visible min-h-[500px]">
               <div className="w-full text-left min-w-[700px] md:min-w-0">
                 <div className="bg-[var(--surface)] border-b border-[#374151]/30 rounded-t-[var(--radius)] flex">
@@ -1080,7 +1092,7 @@ export function ScreenEdiciones({ ediciones, onExportPDF, clientes, avisos, onNa
                            </span>
                         </div>
                         <div className="px-8 py-6 text-right w-1/4">
-                           <div className="flex justify-end gap-3 opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity">
+                           <div className="flex justify-end gap-3 transition-all">
                               <button 
                                 onClick={() => onExportPDF(ed)}
                                 className="p-3 bg-[var(--surface-card)] text-[var(--on-surface-variant)] rounded-xl border border-transparent hover:bg-primary hover:text-white transition-all shadow-sm"
@@ -1091,6 +1103,7 @@ export function ScreenEdiciones({ ediciones, onExportPDF, clientes, avisos, onNa
                               <button 
                                 onClick={() => setViewDetail(ed)}
                                 className="p-3 bg-[var(--surface-card)] text-[var(--on-surface-variant)] rounded-xl border border-transparent hover:bg-primary hover:text-white transition-all shadow-sm flex items-center gap-2"
+                                title="Ver Detalles"
                               >
                                 <span className="text-[10px] font-black uppercase tracking-widest hidden md:inline">Detalle</span>
                                 <ChevronRight size={18} />
@@ -1422,7 +1435,7 @@ export function ScreenClientes({ clientes, campañas, onNavigateToCampaña, onUp
 }
 
 // --- CONFIG ---
-export function ScreenConfig({ user, onUpdateUser, onBatchGenerate, feriados, onAddFeriado, onDeleteFeriado, onBulkAddFeriados, ediciones, onLoadDemo }: any) {
+export function ScreenConfig({ user, onUpdateUser, onBatchGenerate, onSyncEdiciones, feriados, onAddFeriado, onDeleteFeriado, onBulkAddFeriados, ediciones, onLoadDemo, onClearEdiciones, appLogo, onUpdateLogo }: any) {
   const sortedFeriados = useMemo(() => {
     return [...feriados].sort((a: any, b: any) => a.fecha.localeCompare(b.fecha));
   }, [feriados]);
@@ -1477,10 +1490,77 @@ export function ScreenConfig({ user, onUpdateUser, onBatchGenerate, feriados, on
          <p className="text-[var(--on-surface-variant)] font-medium">Configuración de la plataforma y generación de recursos.</p>
        </div>
 
+        <Card title="Identidad Visual" className="relative z-40">
+           <div className="flex flex-col md:flex-row items-center gap-10">
+              <div className="w-32 h-32 rounded-3xl bg-[var(--surface)] border-2 border-dashed border-[var(--outline)] flex items-center justify-center overflow-hidden shrink-0">
+                 {appLogo ? (
+                   <img src={appLogo} alt="App Logo" className="w-full h-full object-contain" />
+                 ) : (
+                   <div className="text-center p-4">
+                     <Layout className="mx-auto text-slate-300 mb-2" size={32} />
+                     <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">Sin Logo</p>
+                   </div>
+                 )}
+              </div>
+              <div className="flex-grow space-y-4">
+                 <h4 className="text-lg font-display font-black text-[var(--on-surface)]">Logo de la Aplicación</h4>
+                 <p className="text-sm text-[var(--on-surface-variant)] leading-relaxed">Este logo aparecerá en la cabecera del sistema y en todos los reportes PDF generados (Diagramación y Campañas). Se recomienda formato PNG con fondo transparente.</p>
+                 <div className="flex items-center gap-4">
+                    <label className="cursor-pointer">
+                       <input 
+                        type="file" 
+                        accept="image/*" 
+                        className="hidden" 
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            const reader = new FileReader();
+                            reader.onloadend = () => {
+                              onUpdateLogo(reader.result as string);
+                            };
+                            reader.readAsDataURL(file);
+                          }
+                        }}
+                       />
+                       <span className="modern-button-primary !py-2.5 !px-5 flex items-center gap-2 text-xs">
+                          <Plus size={16} /> {appLogo ? 'Cambiar Logo' : 'Subir Logo'}
+                       </span>
+                    </label>
+                    {appLogo && (
+                      <button 
+                        onClick={() => onUpdateLogo(null)}
+                        className="text-xs font-black text-rose-500 hover:underline"
+                      >
+                        Eliminar
+                      </button>
+                    )}
+                 </div>
+              </div>
+           </div>
+        </Card>
+
+       <Card title="Modo Demostración" className="relative z-30 border-primary/20 bg-primary/5">
+          <div className="space-y-4">
+            <p className="text-[var(--on-surface-variant)] text-sm font-medium">¿Necesita probar el sistema? Genere instantáneamente una estructura completa de datos.</p>
+            <div className="flex items-center gap-4 p-4 bg-primary/10 rounded-2xl border border-primary/20">
+               <div className="flex-grow">
+                 <p className="text-xs font-black text-primary uppercase tracking-widest mb-1">Carga Masiva</p>
+                 <p className="text-[11px] text-[var(--on-surface-variant)] font-medium">• 10 Clientes corporativos<br/>• 50 Ediciones diarias<br/>• 20 Campañas con avisos</p>
+               </div>
+               <button 
+                onClick={onLoadDemo}
+                className="modern-button-primary !py-3 !px-6 flex items-center gap-2 shadow-lg shadow-primary/20"
+               >
+                 <Sparkles size={18} /> Cargar Demo
+               </button>
+            </div>
+          </div>
+       </Card>
+
        <Card title="Generación de Ediciones" className="relative z-20">
           <div className="space-y-6">
             <p className="text-[var(--on-surface-variant)] text-sm font-medium">Cree un lote de ediciones diarias (Lunes a Viernes) de forma masiva.</p>
-            <div className="flex flex-col sm:flex-row gap-6 items-end bg-[var(--surface)] p-6 rounded-3xl border border-transparent">
+            <div className="flex flex-col sm:flex-row gap-6 items-end bg-[var(--surface)] p-6 rounded-3xl border border-transparent relative z-30 overflow-visible">
                <div className="space-y-2 w-full sm:w-1/3">
                   <label className="text-[10px] font-black uppercase tracking-widest text-[var(--on-surface-variant)] ml-1">Fecha Inicial</label>
                   <CustomDatePicker value={dateIni} onChange={setDateIni} />
@@ -1514,34 +1594,77 @@ export function ScreenConfig({ user, onUpdateUser, onBatchGenerate, feriados, on
           </div>
        </Card>
 
+       <Card title="Mantenimiento de Ediciones" className="relative z-15">
+          <div className="space-y-6">
+            <div className="p-4 bg-amber-50 dark:bg-amber-500/10 border border-amber-100 dark:border-amber-900/20 rounded-2xl">
+               <p className="text-xs font-bold text-amber-600 flex items-center gap-2">
+                 <AlertCircle size={14} /> Zona de mantenimiento: Use con precaución.
+               </p>
+            </div>
+            <p className="text-[var(--on-surface-variant)] text-sm font-medium">Elimine un bloque de ediciones a partir de un número específico para permitir su regeneración.</p>
+            <div className="flex flex-col sm:flex-row gap-6 items-end bg-[var(--surface)] p-6 rounded-3xl border border-transparent relative z-30 overflow-visible">
+               <div className="space-y-2 w-full sm:w-2/3">
+                  <label className="text-[10px] font-black uppercase tracking-widest text-[var(--on-surface-variant)] ml-1">Borrar desde el número #</label>
+                  <input 
+                   type="number" 
+                   id="clearFromInput"
+                   placeholder="Ej: 0045" 
+                   className="modern-input" 
+                  />
+               </div>
+               <button 
+                 onClick={() => {
+                   const input = document.getElementById('clearFromInput') as HTMLInputElement;
+                   const val = parseInt(input.value);
+                   if (isNaN(val)) return alert('Ingrese un número válido');
+                   onClearEdiciones(val);
+                 }}
+                 className="w-full sm:w-1/3 h-14 bg-rose-500 text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-rose-600 transition-all shadow-lg shadow-rose-500/20 flex items-center justify-center gap-2"
+               >
+                 <Trash2 size={18} /> Limpiar bloque
+               </button>
+            </div>
+          </div>
+       </Card>
+
        <Card title="Calendario de Feriados" className="relative z-10">
           <div className="space-y-6">
             <p className="text-[var(--on-surface-variant)] text-sm font-medium">Configure los días no laborables para que el generador de avisos y ediciones los omita automáticamente.</p>
             
-            <div className="flex gap-4">
-               <button 
-                onClick={fetchHolidays}
-                disabled={isFetching}
-                className="flex-1 h-14 bg-slate-900 dark:bg-slate-800 text-white rounded-2xl font-black text-sm flex items-center justify-center gap-3 hover:bg-slate-800 transition-all disabled:opacity-50"
-               >
-                 <Sparkles size={20} className={isFetching ? 'animate-spin' : ''} />
-                 {isFetching ? 'Conectando...' : 'Importar Feriados Oficiales (AR)'}
-               </button>
-            </div>
+             <div className="flex flex-col sm:flex-row gap-4">
+                <button 
+                 onClick={fetchHolidays}
+                 disabled={isFetching}
+                 className="flex-1 h-14 bg-slate-900 dark:bg-slate-800 text-white rounded-2xl font-black text-sm flex items-center justify-center gap-3 hover:bg-slate-800 transition-all disabled:opacity-50"
+                >
+                  <Sparkles size={20} className={isFetching ? 'animate-spin' : ''} />
+                  {isFetching ? 'Conectando...' : 'Importar Feriados Oficiales (AR)'}
+                </button>
+                {ediciones.length > 0 && (
+                  <button 
+                   onClick={onSyncEdiciones}
+                   className="flex-1 h-14 bg-amber-500/10 text-amber-600 border border-amber-500/20 rounded-2xl font-black text-sm flex items-center justify-center gap-3 hover:bg-amber-500 hover:text-white transition-all shadow-sm"
+                  >
+                     <Calendar size={20} /> Re-sincronizar Calendario
+                  </button>
+                )}
+             </div>
 
             <div className="border-t border-slate-100 pt-6">
               <label className="text-[10px] font-black uppercase tracking-widest text-[var(--on-surface-variant)] ml-1">Agregar Feriado Manual</label>
-              <div className="flex flex-col sm:flex-row gap-2 mt-2">
-                <div className="w-full sm:w-48">
+              <div className="flex flex-col sm:flex-row gap-4 mt-2">
+                <div className="w-full sm:w-64 shrink-0">
                   <CustomDatePicker value={manualDate} onChange={setManualDate} />
                 </div>
-                <input 
-                  type="text" 
-                  value={manualName}
-                  onChange={e => setManualName(e.target.value)}
-                  placeholder="Nombre del feriado"
-                  className="modern-input h-14 flex-1" 
-                />
+                <div className="flex-1">
+                  <input 
+                    type="text" 
+                    value={manualName}
+                    onChange={e => setManualName(e.target.value)}
+                    placeholder="Nombre del feriado (Ej: Navidad)"
+                    className="modern-input" 
+                  />
+                </div>
                 <button 
                   onClick={() => {
                     if(!manualDate) return;
@@ -1549,9 +1672,9 @@ export function ScreenConfig({ user, onUpdateUser, onBatchGenerate, feriados, on
                     setManualDate('');
                     setManualName('');
                   }}
-                  className="px-6 h-14 modern-button-primary"
+                  className="px-8 h-14 modern-button-primary shrink-0"
                 >
-                  Agregar
+                  Agregar Feriado
                 </button>
               </div>
             </div>
@@ -1597,19 +1720,38 @@ export function ScreenConfig({ user, onUpdateUser, onBatchGenerate, feriados, on
                 </div>
                 <button 
                   onClick={() => onUpdateUser({...user, dark_mode: !user.dark_mode})}
-                  className={`w-16 h-10 rounded-full transition-all relative ${user.dark_mode ? 'bg-primary shadow-lg shadow-primary/30' : 'bg-[var(--outline)]'}`}
+                  className={`w-16 h-10 rounded-full transition-all relative ${user.dark_mode ? 'bg-primary shadow-lg shadow-primary/30' : 'bg-slate-200 dark:bg-slate-700'}`}
                 >
-                  <div className={`absolute top-1.5 w-7 h-7 rounded-full bg-white shadow-sm transition-all ${user.dark_mode ? 'left-7.5' : 'left-1.5'}`} />
+                  <div className={`absolute top-1.5 w-7 h-7 rounded-full shadow-sm transition-all transform ${user.dark_mode ? 'translate-x-[30px] bg-[var(--on-primary)]' : 'translate-x-[6px] bg-white'}`} style={{ left: 0 }} />
                 </button>
              </div>
+
+             <div className="space-y-6">
+                 <span className="text-xs font-black uppercase tracking-[0.2em] text-[var(--on-surface-variant)] ml-1">Estructura de Menú</span>
+                 <div className="grid grid-cols-2 gap-6">
+                    {[
+                      { id: 'TOP' as const, label: 'Menú Superior', icon: Layout },
+                      { id: 'SIDE' as const, label: 'Menú Lateral', icon: Newspaper }
+                    ].map(layout => (
+                      <button 
+                        key={layout.id}
+                        onClick={() => onUpdateUser({...user, menu_layout: layout.id})}
+                        className={`p-6 rounded-[2rem] border-2 transition-all flex flex-col items-center gap-4 ${user.menu_layout === layout.id ? 'border-primary bg-primary/5' : 'border-transparent bg-[var(--surface)] hover:border-primary/20'}`}
+                      >
+                         <layout.icon size={32} className={user.menu_layout === layout.id ? 'text-primary' : 'text-[var(--on-surface-variant)]'} />
+                         <span className={`text-sm font-black uppercase tracking-widest ${user.menu_layout === layout.id ? 'text-primary' : 'text-[var(--on-surface-variant)]'}`}>{layout.label}</span>
+                      </button>
+                    ))}
+                 </div>
+              </div>
              
              <div className="space-y-6">
                 <span className="text-xs font-black uppercase tracking-[0.2em] text-[var(--on-surface-variant)] ml-1">Ambiente de Trabajo</span>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                    {[
                      { id: 'blue' as const, label: 'Sapphire Pro', desc: 'Modern Blue Business', color: '#2563eb', accent: '#3b82f6' },
-                     { id: 'rust' as const, label: 'Crimson Luxury', desc: 'Sophisticated Warm', color: '#be123c', accent: '#f43f5e' },
-                     { id: 'slate' as const, label: 'Midnight Technical', desc: 'Noir Monochrome', color: '#111827', accent: '#ffffff' }
+                     { id: 'rust' as const, label: 'Crimson Rose', desc: 'Sophisticated Warm', color: '#be123c', accent: '#fb7185' },
+                     { id: 'slate' as const, label: 'Midnight Slate', desc: 'Technical Elegance', color: '#475569', accent: '#94a3b8' }
                    ].map(t => (
                      <button 
                       key={t.id}

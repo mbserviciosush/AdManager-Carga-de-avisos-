@@ -13,6 +13,8 @@ export interface Usuario {
   role: Role;
   theme: Theme;
   dark_mode: boolean;
+  menu_layout?: 'TOP' | 'SIDE';
+  sidebar_collapsed?: boolean;
 }
 
 export interface Cliente {

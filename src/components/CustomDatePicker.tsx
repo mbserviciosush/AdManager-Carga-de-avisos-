@@ -6,9 +6,10 @@ interface CustomDatePickerProps {
   value: string;
   onChange: (date: string) => void;
   onKeyDown?: (e: React.KeyboardEvent) => void;
+  className?: string;
 }
 
-export const CustomDatePicker: React.FC<CustomDatePickerProps> = ({ value, onChange, onKeyDown }) => {
+export const CustomDatePicker: React.FC<CustomDatePickerProps> = ({ value, onChange, onKeyDown, className = "" }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [currentDate, setCurrentDate] = useState(value ? new Date(value + 'T01:00:00') : new Date());
   const containerRef = useRef<HTMLDivElement>(null);
@@ -76,7 +77,7 @@ export const CustomDatePicker: React.FC<CustomDatePickerProps> = ({ value, onCha
     <div className={`relative w-full ${isOpen ? 'z-[100]' : 'z-auto'}`} ref={containerRef}>
       <div className="relative group">
         <div 
-          className={`absolute left-4 top-1/2 -translate-y-1/2 transition-all duration-300 pointer-events-none p-1 rounded-lg
+          className={`absolute left-3 top-1/2 -translate-y-1/2 transition-all duration-300 pointer-events-none p-1 rounded-lg
             ${isOpen ? 'bg-primary/20 text-primary scale-110' : 'text-[var(--on-surface)] opacity-60'}
             group-hover:opacity-100 group-hover:text-primary
           `}
@@ -95,8 +96,9 @@ export const CustomDatePicker: React.FC<CustomDatePickerProps> = ({ value, onCha
             if (onKeyDown) onKeyDown(e);
           }}
           placeholder="Seleccionar fecha..."
-          className={`modern-input pl-12 cursor-pointer transition-all duration-300
+          className={`modern-input cursor-pointer transition-all duration-300
             ${isOpen ? 'ring-4 ring-primary/15 border-primary bg-[var(--surface)] shadow-lg' : ''}
+            ${className || "pl-10"}
           `}
         />
       </div>

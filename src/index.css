@@ -12,45 +12,51 @@
 
 @layer base {
   :root {
-    /* Base configuration for Tech Admin Moderno */
-    --surface: #111827; /* Gris antracita muy oscuro */
-    --surface-card: #1F2937; /* Gris oscuro elevado */
-    --on-surface: #F9FAFB; /* Blanco hueso */
-    --on-surface-variant: #9CA3AF; /* Gris claro */
-    --outline: transparent; /* Sin bordes duros */
-    --primary: #0D9488; /* Turquesa vibrante */
+    /* Base configuration for Light Mode */
+    --surface: #F9FAFB;
+    --surface-card: #ffffff;
+    --on-surface: #111827;
+    --on-surface-variant: #6B7280;
+    --outline: #E5E7EB;
+    --input-bg: #F3F4F6;
+    --primary: #0D9488; /* Teal */
     --on-primary: #ffffff;
-    --radius: 12px;
-    --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
-    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+    --radius: 20px;
+    --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
   }
 
   [data-dark='true'] {
-    /* Forzar siempre el tema Tech Admin Moderno */
-    --surface: #111827;
-    --surface-card: #1F2937;
-    --on-surface: #F9FAFB;
-    --on-surface-variant: #9CA3AF;
-    --outline: transparent;
-    --primary: #0D9488;
-    --on-primary: #ffffff;
+    /* Dark Mode Overrides */
+    --surface: #0f172a;
+    --surface-card: #1e293b;
+    --on-surface: #f8fafc;
+    --on-surface-variant: #94a3b8;
+    --outline: #334155;
+    --input-bg: #1e293b;
+    --shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
   }
 
-  /* Ignite overrides for custom themes, ensuring Tech Admin aesthetic remains */
-  [data-theme='blue'], [data-theme='blue'][data-dark='true'] {
-    --primary: #06B6D4; /* Cian alternativo */
+  /* Theme Overrides - Apply to both light and dark */
+  [data-theme='blue'] {
+    --primary: #2563eb; /* Sapphire Blue */
   }
 
-  [data-theme='rust'], [data-theme='rust'][data-dark='true'] {
-    --primary: #0D9488;
+  [data-theme='rust'] {
+    --primary: #be123c; /* Crimson Rose */
   }
 
-  [data-theme='slate'], [data-theme='slate'][data-dark='true'] {
-    --primary: #0D9488;
+  [data-theme='slate'] {
+    --primary: #475569; /* Slate Gray */
+  }
+  
+  [data-dark='true'][data-theme='slate'] {
+    --primary: #f8fafc; /* White/Slate for high contrast in dark mode */
+    --on-primary: #0f172a; /* Dark text for light primary button */
   }
 
   body {
-    @apply bg-[var(--surface)] text-[var(--on-surface)] transition-colors duration-300 antialiased selection:bg-primary/20;
+    @apply bg-[var(--surface)] text-[var(--on-surface)] transition-colors duration-500 antialiased selection:bg-primary/20;
     font-family: var(--font-sans);
   }
 }
@@ -83,8 +89,7 @@
   }
   
   .modern-input {
-    /* Fondo oscuro interior #374151, focus anillo de turquesa */
-    @apply w-full bg-[#374151] rounded-[var(--radius)] px-4 py-3 outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all font-medium text-[var(--on-surface)] border-transparent;
+    @apply w-full h-11 bg-[var(--input-bg)] border border-[var(--outline)] rounded-[var(--radius)] px-4 py-2 outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all font-medium text-[var(--on-surface)] placeholder:text-[var(--on-surface-variant)]/50;
   }
 
   .modern-button-primary {

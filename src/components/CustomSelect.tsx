@@ -14,6 +14,7 @@ interface CustomSelectProps {
   onKeyDown?: (e: React.KeyboardEvent) => void;
   placeholder?: string;
   id?: string;
+  className?: string;
 }
 
 export const CustomSelect: React.FC<CustomSelectProps> = ({ 
@@ -22,6 +23,7 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
   onChange, 
   onKeyDown,
   placeholder = "Seleccionar...",
+  className = "",
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -82,6 +84,7 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
         }}
         className={`modern-input text-left flex items-center justify-between transition-all duration-300
           ${isOpen ? 'ring-4 ring-primary/10 border-primary bg-[var(--surface)]' : ''}
+          ${className}
         `}
       >
         <span className={`truncate mr-2 ${value ? 'text-[var(--on-surface)]' : 'text-[var(--on-surface-variant)] opacity-60'}`}>

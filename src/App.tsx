@@ -9,7 +9,8 @@ import {
   Search,
   Menu,
   X,
-  UserPlus
+  UserPlus,
+  ChevronRight
 } from 'lucide-react';
 import { 
   Screen, 
@@ -20,7 +21,8 @@ import {
   Edición, 
   Campaña, 
   Aviso, 
-  Feriado 
+  Feriado,
+  PRODUCTOS
 } from './types';
 import { 
   ScreenCampañas, 
@@ -57,6 +59,7 @@ export default function App() {
   const [campañas, setCampañas] = useState<Campaña[]>([]);
   const [avisos, setAvisos] = useState<Aviso[]>([]);
   const [feriados, setFeriados] = useState<Feriado[]>([]);
+  const [appLogo, setAppLogo] = useState<string | null>(null);
   
   const [currentScreen, setCurrentScreen] = useState<Screen>('CAMPAÑAS');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -82,6 +85,7 @@ export default function App() {
       setCampañas(data.campañas || []);
       setAvisos(data.avisos || []);
       setFeriados(data.feriados || []);
+      setAppLogo(data.appLogo || null);
       if (data.user) {
         setUser(data.user);
         // Visual states are already initialized from independent localStorage keys, 
@@ -92,7 +96,7 @@ export default function App() {
     } else {
       // --- LOAD DEMO DATA ---
       const demoUsers: Usuario[] = [
-        { id: 'admin-root', username: 'admin', password: 'admin', role: Role.ADMIN, theme: 'blue', dark_mode: false }
+        { id: 'admin-root', username: 'admin', password: 'admin', role: Role.ADMIN, theme: 'blue', dark_mode: false, menu_layout: 'TOP', sidebar_collapsed: false }
       ];
       const demoClientes: Cliente[] = [
         { id: 'c1', nombre: 'Agencia El Sol' },
@@ -158,83 +162,88 @@ export default function App() {
   }, []);
 
   const loadDemoData = () => {
-    // Generar IDs únicos
     const suffix = Math.random().toString(36).slice(2, 5);
-    const demoClientes: Cliente[] = [
-      { id: `dc1-${suffix}`, nombre: 'Distribuidora Patagónica' },
-      { id: `dc2-${suffix}`, nombre: 'Turismo Extremo' },
-      { id: `dc3-${suffix}`, nombre: 'Inmobiliaria Central' }
-    ];
     
+    // 10 Clientes
+    const nombresClientes = [
+      "Coca-Cola S.A.", "Banco Galicia", "YPF Argentina", "Movistar", "Personal Flow",
+      "Mercado Libre", "Samsung Tech", "Nike Sport", "Adidas Group", "Toyota Motors"
+    ];
+    const demoClientes: Cliente[] = nombresClientes.map((n, i) => ({
+      id: `c-demo-${i}-${suffix}`,
+      nombre: n
+    }));
+
+    // 50 Ediciones desde mañana
     const demoEdiciones: Edición[] = [];
-    const today = new Date();
+    const tomorrow = addDays(startOfToday(), 1);
     let count = 0;
     let offset = 0;
-    while (count < 15) {
-      const d = new Date(today);
-      d.setDate(today.getDate() + offset);
+    let startNum = ediciones.length > 0 ? Math.max(...ediciones.map(e => parseInt(e.numero))) + 1 : 1000;
+
+    while (count < 50) {
+      const d = addDays(tomorrow, offset);
       const day = d.getDay();
-      if (day >= 1 && day <= 5) {
-        const f = d.toISOString().split('T')[0];
-        demoEdiciones.push({ 
-          id: `demo-ed-${f}-${suffix}`, 
-          fecha: f, 
-          numero: (8000 + count).toString(), 
+      const dateStr = format(d, 'yyyy-MM-dd');
+      const holiday = feriados.find(f => f.fecha === dateStr);
+
+      if (day !== 0 && day !== 6 && !holiday) {
+        demoEdiciones.push({
+          id: `ed-demo-${dateStr}-${suffix}`,
+          fecha: dateStr,
+          numero: (startNum + count).toString().padStart(4, '0')
         });
         count++;
       }
       offset++;
     }
 
-    const demoCampaña: Campaña = { 
-      id: `demo-camp-${suffix}`, 
-      nombre_campaña: 'Campaña Invierno 2026', 
-      cliente_id: demoClientes[1].id, 
-      fecha_inicio: demoEdiciones[0].fecha 
-    };
+    // Varias Campañas (2 por cliente)
+    const demoCampañas: Campaña[] = [];
+    const demoAvisos: Aviso[] = [];
 
-    const demoAvisos: Aviso[] = [
-      { 
-        id: `da1-${suffix}`, 
-        campaña_id: demoCampaña.id, 
-        nombre: 'Banner Principal', 
-        producto: '4x34',
-        fecha_publicacion: demoEdiciones[0].fecha, 
-        edicion_id: demoEdiciones[0].id,
-        numero_salida: 1
-      },
-      { 
-        id: `da2-${suffix}`, 
-        campaña_id: demoCampaña.id, 
-        nombre: 'Zócalo de Ofertas', 
-        producto: '2x8',
-        fecha_publicacion: demoEdiciones[2].fecha, 
-        edicion_id: demoEdiciones[2].id,
-        numero_salida: 2
-      },
-      { 
-        id: `da3-${suffix}`, 
-        campaña_id: demoCampaña.id, 
-        nombre: 'Aviso Clasificado', 
-        producto: '1x8',
-        fecha_publicacion: demoEdiciones[4].fecha, 
-        edicion_id: demoEdiciones[4].id,
-        numero_salida: 3
+    demoClientes.forEach((cli, cliIdx) => {
+      for (let i = 1; i <= 2; i++) {
+        const campId = `camp-demo-${cli.id}-${i}`;
+        const startEdIdx = Math.floor(Math.random() * 5);
+        const startDate = demoEdiciones[startEdIdx].fecha;
+        
+        demoCampañas.push({
+          id: campId,
+          nombre_campaña: `Campaña ${cli.nombre} - ${i === 1 ? 'Pauta Mensual' : 'Lanzamiento'}`,
+          cliente_id: cli.id,
+          fecha_inicio: startDate
+        });
+
+        // 3 avisos por campaña
+        for (let j = 1; j <= 3; j++) {
+          const edIdx = Math.floor(Math.random() * (demoEdiciones.length - 10)) + 5;
+          const ed = demoEdiciones[edIdx];
+          demoAvisos.push({
+            id: `av-demo-${campId}-${j}`,
+            campaña_id: campId,
+            nombre: `Aviso ${j} - ${cli.nombre} ${i}`,
+            producto: PRODUCTOS[Math.floor(Math.random() * PRODUCTOS.length)],
+            fecha_publicacion: ed.fecha,
+            edicion_id: ed.id,
+            numero_salida: j
+          });
+        }
       }
-    ];
+    });
 
     setClientes(prev => [...prev, ...demoClientes]);
     setEdiciones(prev => [...prev, ...demoEdiciones]);
-    setCampañas(prev => [...prev, demoCampaña]);
+    setCampañas(prev => [...prev, ...demoCampañas]);
     setAvisos(prev => [...prev, ...demoAvisos]);
-    
-    // Switch to Campaigns to show results
+
     setCurrentScreen('CAMPAÑAS');
+    alert('Datos de demostración generados con éxito: 10 clientes, 50 ediciones y 20 campañas.');
   };
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify({
-      clientes, ediciones, campañas, avisos, feriados, user, users
+      clientes, ediciones, campañas, avisos, feriados, user, users, appLogo
     }));
   }, [clientes, ediciones, campañas, avisos, feriados, user, users]);
 
@@ -242,12 +251,17 @@ export default function App() {
   useEffect(() => {
     localStorage.setItem(DARK_MODE_KEY, String(isDark));
     localStorage.setItem(THEME_KEY, theme);
-    document.documentElement.className = theme;
+    
+    // Set attributes and classes on root for CSS targeting
+    document.documentElement.setAttribute('data-theme', theme);
+    document.documentElement.setAttribute('data-dark', String(isDark));
+    
     if (isDark) {
       document.documentElement.classList.add('dark');
     } else {
       document.documentElement.classList.remove('dark');
     }
+    
     // Update current user visual settings if logged in
     if (user && (user.dark_mode !== isDark || user.theme !== theme)) {
       const updated = { ...user, dark_mode: isDark, theme };
@@ -268,7 +282,9 @@ export default function App() {
         password: 'admin', 
         role: Role.ADMIN, 
         theme: 'blue', 
-        dark_mode: true
+        dark_mode: true,
+        menu_layout: 'TOP',
+        sidebar_collapsed: false
       };
       setUsers([initialAdmin]);
       setUser(initialAdmin);
@@ -284,6 +300,11 @@ export default function App() {
     } else {
       alert('Credenciales incorrectas');
     }
+  };
+
+  const updateUser = (updated: Usuario) => {
+    setUser(updated);
+    setUsers(prev => prev.map(u => u.id === updated.id ? updated : u));
   };
 
   const logout = () => {
@@ -317,10 +338,67 @@ export default function App() {
     setEdiciones(prev => [...prev, ...newEdiciones]);
   };
 
+  const synchronizeEdicionesWithHolidays = () => {
+    if (ediciones.length === 0) return;
+    if (!confirm('Esta acción reorganizará TODAS las fechas de las ediciones existentes para evitar fines de semana y los feriados cargados actualmente. Los avisos se moverán junto con sus ediciones. ¿Desea continuar?')) return;
+
+    const sortedEdiciones = [...ediciones].sort((a, b) => a.numero.localeCompare(b.numero));
+    const firstEd = sortedEdiciones[0];
+    
+    let currentDate = new Date(firstEd.fecha + 'T12:00:00');
+    const updatedEdiciones: Edición[] = [];
+    const dateMapping: Record<string, string> = {}; // oldId -> newDate
+
+    sortedEdiciones.forEach(ed => {
+      let found = false;
+      while (!found) {
+        const day = currentDate.getDay();
+        const dateStr = format(currentDate, 'yyyy-MM-dd');
+        const isWeekend = day === 0 || day === 6;
+        const holiday = feriados.find(f => f.fecha === dateStr);
+
+        if (!isWeekend && !holiday) {
+          dateMapping[ed.id] = dateStr;
+          updatedEdiciones.push({
+            ...ed,
+            fecha: dateStr
+          });
+          found = true;
+        }
+        currentDate = addDays(currentDate, 1);
+      }
+    });
+
+    // Actualizar avisos
+    const updatedAvisos = avisos.map(a => {
+      if (a.edicion_id && dateMapping[a.edicion_id]) {
+        return {
+          ...a,
+          fecha_publicacion: dateMapping[a.edicion_id]
+        };
+      }
+      return a;
+    });
+
+    setEdiciones(updatedEdiciones);
+    setAvisos(updatedAvisos);
+    alert('Sincronización completada: Las ediciones y avisos han sido reubicados respetando el nuevo calendario.');
+  };
+
   const deleteCampaña = (id: string) => {
     if (!confirm('¿Está seguro de eliminar esta campaña y todos sus avisos asociados?')) return;
     setCampañas(prev => prev.filter(c => c.id !== id));
     setAvisos(prev => prev.filter(a => a.campaña_id !== id));
+  };
+
+  const clearEdicionesFrom = (fromNum: number) => {
+    if (!confirm(`¿Está seguro de eliminar TODAS las ediciones desde el número ${fromNum} en adelante?`)) return;
+    
+    // Identificar IDs de ediciones a borrar
+    const idsToBorrar = ediciones.filter(e => parseInt(e.numero) >= fromNum).map(e => e.id);
+    
+    setEdiciones(prev => prev.filter(e => parseInt(e.numero) < fromNum));
+    setAvisos(prev => prev.map(a => idsToBorrar.includes(a.edicion_id) ? { ...a, edicion_id: '' } : a));
   };
 
   const updateAvisosCampaña = (campId: string, updatedAvisos: Aviso[]) => {
@@ -433,172 +511,239 @@ export default function App() {
             </motion.div>
           </motion.div>
         ) : (
-          <motion.div 
-            key="app"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="flex-1 flex flex-col"
-          >
-            {/* Top Navigation */}
-            <header className="sticky top-0 bg-[var(--surface-card)]/80 backdrop-blur-xl h-20 md:h-24 flex items-center justify-between px-4 md:px-8 z-50 border-b border-white/5">
-               <div className="flex items-center gap-4 md:gap-10">
-                  <div className="flex items-center gap-2 md:gap-3">
-                    <div className="w-10 h-10 md:w-11 md:h-11 bg-primary/10 rounded-2xl flex items-center justify-center shadow-sm shrink-0">
-                      <Newspaper className="text-primary" size={20} />
+          <div className={`min-h-screen flex ${user.menu_layout === 'SIDE' ? 'flex-row' : 'flex-col'}`}>
+            
+            {/* --- SIDEBAR --- */}
+            {user.menu_layout === 'SIDE' && (
+              <aside 
+                className={`hidden md:flex flex-col bg-[var(--surface-card)] border-r border-white/5 transition-all duration-300 relative z-[60] ${user.sidebar_collapsed ? 'w-24' : 'w-72'}`}
+              >
+                <div className={`h-24 flex items-center px-6 mb-8 transition-all ${user.sidebar_collapsed ? 'flex-col justify-center gap-2' : 'justify-between'}`}>
+                  <div className="flex items-center gap-3 overflow-hidden">
+                    <div className="w-11 h-11 bg-primary/10 rounded-2xl flex items-center justify-center shadow-sm shrink-0 overflow-hidden">
+                      {appLogo ? (
+                        <img src={appLogo} alt="Logo" className="w-full h-full object-contain p-1" />
+                      ) : (
+                        <Newspaper className="text-primary" size={20} />
+                      )}
                     </div>
-                    <h1 className="text-lg md:text-xl font-display font-black tracking-tighter text-[var(--on-surface)] truncate">AdManager<span className="text-primary">.</span></h1>
+                    {!user.sidebar_collapsed && (
+                      <h1 className="text-xl font-display font-black tracking-tighter text-[var(--on-surface)] truncate">AdManager<span className="text-primary">.</span></h1>
+                    )}
                   </div>
+                  <button 
+                    onClick={() => updateUser({...user, sidebar_collapsed: !user.sidebar_collapsed})}
+                    className={`bg-[var(--surface)] rounded-xl flex items-center justify-center text-[var(--on-surface-variant)] hover:text-primary transition-all shrink-0 ${user.sidebar_collapsed ? 'w-full h-8' : 'w-10 h-10'}`}
+                  >
+                    <ChevronRight size={18} className={user.sidebar_collapsed ? '' : 'rotate-180'} />
+                  </button>
+                </div>
 
-                  <nav className="hidden md:flex items-center gap-1">
-                    {(() => {
-                      const menuItems = [
-                        { id: 'CAMPAÑAS', label: 'Campañas', icon: Megaphone },
-                        { id: 'EDICIONES', label: 'Ediciones', icon: Newspaper },
-                        { id: 'CLIENTES', label: 'Clientes', icon: Users },
-                        ...(user?.role === Role.ADMIN ? [{ id: 'USUARIOS', label: 'Usuarios', icon: UserPlus }] : []),
-                        { id: 'CONFIG', label: 'Ajustes', icon: Settings },
-                      ];
-                      return menuItems.map(item => (
-                        <button 
-                          key={item.id}
-                          onClick={() => setCurrentScreen(item.id as Screen)}
-                          className={`px-4 py-2 rounded-xl transition-all flex items-center gap-2 group ${
-                            currentScreen === item.id 
-                            ? 'bg-primary/5 text-primary shadow-sm' 
-                            : 'text-[var(--on-surface-variant)] hover:bg-[var(--surface)] hover:text-[var(--on-surface)]'
-                          }`}
-                        >
-                          <item.icon size={18} className={currentScreen === item.id ? 'opacity-100' : 'opacity-60 group-hover:opacity-100'} />
-                          <span className="text-[13px] font-black tracking-tight">{item.label}</span>
+                <nav className="flex-1 px-4 space-y-2">
+                  {[
+                    { id: 'CAMPAÑAS', label: 'Campañas', icon: Megaphone },
+                    { id: 'EDICIONES', label: 'Ediciones', icon: Newspaper },
+                    { id: 'CLIENTES', label: 'Clientes', icon: Users },
+                    ...(user?.role === Role.ADMIN ? [{ id: 'USUARIOS', label: 'Usuarios', icon: UserPlus }] : []),
+                    { id: 'CONFIG', label: 'Ajustes', icon: Settings },
+                  ].map(item => (
+                    <button 
+                      key={item.id}
+                      onClick={() => setCurrentScreen(item.id as Screen)}
+                      className={`w-full px-4 py-3.5 rounded-2xl transition-all flex items-center gap-4 group ${
+                        currentScreen === item.id 
+                        ? 'bg-primary text-white shadow-lg shadow-primary/20' 
+                        : 'text-[var(--on-surface-variant)] hover:bg-[var(--surface)] hover:text-[var(--on-surface)]'
+                      }`}
+                    >
+                      <item.icon size={22} className={currentScreen === item.id ? 'opacity-100' : 'opacity-60 group-hover:opacity-100'} />
+                      {!user.sidebar_collapsed && <span className="text-sm font-black tracking-tight">{item.label}</span>}
+                    </button>
+                  ))}
+                </nav>
+
+              </aside>
+            )}
+
+            <div className="flex-1 flex flex-col min-h-screen">
+              {/* --- HEADER --- */}
+              <header className={`sticky top-0 bg-[var(--surface-card)]/80 backdrop-blur-xl h-20 md:h-24 flex items-center justify-between px-4 md:px-8 z-50 border-b border-white/5`}>
+                 <div className="flex items-center gap-4 md:gap-10">
+                    {/* Mobile Toggle & Logo if TOP */}
+                    <div className="flex items-center gap-4">
+                      {user.menu_layout === 'SIDE' ? (
+                        <button className="md:hidden p-3 bg-[var(--surface)] rounded-xl text-[var(--on-surface)]" onClick={() => setMobileMenuOpen(true)}>
+                          <Menu size={20} />
                         </button>
-                      ));
-                    })()}
-                  </nav>
-               </div>
-
-               <div className="flex items-center gap-6">
-                  <div className="hidden lg:flex relative">
-                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--on-surface-variant)]" size={16} />
-                     <input className="pl-11 pr-6 py-2.5 bg-[var(--surface)] border border-transparent rounded-2xl text-xs font-medium w-64 shadow-sm outline-none focus:ring-4 focus:ring-primary/5 transition-all text-[var(--on-surface)]" placeholder="Buscar..." />
-                  </div>
-
-                  <div className="flex items-center gap-4 pl-6 border-l border-white/5">
-                     <button className="md:hidden p-3 bg-[var(--surface)] rounded-xl text-[var(--on-surface)]" onClick={() => setMobileMenuOpen(true)}>
-                        <Menu size={20} />
-                     </button>
-                     <div className="hidden md:flex items-center gap-5">
-                        <div className="flex items-center gap-3 pr-1">
-                          <div className="text-right">
-                            <p className="text-[13px] font-display font-bold text-[var(--on-surface)] tracking-tight leading-none uppercase">{user.username}</p>
-                            <p className="text-[9px] font-black text-primary uppercase tracking-[0.1em] mt-1 opacity-70">Sístema {user.role}</p>
+                      ) : (
+                        <div className="flex items-center gap-2 md:gap-3">
+                          <div className="w-10 h-10 md:w-11 md:h-11 bg-primary/10 rounded-2xl flex items-center justify-center shadow-sm shrink-0 overflow-hidden">
+                            {appLogo ? (
+                              <img src={appLogo} alt="Logo" className="w-full h-full object-contain p-1" />
+                            ) : (
+                              <Newspaper className="text-primary" size={20} />
+                            )}
                           </div>
-                          <div className="w-10 h-10 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-black text-xs">
-                            {user.username.substring(0, 2).toUpperCase()}
-                          </div>
+                          <h1 className="text-lg md:text-xl font-display font-black tracking-tighter text-[var(--on-surface)] truncate">AdManager<span className="text-primary">.</span></h1>
                         </div>
-                        <button onClick={logout} className="p-2.5 bg-[var(--surface-card)] hover:bg-rose-500 hover:text-white text-[var(--on-surface-variant)] rounded-2xl transition-all border border-transparent shadow-sm group">
-                          <LogOut size={16} className="group-hover:-translate-x-0.5 transition-transform" />
-                        </button>
-                     </div>
-                  </div>
-               </div>
-            </header>
+                      )}
+                    </div>
 
-            <main className="flex-1 flex flex-col min-h-[calc(100vh-6rem)] relative max-w-[1600px] mx-auto w-full px-4 md:px-8 py-6 md:py-10">
-              <AnimatePresence mode="wait">
-                {currentScreen === 'CAMPAÑAS' && (
-                  <ScreenCampañas 
-                    clientes={clientes}
-                    onAddCliente={addCliente}
-                    ediciones={ediciones}
-                    feriados={feriados}
-                    campañas={campañas}
-                    avisos={avisos}
-                    onSaveCampaña={(camp: any, newAvisos: Aviso[]) => {
-                      const campId = Math.random().toString(36).slice(2, 11);
-                      setCampañas(prev => [...prev, { ...camp, id: campId }]);
-                      setAvisos(prev => [...prev, ...newAvisos.map(a => ({ ...a, campaña_id: campId }))]);
-                      alert('Campaña Guardada con éxito');
-                    }}
-                    onDeleteCampaña={deleteCampaña}
-                    onUpdateAvisos={updateAvisosCampaña}
-                    onUpdateCampaña={updateCampaña}
-                    initialSelectedId={targetCampañaId}
-                    onClearInitialId={() => setTargetCampañaId(null)}
-                  />
-                )}
-                {currentScreen === 'EDICIONES' && (
-                  <ScreenEdiciones 
-                    ediciones={ediciones}
-                    avisos={avisos}
-                    clientes={clientes}
-                    campañas={campañas}
-                    onNavigateToCampaña={(id: string) => {
-                      setTargetCampañaId(id);
-                      setCurrentScreen('CAMPAÑAS');
-                    }}
-                    onExportPDF={(ed: Edición) => exportEdicionPDF(ed, avisos.filter(a => a.edicion_id === ed.id), clientes)}
-                  />
-                )}
-                {currentScreen === 'CLIENTES' && (
-                  <ScreenClientes 
-                    clientes={clientes}
-                    campañas={campañas}
-                    onNavigateToCampaña={(id: string) => {
-                      setTargetCampañaId(id);
-                      setCurrentScreen('CAMPAÑAS');
-                    }}
-                    onUpsert={(c: any) => {
-                      if (c.id) {
-                        setClientes(prev => prev.map(x => x.id === c.id ? c : x));
-                      } else {
-                        addCliente(c.nombre);
-                      }
-                    }}
-                    onDelete={(id: string) => setClientes(prev => prev.filter(x => x.id !== id))}
-                  />
-                )}
-                {currentScreen === 'CONFIG' && (
-                  <ScreenConfig 
-                    user={user}
-                    onUpdateUser={(updatedUser: Usuario) => {
-                      setUser(updatedUser);
-                      setUsers(prev => prev.map(u => u.id === updatedUser.id ? updatedUser : u));
-                      setIsDark(updatedUser.dark_mode);
-                      setTheme(updatedUser.theme);
-                    }}
-                    onBatchGenerate={addBatchEdiciones}
-                    ediciones={ediciones}
-                    feriados={feriados}
-                    onAddFeriado={(fecha: string, nombre?: string) => setFeriados(prev => [...prev, { id: Math.random().toString(36).slice(2, 11), fecha, nombre }])}
-                    onDeleteFeriado={(id: string) => setFeriados(prev => prev.filter(f => f.id !== id))}
-                    onBulkAddFeriados={(newHolidays: any[]) => {
-                      setFeriados(prev => {
-                        const existingDates = new Set(prev.map(f => f.fecha));
-                        const uniqueNew = newHolidays.filter(f => !existingDates.has(f.fecha));
-                        return [...prev, ...uniqueNew];
-                      });
-                    }}
-                    onLoadDemo={loadDemoData}
-                  />
-                )}
-                {currentScreen === 'USUARIOS' && (
-                  <ScreenUsuarios 
-                    users={users}
-                    onUpsert={(u: Usuario) => {
-                      setUsers(prev => {
-                        const exists = prev.find(x => x.id === u.id);
-                        if (exists) return prev.map(x => x.id === u.id ? u : x);
-                        return [...prev, u];
-                      });
-                      alert(u.id ? 'Usuario actualizado' : 'Usuario creado');
-                    }}
-                    onDelete={(id: string) => setUsers(prev => prev.filter(u => u.id !== id))}
-                  />
-                )}
-              </AnimatePresence>
-            </main>
-          </motion.div>
+                    {/* Desktop Top Menu */}
+                    {user.menu_layout === 'TOP' && (
+                      <nav className="hidden md:flex items-center gap-1">
+                        {[
+                          { id: 'CAMPAÑAS', label: 'Campañas', icon: Megaphone },
+                          { id: 'EDICIONES', label: 'Ediciones', icon: Newspaper },
+                          { id: 'CLIENTES', label: 'Clientes', icon: Users },
+                          ...(user?.role === Role.ADMIN ? [{ id: 'USUARIOS', label: 'Usuarios', icon: UserPlus }] : []),
+                          { id: 'CONFIG', label: 'Ajustes', icon: Settings },
+                        ].map(item => (
+                          <button 
+                            key={item.id}
+                            onClick={() => setCurrentScreen(item.id as Screen)}
+                            className={`px-4 py-2 rounded-xl transition-all flex items-center gap-2 group ${
+                              currentScreen === item.id 
+                              ? 'bg-primary/5 text-primary shadow-sm' 
+                              : 'text-[var(--on-surface-variant)] hover:bg-[var(--surface)] hover:text-[var(--on-surface)]'
+                            }`}
+                          >
+                            <item.icon size={18} className={currentScreen === item.id ? 'opacity-100' : 'opacity-60 group-hover:opacity-100'} />
+                            <span className="text-[13px] font-black tracking-tight">{item.label}</span>
+                          </button>
+                        ))}
+                      </nav>
+                    )}
+                 </div>
+
+                 <div className="flex items-center gap-6">
+                    <div className="hidden lg:flex relative">
+                       <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--on-surface-variant)]" size={16} />
+                       <input className="pl-11 pr-6 py-2.5 bg-[var(--surface)] border border-transparent rounded-2xl text-xs font-medium w-64 shadow-sm outline-none focus:ring-4 focus:ring-primary/5 transition-all text-[var(--on-surface)]" placeholder="Buscar..." />
+                    </div>
+
+                    <div className="flex items-center gap-4 pl-6 border-l border-white/5">
+                       {user.menu_layout === 'TOP' && (
+                         <button className="md:hidden p-3 bg-[var(--surface)] rounded-xl text-[var(--on-surface)]" onClick={() => setMobileMenuOpen(true)}>
+                            <Menu size={20} />
+                         </button>
+                       )}
+                       <div className="hidden md:flex items-center gap-5">
+                          <div className="flex items-center gap-3 pr-1">
+                            <div className="text-right">
+                              <p className="text-[13px] font-display font-bold text-[var(--on-surface)] tracking-tight leading-none uppercase">{user.username}</p>
+                              <p className="text-[9px] font-black text-primary uppercase tracking-[0.1em] mt-1 opacity-70">Sístema {user.role}</p>
+                            </div>
+                            <div className="w-10 h-10 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-black text-xs">
+                              {user.username.substring(0, 2).toUpperCase()}
+                            </div>
+                          </div>
+                          <button onClick={logout} className="p-2.5 bg-[var(--surface-card)] hover:bg-rose-500 hover:text-white text-[var(--on-surface-variant)] rounded-2xl transition-all border border-transparent shadow-sm group">
+                            <LogOut size={16} className="group-hover:-translate-x-0.5 transition-transform" />
+                          </button>
+                       </div>
+                    </div>
+                 </div>
+              </header>
+
+              {/* Main Content Area */}
+              <main className="flex-1 p-4 md:p-10 relative z-10">
+                <div className="max-w-[1600px] mx-auto">
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={currentScreen}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    {currentScreen === 'CAMPAÑAS' && (
+                      <ScreenCampañas 
+                        campañas={campañas}
+                        avisos={avisos}
+                        clientes={clientes}
+                        ediciones={ediciones}
+                        feriados={feriados}
+                        onSaveCampaña={(c, a) => {
+                          const campId = Math.random().toString(36).slice(2, 11);
+                          setCampañas(prev => [...prev, { ...c, id: campId }]);
+                          setAvisos(prev => [...prev, ...a.map(av => ({ ...av, campaña_id: campId }))]);
+                          alert('Campaña guardada');
+                        }}
+                        onDeleteCampaña={deleteCampaña}
+                        onUpdateAvisos={updateAvisosCampaña}
+                        onUpdateCampaña={updateCampaña}
+                        onAddCliente={(n) => setClientes(prev => [...prev, { id: Math.random().toString(36), nombre: n }])}
+                        initialSelectedId={targetCampañaId}
+                        onClearInitialId={() => setTargetCampañaId(null)}
+                        appLogo={appLogo}
+                      />
+                    )}
+                    {currentScreen === 'EDICIONES' && (
+                      <ScreenEdiciones 
+                        ediciones={ediciones}
+                        avisos={avisos}
+                        clientes={clientes}
+                        campañas={campañas}
+                        onNavigateToCampaña={(id: string) => {
+                          setTargetCampañaId(id);
+                          setCurrentScreen('CAMPAÑAS');
+                        }}
+                        onExportPDF={(ed: Edición) => exportEdicionPDF(ed, avisos.filter(a => a.edicion_id === ed.id), clientes, campañas, avisos, appLogo)}
+                      />
+                    )}
+                    {currentScreen === 'CLIENTES' && (
+                      <ScreenClientes 
+                        clientes={clientes} 
+                        onNavigateToCampaña={(id) => { setTargetCampañaId(id); setCurrentScreen('CAMPAÑAS'); }}
+                        onUpsert={(c) => {
+                          if (c.id) setClientes(prev => prev.map(x => x.id === c.id ? c : x));
+                          else setClientes(prev => [...prev, { ...c, id: Math.random().toString(36) }]);
+                        }}
+                        onDelete={(id) => setClientes(prev => prev.filter(c => c.id !== id))}
+                      />
+                    )}
+                    {currentScreen === 'CONFIG' && (
+                      <ScreenConfig 
+                        user={user}
+                        onUpdateUser={(u) => {
+                          setUser(u);
+                          setUsers(prev => prev.map(x => x.id === u.id ? u : x));
+                          setIsDark(u.dark_mode);
+                          setTheme(u.theme);
+                        }}
+                        onBatchGenerate={addBatchEdiciones}
+                        onSyncEdiciones={synchronizeEdicionesWithHolidays}
+                        appLogo={appLogo}
+                        onUpdateLogo={setAppLogo}
+                        ediciones={ediciones}
+                        feriados={feriados}
+                        onAddFeriado={(f, n) => setFeriados(prev => [...prev, { id: Math.random().toString(36), fecha: f, nombre: n }])}
+                        onDeleteFeriado={(id) => setFeriados(prev => prev.filter(f => f.id !== id))}
+                        onBulkAddFeriados={(nh) => setFeriados(prev => [...prev, ...nh])}
+                        onLoadDemo={loadDemoData}
+                        onClearEdiciones={clearEdicionesFrom}
+                      />
+                    )}
+                    {currentScreen === 'USUARIOS' && (
+                      <ScreenUsuarios 
+                        users={users}
+                        onUpsert={(u) => {
+                          setUsers(prev => {
+                            const exists = prev.find(x => x.id === u.id);
+                            if (exists) return prev.map(x => x.id === u.id ? u : x);
+                            return [...prev, u];
+                          });
+                        }}
+                        onDelete={(id) => setUsers(prev => prev.filter(u => u.id !== id))}
+                      />
+                    )}
+                  </motion.div>
+                </AnimatePresence>
+                </div>
+              </main>
+            </div>
+          </div>
         )}
       </AnimatePresence>
 
