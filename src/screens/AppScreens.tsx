@@ -1495,72 +1495,76 @@ export function ScreenConfig({ user, onUpdateUser, onBatchGenerate, onSyncEdicio
          <p className="text-[var(--on-surface-variant)] font-medium">Configuración de la plataforma y generación de recursos.</p>
        </div>
 
-        <Card title="Identidad Visual" className="relative z-40">
-           <div className="flex flex-col md:flex-row items-center gap-10">
-              <div className="w-32 h-32 rounded-3xl bg-[var(--surface)] border-2 border-dashed border-[var(--outline)] flex items-center justify-center overflow-hidden shrink-0">
-                 {appLogo ? (
-                   <img src={appLogo} alt="App Logo" className="w-full h-full object-contain" />
-                 ) : (
-                   <div className="text-center p-4">
-                     <Layout className="mx-auto text-slate-300 mb-2" size={32} />
-                     <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">Sin Logo</p>
+        {user.role === Role.ADMIN && (
+          <Card title="Identidad Visual" className="relative z-40">
+             <div className="flex flex-col md:flex-row items-center gap-10">
+                <div className="w-32 h-32 rounded-3xl bg-[var(--surface)] border-2 border-dashed border-[var(--outline)] flex items-center justify-center overflow-hidden shrink-0">
+                   {appLogo ? (
+                     <img src={appLogo} alt="App Logo" className="w-full h-full object-contain" />
+                   ) : (
+                     <div className="text-center p-4">
+                       <Layout className="mx-auto text-slate-300 mb-2" size={32} />
+                       <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">Sin Logo</p>
+                     </div>
+                   )}
+                </div>
+                <div className="flex-grow space-y-4">
+                   <h4 className="text-lg font-display font-black text-[var(--on-surface)]">Logo de la Aplicación</h4>
+                   <p className="text-sm text-[var(--on-surface-variant)] leading-relaxed">Este logo aparecerá en la cabecera del sistema y en todos los reportes PDF generados (Diagramación y Campañas). Se recomienda formato PNG con fondo transparente.</p>
+                   <div className="flex items-center gap-4">
+                      <label className="cursor-pointer">
+                         <input 
+                          type="file" 
+                          accept="image/*" 
+                          className="hidden" 
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              const reader = new FileReader();
+                              reader.onloadend = () => {
+                                onUpdateLogo(reader.result as string);
+                              };
+                              reader.readAsDataURL(file);
+                            }
+                          }}
+                         />
+                         <span className="modern-button-primary !py-2.5 !px-5 flex items-center gap-2 text-xs">
+                            <Plus size={16} /> {appLogo ? 'Cambiar Logo' : 'Subir Logo'}
+                         </span>
+                      </label>
+                      {appLogo && (
+                        <button 
+                          onClick={() => onUpdateLogo(null)}
+                          className="text-xs font-black text-rose-500 hover:underline"
+                        >
+                          Eliminar
+                        </button>
+                      )}
                    </div>
-                 )}
-              </div>
-              <div className="flex-grow space-y-4">
-                 <h4 className="text-lg font-display font-black text-[var(--on-surface)]">Logo de la Aplicación</h4>
-                 <p className="text-sm text-[var(--on-surface-variant)] leading-relaxed">Este logo aparecerá en la cabecera del sistema y en todos los reportes PDF generados (Diagramación y Campañas). Se recomienda formato PNG con fondo transparente.</p>
-                 <div className="flex items-center gap-4">
-                    <label className="cursor-pointer">
-                       <input 
-                        type="file" 
-                        accept="image/*" 
-                        className="hidden" 
-                        onChange={(e) => {
-                          const file = e.target.files?.[0];
-                          if (file) {
-                            const reader = new FileReader();
-                            reader.onloadend = () => {
-                              onUpdateLogo(reader.result as string);
-                            };
-                            reader.readAsDataURL(file);
-                          }
-                        }}
-                       />
-                       <span className="modern-button-primary !py-2.5 !px-5 flex items-center gap-2 text-xs">
-                          <Plus size={16} /> {appLogo ? 'Cambiar Logo' : 'Subir Logo'}
-                       </span>
-                    </label>
-                    {appLogo && (
-                      <button 
-                        onClick={() => onUpdateLogo(null)}
-                        className="text-xs font-black text-rose-500 hover:underline"
-                      >
-                        Eliminar
-                      </button>
-                    )}
-                 </div>
-              </div>
-           </div>
-        </Card>
+                </div>
+             </div>
+          </Card>
+        )}
 
-       <Card title="Modo Demostración" className="relative z-30 border-primary/20 bg-primary/5">
-          <div className="space-y-4">
-            <p className="text-[var(--on-surface-variant)] text-sm font-medium">¿Necesita probar el sistema? Genere instantáneamente una estructura completa de datos.</p>
-            <div className="flex items-center gap-4 p-4 bg-primary/10 rounded-2xl border border-primary/20">
-               <div className="flex-grow">
-                 <p className="text-xs font-black text-primary uppercase tracking-widest mb-1">Carga Masiva</p>
-                 <p className="text-[11px] text-[var(--on-surface-variant)] font-medium">• 10 Clientes corporativos<br/>• 50 Ediciones diarias<br/>• 20 Campañas con avisos</p>
+        {user.role === Role.ADMIN && (
+          <Card title="Modo Demostración" className="relative z-30 border-primary/20 bg-primary/5">
+             <div className="space-y-4">
+               <p className="text-[var(--on-surface-variant)] text-sm font-medium">¿Necesita probar el sistema? Genere instantáneamente una estructura completa de datos.</p>
+               <div className="flex items-center gap-4 p-4 bg-primary/10 rounded-2xl border border-primary/20">
+                  <div className="flex-grow">
+                    <p className="text-xs font-black text-primary uppercase tracking-widest mb-1">Carga Masiva</p>
+                    <p className="text-[11px] text-[var(--on-surface-variant)] font-medium">• 10 Clientes corporativos<br/>• 50 Ediciones diarias<br/>• 20 Campañas con avisos</p>
+                  </div>
+                  <button 
+                   onClick={onLoadDemo}
+                   className="modern-button-primary !py-3 !px-6 flex items-center gap-2 shadow-lg shadow-primary/20"
+                  >
+                    <Sparkles size={18} /> Cargar Demo
+                  </button>
                </div>
-               <button 
-                onClick={onLoadDemo}
-                className="modern-button-primary !py-3 !px-6 flex items-center gap-2 shadow-lg shadow-primary/20"
-               >
-                 <Sparkles size={18} /> Cargar Demo
-               </button>
-            </div>
-          </div>
-       </Card>
+             </div>
+          </Card>
+        )}
 
        <Card title="Generación de Ediciones" className="relative z-20">
           <div className="space-y-6">
@@ -1599,38 +1603,40 @@ export function ScreenConfig({ user, onUpdateUser, onBatchGenerate, onSyncEdicio
           </div>
        </Card>
 
-       <Card title="Mantenimiento de Ediciones" className="relative z-15">
-          <div className="space-y-6">
-            <div className="p-4 bg-amber-50 dark:bg-amber-500/10 border border-amber-100 dark:border-amber-900/20 rounded-2xl">
-               <p className="text-xs font-bold text-amber-600 flex items-center gap-2">
-                 <AlertCircle size={14} /> Zona de mantenimiento: Use con precaución.
-               </p>
-            </div>
-            <p className="text-[var(--on-surface-variant)] text-sm font-medium">Elimine un bloque de ediciones a partir de un número específico para permitir su regeneración.</p>
-            <div className="flex flex-col sm:flex-row gap-6 items-end bg-[var(--surface)] p-6 rounded-3xl border border-transparent relative z-30 overflow-visible">
-               <div className="space-y-2 w-full sm:w-2/3">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-[var(--on-surface-variant)] ml-1">Borrar desde el número #</label>
-                  <input 
-                   type="number" 
-                   id="clearFromInput"
-                   placeholder="Ej: 0045" 
-                   className="modern-input" 
-                  />
+        {user.role === Role.ADMIN && (
+          <Card title="Mantenimiento de Ediciones" className="relative z-15">
+             <div className="space-y-6">
+               <div className="p-4 bg-amber-50 dark:bg-amber-500/10 border border-amber-100 dark:border-amber-900/20 rounded-2xl">
+                  <p className="text-xs font-bold text-amber-600 flex items-center gap-2">
+                    <AlertCircle size={14} /> Zona de mantenimiento: Use con precaución.
+                  </p>
                </div>
-               <button 
-                 onClick={() => {
-                   const input = document.getElementById('clearFromInput') as HTMLInputElement;
-                   const val = parseInt(input.value);
-                   if (isNaN(val)) return alert('Ingrese un número válido');
-                   onClearEdiciones(val);
-                 }}
-                 className="w-full sm:w-1/3 h-14 bg-rose-500 text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-rose-600 transition-all shadow-lg shadow-rose-500/20 flex items-center justify-center gap-2"
-               >
-                 <Trash2 size={18} /> Limpiar bloque
-               </button>
-            </div>
-          </div>
-       </Card>
+               <p className="text-[var(--on-surface-variant)] text-sm font-medium">Elimine un bloque de ediciones a partir de un número específico para permitir su regeneración.</p>
+               <div className="flex flex-col sm:flex-row gap-6 items-end bg-[var(--surface)] p-6 rounded-3xl border border-transparent relative z-30 overflow-visible">
+                  <div className="space-y-2 w-full sm:w-2/3">
+                     <label className="text-[10px] font-black uppercase tracking-widest text-[var(--on-surface-variant)] ml-1">Borrar desde el número #</label>
+                     <input 
+                      type="number" 
+                      id="clearFromInput"
+                      placeholder="Ej: 0045" 
+                      className="modern-input" 
+                     />
+                  </div>
+                  <button 
+                    onClick={() => {
+                      const input = document.getElementById('clearFromInput') as HTMLInputElement;
+                      const val = parseInt(input.value);
+                      if (isNaN(val)) return alert('Ingrese un número válido');
+                      onClearEdiciones(val);
+                    }}
+                    className="w-full sm:w-1/3 h-14 bg-rose-500 text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-rose-600 transition-all shadow-lg shadow-rose-500/20 flex items-center justify-center gap-2"
+                  >
+                    <Trash2 size={18} /> Limpiar bloque
+                  </button>
+               </div>
+             </div>
+          </Card>
+        )}
 
        <Card title="Calendario de Feriados" className="relative z-10">
           <div className="space-y-6">
