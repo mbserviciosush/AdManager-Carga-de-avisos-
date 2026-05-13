@@ -275,53 +275,54 @@ export function ScreenCampañas({ campañas, avisos, clientes, onAddCliente, edi
                 </div>
               }
             >
-              <div className="overflow-x-auto md:overflow-visible -mx-4 md:-mx-8 -mb-4 md:-mb-8 pb-32">
-                  <table className="w-full text-left border-collapse min-w-[600px] md:min-w-0">
-                    <thead className="bg-[var(--surface)] border-y border-[var(--outline)]">
-                      <tr>
-                        <th className="px-8 py-4 text-[10px] font-black uppercase tracking-widest text-[var(--on-surface-variant)]">#</th>
-                        <th className="px-8 py-4 text-[10px] font-black uppercase tracking-widest text-[var(--on-surface-variant)]">Aviso</th>
-                        <th className="px-8 py-4 text-[10px] font-black uppercase tracking-widest text-[var(--on-surface-variant)]">Producto</th>
-                        <th className="px-8 py-4 text-[10px] font-black uppercase tracking-widest text-[var(--on-surface-variant)] text-center">Fecha</th>
-                        <th className="px-8 py-4 text-[10px] font-black uppercase tracking-widest text-[var(--on-surface-variant)] text-center">Edición</th>
-                        <th className="px-8 py-4 text-[10px] font-black uppercase tracking-widest text-[var(--on-surface-variant)] text-right">Acción</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-[var(--outline)]">
-                      {filteredAvisos.map((aviso: any) => {
-                        const idx = editingAvisos.findIndex((a: any) => a.id === aviso.id);
-                        const edicion = ediciones.find((e: any) => e.id === aviso.edicion_id);
-                        return (
-                          <tr key={aviso.id} className="group hover:bg-[var(--surface)] transition-all">
-                          <td className="px-8 py-4 font-black text-[var(--on-surface-variant)] text-xs">
-                             {idx + 1}
-                          </td>
-                          <td className="px-8 py-4">
-                            <input 
-                              value={aviso.nombre}
-                              onChange={e => {
-                                const newArr = [...editingAvisos];
-                                newArr[idx].nombre = e.target.value;
-                                setEditingAvisos(newArr);
-                                setHasChanges(true);
-                              }}
-                              className="bg-transparent border-none outline-none font-bold text-[var(--on-surface)] w-full focus:bg-[var(--surface-card)] rounded-lg px-2 py-1"
-                            />
-                          </td>
-                          <td className="px-8 py-4">
-                            <CustomSelect 
-                              options={PRODUCTOS}
-                              value={aviso.producto}
-                              onChange={val => {
-                                const newArr = [...editingAvisos];
-                                newArr[idx].producto = val;
-                                setEditingAvisos(newArr);
-                                setHasChanges(true);
-                              }}
-                            />
-                          </td>
-                          <td className="px-8 py-4 text-center">
-                            <CustomDatePicker 
+              <div className="space-y-4 px-4 py-8">
+                {filteredAvisos.map((aviso: any) => {
+                  const idx = editingAvisos.findIndex((a: any) => a.id === aviso.id);
+                  const edicion = ediciones.find((e: any) => e.id === aviso.edicion_id);
+                  return (
+                    <motion.div
+                      key={aviso.id}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="p-6 bg-[var(--surface)] border border-[var(--outline)] rounded-[var(--radius)] flex flex-col lg:flex-row items-center gap-6 group hover:border-primary/30 transition-all shadow-sm hover:shadow-md"
+                    >
+                      <div className="flex items-center gap-6 w-full lg:w-1/3">
+                        <span className="w-12 h-12 rounded-xl bg-primary/10 text-primary font-black flex items-center justify-center shrink-0">
+                          {idx + 1}
+                        </span>
+                        <div className="flex-grow">
+                          <label className="text-[10px] font-black uppercase tracking-widest text-[var(--on-surface-variant)] mb-1 block">Aviso</label>
+                          <input
+                            className="w-full bg-transparent border-none outline-none font-bold text-lg text-[var(--on-surface)]"
+                            value={aviso.nombre}
+                            onChange={(e) => {
+                              const newArr = [...editingAvisos];
+                              newArr[idx].nombre = e.target.value;
+                              setEditingAvisos(newArr);
+                              setHasChanges(true);
+                            }}
+                          />
+                        </div>
+                      </div>
+
+                      <div className="w-full lg:w-1/4">
+                        <label className="text-[10px] font-black uppercase tracking-widest text-[var(--on-surface-variant)] mb-1 block">Producto</label>
+                        <CustomSelect
+                          options={PRODUCTOS}
+                          value={aviso.producto}
+                          onChange={val => {
+                            const newArr = [...editingAvisos];
+                            newArr[idx].producto = val;
+                            setEditingAvisos(newArr);
+                            setHasChanges(true);
+                          }}
+                        />
+                      </div>
+
+                      <div className="w-full lg:w-1/4">
+                        <label className="text-[10px] font-black uppercase tracking-widest text-[var(--on-surface-variant)] mb-1 block">Publicación</label>
+                        <div className="flex flex-col gap-2">
+                           <CustomDatePicker
                               value={aviso.fecha_publicacion}
                               onChange={val => {
                                 const newArr = [...editingAvisos];
@@ -332,28 +333,28 @@ export function ScreenCampañas({ campañas, avisos, clientes, onAddCliente, edi
                                 setHasChanges(true);
                               }}
                             />
-                          </td>
-                          <td className="px-8 py-4 text-center">
-                             <div className="inline-flex items-center justify-center px-4 py-1.5 bg-[var(--surface)] border border-[var(--outline)] rounded-xl text-[11px] font-black text-[var(--on-surface-variant)] min-w-[80px]">
-                               {edicion ? `ED. ${edicion.numero}` : '-'}
-                             </div>
-                          </td>
-                          <td className="px-8 py-4 text-right">
-                             <button 
-                               onClick={() => {
-                                 setEditingAvisos(prev => prev.filter((_, i) => i !== idx));
-                                 setHasChanges(true);
-                               }}
-                               className="p-2 text-[var(--on-surface-variant)] hover:text-rose-500 transition-colors"
-                             >
-                               <Trash2 size={16} />
-                             </button>
-                          </td>
-                        </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
+                            {edicion && (
+                              <span className="text-[10px] font-bold text-primary px-3 py-1 bg-primary/10 rounded-lg inline-block text-center uppercase tracking-widest w-fit">
+                                Edición #{edicion.numero}
+                              </span>
+                            )}
+                        </div>
+                      </div>
+
+                      <div className="w-full lg:w-auto flex justify-end">
+                        <button
+                          onClick={() => {
+                            setEditingAvisos(prev => prev.filter((_, i) => i !== idx));
+                            setHasChanges(true);
+                          }}
+                          className="p-3 bg-rose-50 dark:bg-rose-500/10 text-rose-500 hover:bg-rose-500 hover:text-white rounded-xl transition-all"
+                        >
+                          <Trash2 size={18} />
+                        </button>
+                      </div>
+                    </motion.div>
+                  );
+                })}
               </div>
             </Card>
           </div>
@@ -1048,57 +1049,59 @@ export function ScreenEdiciones({ ediciones, onExportPDF, clientes, avisos, onNa
              })}
           </div>
         ) : (
-          <div className="bg-[var(--surface-card)] rounded-[1.5rem] md:rounded-[2.5rem] border border-[var(--outline)] shadow-sm">
+          <div className="bg-[var(--surface-card)] rounded-[var(--radius)] border border-[var(--outline)] shadow-sm">
             <div className="overflow-x-auto md:overflow-visible min-h-[500px]">
-              <table className="w-full text-left border-collapse min-w-[700px] md:min-w-0">
-                <thead>
-                  <tr className="bg-[var(--surface)] border-b border-[var(--outline)]">
-                    <th className="px-8 py-6 text-[10px] font-black uppercase tracking-[0.2em] text-[var(--on-surface-variant)]">Edición</th>
-                    <th className="px-8 py-6 text-[10px] font-black uppercase tracking-[0.2em] text-[var(--on-surface-variant)]">Fecha</th>
-                    <th className="px-8 py-6 text-[10px] font-black uppercase tracking-[0.2em] text-[var(--on-surface-variant)] text-center">Avisos</th>
-                    <th className="px-8 py-6 text-[10px] font-black uppercase tracking-[0.2em] text-[var(--on-surface-variant)] text-right">Acciones</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-[var(--outline)]">
+              <div className="w-full text-left min-w-[700px] md:min-w-0">
+                <div className="bg-[var(--surface)] border-b border-[var(--outline)] rounded-t-[var(--radius)] flex">
+                    <div className="px-8 py-6 text-[10px] font-black uppercase tracking-[0.2em] text-[var(--on-surface-variant)] w-1/4">Edición</div>
+                    <div className="px-8 py-6 text-[10px] font-black uppercase tracking-[0.2em] text-[var(--on-surface-variant)] w-1/4">Fecha</div>
+                    <div className="px-8 py-6 text-[10px] font-black uppercase tracking-[0.2em] text-[var(--on-surface-variant)] text-center w-1/4">Avisos</div>
+                    <div className="px-8 py-6 text-[10px] font-black uppercase tracking-[0.2em] text-[var(--on-surface-variant)] text-right w-1/4">Acciones</div>
+                </div>
+                <div className="divide-y divide-[var(--outline)]">
                   {filtered.map((ed: any) => {
                     const edAvisos = avisos.filter((a: any) => a.edicion_id === ed.id);
                     return (
-                      <tr 
+                      <motion.div
+                        initial={{ opacity: 0, y: 5 }}
+                        animate={{ opacity: 1, y: 0 }}
                         key={ed.id}
-                        className="group hover:bg-[var(--surface)] transition-all font-bold text-[var(--on-surface)]"
+                        className="group hover:bg-[var(--surface)] transition-all font-bold text-[var(--on-surface)] flex items-center"
                       >
-                        <td className="px-8 py-6">
+                        <div className="px-8 py-6 w-1/4">
                            <span className="text-xl font-display font-black text-[var(--on-surface)]">#{ed.numero}</span>
-                        </td>
-                        <td className="px-8 py-6 font-mono text-xs uppercase text-[var(--on-surface-variant)]">
+                        </div>
+                        <div className="px-8 py-6 font-mono text-xs uppercase text-[var(--on-surface-variant)] w-1/4">
                           {formatDateES(ed.fecha)}
-                        </td>
-                        <td className="px-8 py-6 text-center">
-                           <span className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-[var(--surface)] text-[var(--on-surface)] font-black text-sm">
-                             {edAvisos.length}
+                        </div>
+                        <div className="px-8 py-6 text-center w-1/4">
+                           <span className={`inline-flex items-center justify-center px-4 py-1.5 rounded-xl text-xs font-black transition-colors ${edAvisos.length > 0 ? 'bg-primary/10 text-primary' : 'bg-[var(--surface)] text-[var(--on-surface-variant)]'}`}>
+                             {edAvisos.length} Avisos
                            </span>
-                        </td>
-                        <td className="px-8 py-6 text-right">
-                           <div className="flex justify-end gap-3">
+                        </div>
+                        <div className="px-8 py-6 text-right w-1/4">
+                           <div className="flex justify-end gap-3 opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity">
                               <button 
                                 onClick={() => onExportPDF(ed)}
-                                className="p-3 bg-[var(--surface)] text-[var(--on-surface-variant)] rounded-xl border border-[var(--outline)] hover:text-primary transition-all shadow-sm"
+                                className="p-3 bg-[var(--surface-card)] text-[var(--on-surface-variant)] rounded-xl border border-[var(--outline)] hover:bg-primary hover:text-white transition-all shadow-sm"
+                                title="Exportar PDF"
                               >
                                 <FileText size={18} />
                               </button>
                               <button 
                                 onClick={() => setViewDetail(ed)}
-                                className="p-3 bg-[var(--surface)] text-[var(--on-surface-variant)] rounded-xl border border-[var(--outline)] hover:text-primary transition-all shadow-sm"
+                                className="p-3 bg-[var(--surface-card)] text-[var(--on-surface-variant)] rounded-xl border border-[var(--outline)] hover:bg-primary hover:text-white transition-all shadow-sm flex items-center gap-2"
                               >
+                                <span className="text-[10px] font-black uppercase tracking-widest hidden md:inline">Detalle</span>
                                 <ChevronRight size={18} />
                               </button>
                            </div>
-                        </td>
-                      </tr>
+                        </div>
+                      </motion.div>
                     );
                   })}
-                </tbody>
-              </table>
+                </div>
+              </div>
             </div>
           </div>
         )}
