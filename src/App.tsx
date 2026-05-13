@@ -693,6 +693,7 @@ export default function App() {
                           setTargetCampañaId(id);
                           setCurrentScreen('CAMPAÑAS');
                         }}
+                        feriados={feriados}
                         onExportPDF={(ed: Edición) => exportEdicionPDF(ed, avisos.filter(a => a.edicion_id === ed.id), clientes, campañas, avisos, appLogo)}
                       />
                     )}

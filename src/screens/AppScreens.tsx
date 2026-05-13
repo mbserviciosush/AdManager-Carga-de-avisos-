@@ -7,6 +7,7 @@ import {
   Search, 
   Filter, 
   ChevronRight, 
+  ChevronLeft,
   Edit3, 
   UserPlus, 
   Calendar,
@@ -37,6 +38,21 @@ import { exportEdicionPDF, exportCampañaPDF } from '../lib/pdfUtils';
 import { motion, AnimatePresence } from 'motion/react';
 import { CustomDatePicker } from '../components/CustomDatePicker';
 import { CustomSelect } from '../components/CustomSelect';
+
+import { 
+  format, 
+  addMonths, 
+  subMonths, 
+  startOfMonth, 
+  endOfMonth, 
+  startOfWeek, 
+  endOfWeek, 
+  eachDayOfInterval, 
+  isSameMonth, 
+  isSameDay, 
+  parseISO 
+} from 'date-fns';
+import { es } from 'date-fns/locale';
 
 // --- SHARED COMPONENTS ---
 const Card = ({ children, title, action, className = "" }: any) => (
@@ -969,9 +985,9 @@ function addDaysSafe(date: Date, days: number): Date {
 }
 
 // --- EDICIONES ---
-export function ScreenEdiciones({ ediciones, onExportPDF, clientes, avisos, onNavigateToCampaña, campañas }: any) {
+export function ScreenEdiciones({ ediciones, onExportPDF, clientes, avisos, onNavigateToCampaña, campañas, feriados }: any) {
   const [search, setSearch] = useState('');
-  const [viewMode, setViewMode] = useState<'GRID' | 'LIST'>('LIST');
+  const [viewMode, setViewMode] = useState<'GRID' | 'LIST' | 'CALENDAR'>('CALENDAR');
   const [viewDetail, setViewDetail] = useState<any>(null);
 
   const filtered = ediciones.filter((e: any) => 
@@ -999,28 +1015,44 @@ export function ScreenEdiciones({ ediciones, onExportPDF, clientes, avisos, onNa
           >
             <Newspaper size={18} />
           </button>
+          <button 
+            onClick={() => setViewMode('CALENDAR')}
+            className={`p-3 rounded-xl flex items-center gap-2 font-black transition-all ${viewMode === 'CALENDAR' ? 'bg-[var(--surface-card)] shadow-sm text-primary' : 'text-[var(--on-surface-variant)]'}`}
+          >
+            <Calendar size={18} />
+          </button>
         </div>
       </div>
 
       <div className="space-y-6">
-        <div className="flex items-center justify-between bg-[var(--surface-card)] p-2 pl-6 rounded-2xl border border-transparent shadow-sm">
-           <div className="relative flex-grow flex items-center">
-              <Search className="text-slate-400" size={18} />
-              <input 
-                placeholder="Filtrar por número o fecha..." 
-                value={search}
-                onChange={e=>setSearch(e.target.value)}
-                className="w-full px-4 py-3 bg-transparent border-none outline-none font-medium text-sm"
-              />
-           </div>
-           <div className="p-2 flex gap-2">
-              <button className="p-3 bg-slate-50 dark:bg-slate-800 text-slate-400 rounded-xl hover:text-primary transition-all">
-                <Filter size={18} />
-              </button>
-           </div>
-        </div>
+        {viewMode !== 'CALENDAR' && (
+          <div className="flex items-center justify-between bg-[var(--surface-card)] p-2 pl-6 rounded-2xl border border-transparent shadow-sm">
+             <div className="relative flex-grow flex items-center">
+                <Search className="text-slate-400" size={18} />
+                <input 
+                  placeholder="Filtrar por número o fecha..." 
+                  value={search}
+                  onChange={e=>setSearch(e.target.value)}
+                  className="w-full px-4 py-3 bg-transparent border-none outline-none font-medium text-sm"
+                />
+             </div>
+             <div className="p-2 flex gap-2">
+                <button className="p-3 bg-slate-50 dark:bg-slate-800 text-slate-400 rounded-xl hover:text-primary transition-all">
+                  <Filter size={18} />
+                </button>
+             </div>
+          </div>
+        )}
 
-        {viewMode === 'GRID' ? (
+        {viewMode === 'CALENDAR' ? (
+          <CalendarView 
+            ediciones={ediciones} 
+            avisos={avisos} 
+            feriados={feriados}
+            onViewDetail={setViewDetail} 
+            onExportPDF={onExportPDF}
+          />
+        ) : viewMode === 'GRID' ? (
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
              {filtered.map((ed: any) => {
                const edAvisos = avisos.filter((a: any) => a.edicion_id === ed.id);
@@ -1219,6 +1251,113 @@ export function ScreenEdiciones({ ediciones, onExportPDF, clientes, avisos, onNa
         </AnimatePresence>
       </div>
     </div>
+  );
+}
+
+function CalendarView({ ediciones, avisos, feriados, onViewDetail, onExportPDF }: any) {
+  const [currentMonth, setCurrentMonth] = useState(new Date());
+  
+  const days = useMemo(() => {
+    const start = startOfWeek(startOfMonth(currentMonth), { weekStartsOn: 0 });
+    const end = endOfWeek(endOfMonth(currentMonth), { weekStartsOn: 0 });
+    return eachDayOfInterval({ start, end });
+  }, [currentMonth]);
+
+  const monthName = format(currentMonth, 'MMMM yyyy', { locale: es });
+
+  return (
+    <motion.div 
+      initial={{ opacity: 0, scale: 0.98 }}
+      animate={{ opacity: 1, scale: 1 }}
+      className="bg-[var(--surface-card)] rounded-[2.5rem] border border-transparent shadow-xl overflow-hidden"
+    >
+      <div className="px-10 py-8 border-b border-[#374151]/30 flex justify-between items-center bg-[var(--surface)]">
+         <h3 className="text-2xl font-display font-black text-[var(--on-surface)] capitalize">{monthName}</h3>
+         <div className="flex gap-2">
+            <button 
+              onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}
+              className="w-12 h-12 flex items-center justify-center hover:bg-primary/10 rounded-xl transition-all text-[var(--on-surface-variant)] hover:text-primary border border-transparent hover:border-primary/20"
+            >
+              <ChevronLeft size={24} />
+            </button>
+            <button 
+              onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
+              className="w-12 h-12 flex items-center justify-center hover:bg-primary/10 rounded-xl transition-all text-[var(--on-surface-variant)] hover:text-primary border border-transparent hover:border-primary/20"
+            >
+              <ChevronRight size={24} />
+            </button>
+         </div>
+      </div>
+
+      <div className="grid grid-cols-7 border-b border-[#374151]/10 bg-[var(--surface)]/50">
+        {['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'].map(d => (
+          <div key={d} className="py-4 text-center text-[10px] font-black uppercase tracking-[0.2em] text-[var(--on-surface-variant)]">
+            {d}
+          </div>
+        ))}
+      </div>
+
+      <div className="grid grid-cols-7 divide-x divide-y divide-[#374151]/10">
+        {days.map((day, idx) => {
+          const dateStr = format(day, 'yyyy-MM-dd');
+          const ed = ediciones.find((e: any) => e.fecha === dateStr);
+          const isSelectedMonth = isSameMonth(day, currentMonth);
+          const edAvisos = ed ? avisos.filter((a: any) => a.edicion_id === ed.id) : [];
+          
+          const isWeekend = day.getDay() === 0 || day.getDay() === 6;
+          const holiday = feriados?.find((f: any) => f.fecha === dateStr);
+          const isRed = isWeekend || !!holiday;
+
+          return (
+            <div 
+              key={idx} 
+              className={`min-h-[160px] p-4 transition-all relative group flex flex-col justify-between ${!isSelectedMonth ? 'bg-slate-50/30 dark:bg-slate-900/10 opacity-20' : 'bg-[#0f172a] hover:bg-[#1e293b]/30'}`}
+            >
+               {/* Top Section: Day + Edition Info */}
+               <div className="flex items-start gap-4">
+                  {/* Day Number */}
+                  <span className={`text-4xl font-display font-black leading-none tracking-tighter ${isSameDay(day, new Date()) ? 'text-primary' : isRed ? 'text-rose-500/80' : 'text-white'}`}>
+                    {format(day, 'd')}
+                  </span>
+
+                  {/* Edition Info (Stacked Blue) */}
+                  {ed && (
+                    <div className="flex flex-col">
+                       <span className="text-[12px] font-black text-blue-500 uppercase leading-none mb-1">ED. #</span>
+                       <span className="text-[16px] font-mono font-black text-blue-500 leading-none">{ed.numero}</span>
+                    </div>
+                  )}
+               </div>
+
+               {/* Middle Section (Holiday Name) */}
+               {holiday && isSelectedMonth && (
+                  <p className="text-[9px] font-black text-rose-500/60 uppercase tracking-widest mt-2">
+                    {holiday.nombre}
+                  </p>
+               )}
+
+               {/* Bottom Section: Ad Count (Pill Shape) */}
+               <div className="mt-auto">
+                 {ed ? (
+                    <div 
+                      onClick={() => onViewDetail(ed)}
+                      className="w-full py-5 rounded-full border border-slate-700/50 bg-slate-800/20 flex items-center justify-center cursor-pointer hover:border-primary/50 hover:bg-primary/10 transition-all group/pill"
+                    >
+                       <span className="text-lg font-bold text-slate-400 group-hover/pill:text-slate-100 transition-colors">
+                         {edAvisos.length} Avisos
+                       </span>
+                    </div>
+                 ) : (
+                    <div className="w-full py-5 rounded-full border border-slate-800/30 border-dashed flex items-center justify-center">
+                       <span className="text-xs font-bold text-slate-700 uppercase tracking-widest">Sin Edición</span>
+                    </div>
+                 )}
+               </div>
+            </div>
+          );
+        })}
+      </div>
+    </motion.div>
   );
 }
 
@@ -1448,21 +1587,36 @@ export function ScreenConfig({ user, onUpdateUser, onBatchGenerate, onSyncEdicio
   // Calcular el siguiente número de edición sugerido
   const nextNumber = useMemo(() => {
     if (!ediciones || ediciones.length === 0) return '1';
-    const top = Math.max(...ediciones.map((e: any) => e.numero || 0));
+    const top = Math.max(...ediciones.map((e: any) => parseInt(e.numero) || 0));
     return (top + 1).toString();
   }, [ediciones]);
 
+  // Calcular la siguiente fecha sugerida (día después de la última edición)
+  const nextDate = useMemo(() => {
+    if (!ediciones || ediciones.length === 0) return new Date().toISOString().split('T')[0];
+    
+    // Usar T12:00:00 para evitar problemas de zona horaria al parsear
+    const dates = ediciones.map((e: any) => new Date(e.fecha + 'T12:00:00').getTime());
+    const maxDate = new Date(Math.max(...dates));
+    
+    const next = new Date(maxDate);
+    next.setDate(next.getDate() + 1);
+    
+    return next.toISOString().split('T')[0];
+  }, [ediciones]);
+
   const [numIni, setNumIni] = useState(nextNumber);
-  const [dateIni, setDateIni] = useState(new Date().toISOString().split('T')[0]);
+  const [dateIni, setDateIni] = useState(nextDate);
   const [cant, setCant] = useState('');
   const [manualDate, setManualDate] = useState('');
   const [manualName, setManualName] = useState('');
   const [isFetching, setIsFetching] = useState(false);
 
-  // Actualizar numIni si cambia el sugerido (cuando se generan nuevas o se borra todo)
+  // Actualizar numIni y dateIni si cambia el sugerido (cuando se generan nuevas o se borra todo)
   useEffect(() => {
     setNumIni(nextNumber);
-  }, [nextNumber]);
+    setDateIni(nextDate);
+  }, [nextNumber, nextDate]);
 
   const fetchHolidays = async () => {
     setIsFetching(true);
