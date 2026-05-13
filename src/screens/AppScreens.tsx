@@ -1245,15 +1245,15 @@ export function ScreenClientes({ clientes, campañas, onNavigateToCampaña, onUp
               />
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <div className="flex flex-col gap-3 p-4 rounded-3xl backdrop-blur-xl bg-black/5 border border-black/5 dark:bg-white/5 dark:border-white/10 shadow-inner">
              {filtered.map((c: any) => {
                const clientCampañas = campañas.filter((camp: any) => camp.cliente_id === c.id);
                return (
                  <motion.div
                   key={c.id}
-                  initial={{ opacity: 0, scale: 0.98 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                   className="p-6 bg-[var(--surface-card)] border border-[var(--outline)] rounded-[2rem] flex justify-between items-center shadow-sm hover:shadow-xl hover:translate-y-[-2px] transition-all"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                   className="p-5 bg-[var(--surface-card)]/40 hover:bg-primary/10 border border-[var(--outline)]/50 hover:border-primary/30 rounded-2xl flex justify-between items-center shadow-sm hover:shadow-[0_0_20px_rgba(var(--color-primary-rgb),0.15)] transition-all duration-300 group"
                   >
                     <div className="flex items-center gap-5 cursor-pointer flex-grow" onClick={() => setViewDetail(c)}>
                        <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[var(--on-surface)] to-[var(--on-surface-variant)] text-white flex items-center justify-center font-black text-xl shadow-lg ring-4 ring-[var(--surface)] shrink-0">
@@ -1262,8 +1262,8 @@ export function ScreenClientes({ clientes, campañas, onNavigateToCampaña, onUp
                        <div className="flex flex-col">
                           <span className="font-display font-bold text-[var(--on-surface)] text-lg leading-tight">{c.nombre}</span>
                           <div className="flex items-center gap-3 mt-1">
-                             <div className="flex items-center gap-1.5 px-2 py-0.5 bg-[var(--surface)] rounded-lg text-[10px] font-black text-[var(--on-surface-variant)] uppercase tracking-tighter">
-                               <Megaphone size={10} className="text-primary" />
+                             <div className="flex items-center gap-1.5 px-2 py-0.5 bg-[var(--surface)]/50 group-hover:bg-primary/20 group-hover:text-primary group-hover:shadow-[0_0_10px_var(--primary)] rounded-lg text-[10px] font-black text-[var(--on-surface-variant)] uppercase tracking-tighter transition-all">
+                               <Megaphone size={10} className="text-primary group-hover:opacity-100 opacity-70" />
                                {clientCampañas.length} Campañas
                              </div>
                              {c.phone && <span className="text-[10px] text-[var(--on-surface-variant)] font-bold">{c.phone}</span>}
