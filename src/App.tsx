@@ -86,13 +86,17 @@ export default function App() {
       setAvisos(data.avisos || []);
       setFeriados(data.feriados || []);
       setAppLogo(data.appLogo || null);
-      if (data.user) {
-        setUser(data.user);
-        // Visual states are already initialized from independent localStorage keys, 
-        // but we sync them with the loaded user if they differ
-        if (data.user.dark_mode !== undefined) setIsDark(data.user.dark_mode);
-        if (data.user.theme !== undefined) setTheme(data.user.theme);
-      }
+        if (data.user) {
+          // Ensure backward compatibility with missing fields
+          const migratedUser = {
+            ...data.user,
+            menu_layout: data.user.menu_layout || 'TOP',
+            sidebar_collapsed: data.user.sidebar_collapsed || false
+          };
+          setUser(migratedUser);
+          if (data.user.dark_mode !== undefined) setIsDark(data.user.dark_mode);
+          if (data.user.theme !== undefined) setTheme(data.user.theme);
+        }
     } else {
       // --- LOAD DEMO DATA ---
       const demoUsers: Usuario[] = [
@@ -511,10 +515,10 @@ export default function App() {
             </motion.div>
           </motion.div>
         ) : (
-          <div className={`min-h-screen flex ${user.menu_layout === 'SIDE' ? 'flex-row' : 'flex-col'}`}>
+          <div className={`min-h-screen flex ${(user.menu_layout || 'TOP') === 'SIDE' ? 'flex-row' : 'flex-col'}`}>
             
             {/* --- SIDEBAR --- */}
-            {user.menu_layout === 'SIDE' && (
+            {(user.menu_layout || 'TOP') === 'SIDE' && (
               <aside 
                 className={`hidden md:flex flex-col bg-[var(--surface-card)] border-r border-white/5 transition-all duration-300 relative z-[60] ${user.sidebar_collapsed ? 'w-24' : 'w-72'}`}
               >
@@ -571,7 +575,7 @@ export default function App() {
                  <div className="flex items-center gap-4 md:gap-10">
                     {/* Mobile Toggle & Logo if TOP */}
                     <div className="flex items-center gap-4">
-                      {user.menu_layout === 'SIDE' ? (
+                      {(user.menu_layout || 'TOP') === 'SIDE' ? (
                         <button className="md:hidden p-3 bg-[var(--surface)] rounded-xl text-[var(--on-surface)]" onClick={() => setMobileMenuOpen(true)}>
                           <Menu size={20} />
                         </button>
@@ -590,7 +594,7 @@ export default function App() {
                     </div>
 
                     {/* Desktop Top Menu */}
-                    {user.menu_layout === 'TOP' && (
+                    {(user.menu_layout || 'TOP') === 'TOP' && (
                       <nav className="hidden md:flex items-center gap-1">
                         {[
                           { id: 'CAMPAÑAS', label: 'Campañas', icon: Megaphone },
@@ -623,7 +627,7 @@ export default function App() {
                     </div>
 
                     <div className="flex items-center gap-4 pl-6 border-l border-white/5">
-                       {user.menu_layout === 'TOP' && (
+                       {(user.menu_layout || 'TOP') === 'TOP' && (
                          <button className="md:hidden p-3 bg-[var(--surface)] rounded-xl text-[var(--on-surface)]" onClick={() => setMobileMenuOpen(true)}>
                             <Menu size={20} />
                          </button>

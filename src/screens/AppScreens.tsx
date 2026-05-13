@@ -1736,10 +1736,10 @@ export function ScreenConfig({ user, onUpdateUser, onBatchGenerate, onSyncEdicio
                       <button 
                         key={layout.id}
                         onClick={() => onUpdateUser({...user, menu_layout: layout.id})}
-                        className={`p-6 rounded-[2rem] border-2 transition-all flex flex-col items-center gap-4 ${user.menu_layout === layout.id ? 'border-primary bg-primary/5' : 'border-transparent bg-[var(--surface)] hover:border-primary/20'}`}
+                        className={`p-6 rounded-[2rem] border-2 transition-all flex flex-col items-center gap-4 ${(user.menu_layout || 'TOP') === layout.id ? 'border-primary bg-primary/5' : 'border-transparent bg-[var(--surface)] hover:border-primary/20'}`}
                       >
-                         <layout.icon size={32} className={user.menu_layout === layout.id ? 'text-primary' : 'text-[var(--on-surface-variant)]'} />
-                         <span className={`text-sm font-black uppercase tracking-widest ${user.menu_layout === layout.id ? 'text-primary' : 'text-[var(--on-surface-variant)]'}`}>{layout.label}</span>
+                         <layout.icon size={32} className={(user.menu_layout || 'TOP') === layout.id ? 'text-primary' : 'text-[var(--on-surface-variant)]'} />
+                         <span className={`text-sm font-black uppercase tracking-widest ${(user.menu_layout || 'TOP') === layout.id ? 'text-primary' : 'text-[var(--on-surface-variant)]'}`}>{layout.label}</span>
                       </button>
                     ))}
                  </div>
