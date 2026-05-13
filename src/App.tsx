@@ -32,7 +32,7 @@ import {
   ScreenUsuarios
 } from './screens/AppScreens';
 import { exportEdicionPDF } from './lib/pdfUtils';
-import { nextDay, addDays, startOfToday, format } from 'date-fns';
+import { addDays, startOfToday, format } from 'date-fns';
 import { motion, AnimatePresence } from 'motion/react';
 
 const STORAGE_KEY = 'admanager_state_v2';
@@ -532,7 +532,7 @@ export default function App() {
                     )}
                   </div>
                   <button 
-                    onClick={() => updateUser({...user, sidebar_collapsed: !user.sidebar_collapsed})}
+                    onClick={() => user && updateUser({...user, sidebar_collapsed: !user.sidebar_collapsed})}
                     className={`bg-[var(--surface)] rounded-xl flex items-center justify-center text-[var(--on-surface-variant)] hover:text-primary transition-all shrink-0 ${user.sidebar_collapsed ? 'w-full h-8' : 'w-10 h-10'}`}
                   >
                     <ChevronRight size={18} className={user.sidebar_collapsed ? '' : 'rotate-180'} />
