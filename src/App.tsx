@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  Newspaper, 
+  Newspaper, Database,
   Users, 
   Megaphone, 
   Settings, 
@@ -268,7 +268,7 @@ export default function App() {
         password: 'admin', 
         role: Role.ADMIN, 
         theme: 'blue', 
-        dark_mode: false 
+        dark_mode: true
       };
       setUsers([initialAdmin]);
       setUser(initialAdmin);
@@ -387,21 +387,24 @@ export default function App() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="min-h-screen flex items-center justify-center p-6 bg-[url('https://excursionesenushuaia.com/wp-content/uploads/2023/10/1-85-2-e1700135504863.jpg')] bg-cover bg-center relative"
+            className="min-h-screen flex items-center justify-center p-6 bg-[#111827] relative"
           >
-            <div className="absolute inset-0 bg-black/40 backdrop-blur-3xl"></div>
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-md bg-[var(--surface-card)] rounded-[2.5rem] shadow-2xl border border-[var(--outline)] overflow-hidden relative z-10">
+            {/* Minimalist floating dark circles for tech vibe */}
+            <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-[100px] pointer-events-none"></div>
+            <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-primary/5 rounded-full blur-[100px] pointer-events-none"></div>
+
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-md bg-[var(--surface-card)] rounded-2xl shadow-[var(--shadow)] overflow-hidden relative z-10 border border-transparent">
               <div className="p-12">
                 <div className="mb-10 text-center">
-                  <div className="w-20 h-20 bg-primary/10 rounded-3xl flex items-center justify-center mx-auto mb-6">
-                    <Newspaper className="text-primary" size={40} />
+                  <div className="w-16 h-16 bg-[#374151] rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-inner border border-transparent">
+                    <Database className="text-primary" size={32} />
                   </div>
-                  <h1 className="text-4xl font-display font-black text-[var(--on-surface)] tracking-tight mb-2">AdManager</h1>
-                  <p className="text-[var(--on-surface-variant)] font-medium tracking-wide">GESTIÓN EDITORIAL PROFESIONAL</p>
+                  <h1 className="text-3xl font-display font-black text-[var(--on-surface)] tracking-tight mb-2">AdManager</h1>
+                  <p className="text-[var(--on-surface-variant)] font-medium tracking-wide text-xs">SISTEMA ADMINISTRATIVO</p>
                 </div>
                 <form onSubmit={handleLogin} className="space-y-6">
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase tracking-tighter text-[var(--on-surface-variant)] ml-1">Usuario</label>
+                    <label className="text-xs font-bold uppercase tracking-wider text-[var(--on-surface-variant)] ml-1">Usuario</label>
                     <input 
                       value={username}
                       onChange={e=>setUsername(e.target.value)}
@@ -410,7 +413,7 @@ export default function App() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase tracking-tighter text-[var(--on-surface-variant)] ml-1">Contraseña</label>
+                    <label className="text-xs font-bold uppercase tracking-wider text-[var(--on-surface-variant)] ml-1">Contraseña</label>
                     <input 
                       type="password"
                       value={password}
@@ -419,13 +422,13 @@ export default function App() {
                       placeholder="••••••••"
                     />
                   </div>
-                  <button className="w-full py-5 modern-button-primary !text-lg">
-                    Iniciar Sesión
+                  <button className="w-full py-4 modern-button-primary !text-lg mt-4 shadow-lg shadow-primary/20">
+                    Acceder al Sistema
                   </button>
                 </form>
               </div>
-              <div className="bg-black/20 p-6 text-center border-t border-[var(--outline)]">
-                <span className="text-[10px] font-black text-[var(--on-surface-variant)] tracking-[0.2em]">VERSIÓN 2.5 • STABLE</span>
+              <div className="bg-[#111827]/50 p-4 text-center border-t border-white/5">
+                <p className="text-[10px] text-[var(--on-surface-variant)] font-medium tracking-widest uppercase">Seguridad Cifrada 256-bit</p>
               </div>
             </motion.div>
           </motion.div>
@@ -437,7 +440,7 @@ export default function App() {
             className="flex-1 flex flex-col"
           >
             {/* Top Navigation */}
-            <header className="sticky top-0 bg-[var(--surface-card)]/80 backdrop-blur-xl h-20 md:h-24 flex items-center justify-between px-4 md:px-8 z-50 border-b border-[var(--outline)]">
+            <header className="sticky top-0 bg-[var(--surface-card)]/80 backdrop-blur-xl h-20 md:h-24 flex items-center justify-between px-4 md:px-8 z-50 border-b border-white/5">
                <div className="flex items-center gap-4 md:gap-10">
                   <div className="flex items-center gap-2 md:gap-3">
                     <div className="w-10 h-10 md:w-11 md:h-11 bg-primary/10 rounded-2xl flex items-center justify-center shadow-sm shrink-0">
@@ -476,10 +479,10 @@ export default function App() {
                <div className="flex items-center gap-6">
                   <div className="hidden lg:flex relative">
                      <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--on-surface-variant)]" size={16} />
-                     <input className="pl-11 pr-6 py-2.5 bg-[var(--surface)] border border-[var(--outline)] rounded-2xl text-xs font-medium w-64 shadow-sm outline-none focus:ring-4 focus:ring-primary/5 transition-all text-[var(--on-surface)]" placeholder="Buscar..." />
+                     <input className="pl-11 pr-6 py-2.5 bg-[var(--surface)] border border-transparent rounded-2xl text-xs font-medium w-64 shadow-sm outline-none focus:ring-4 focus:ring-primary/5 transition-all text-[var(--on-surface)]" placeholder="Buscar..." />
                   </div>
 
-                  <div className="flex items-center gap-4 pl-6 border-l border-[var(--outline)]">
+                  <div className="flex items-center gap-4 pl-6 border-l border-white/5">
                      <button className="md:hidden p-3 bg-[var(--surface)] rounded-xl text-[var(--on-surface)]" onClick={() => setMobileMenuOpen(true)}>
                         <Menu size={20} />
                      </button>
@@ -493,7 +496,7 @@ export default function App() {
                             {user.username.substring(0, 2).toUpperCase()}
                           </div>
                         </div>
-                        <button onClick={logout} className="p-2.5 bg-[var(--surface-card)] hover:bg-rose-500 hover:text-white text-[var(--on-surface-variant)] rounded-2xl transition-all border border-[var(--outline)] shadow-sm group">
+                        <button onClick={logout} className="p-2.5 bg-[var(--surface-card)] hover:bg-rose-500 hover:text-white text-[var(--on-surface-variant)] rounded-2xl transition-all border border-transparent shadow-sm group">
                           <LogOut size={16} className="group-hover:-translate-x-0.5 transition-transform" />
                         </button>
                      </div>
@@ -611,7 +614,7 @@ export default function App() {
           >
              <button 
                onClick={() => setMobileMenuOpen(false)} 
-               className="absolute top-6 right-6 w-14 h-14 bg-[var(--surface-card)] border border-[var(--outline)] rounded-2xl flex items-center justify-center text-[var(--on-surface)] shadow-lg hover:rotate-90 transition-all duration-300 active:scale-90"
+               className="absolute top-6 right-6 w-14 h-14 bg-[var(--surface-card)] border border-transparent rounded-2xl flex items-center justify-center text-[var(--on-surface)] shadow-lg hover:rotate-90 transition-all duration-300 active:scale-90"
              >
                <X size={24}/>
              </button>
@@ -643,7 +646,7 @@ export default function App() {
                       className={`flex items-center gap-5 px-6 py-5 rounded-[2rem] transition-all border ${
                         currentScreen === item.id 
                         ? 'bg-primary border-primary text-white shadow-xl shadow-primary/30' 
-                        : 'bg-[var(--surface-card)] border-[var(--outline)] text-[var(--on-surface)] hover:border-primary/30'
+                        : 'bg-[var(--surface-card)] border-white/5 text-[var(--on-surface)] hover:border-primary/30'
                       }`}
                     >
                       <item.icon size={24} className={currentScreen === item.id ? 'text-white' : 'text-primary'} />
@@ -663,7 +666,7 @@ export default function App() {
                 </button>
              </div>
 
-             <div className="mt-auto p-8 border-t border-[var(--outline)] bg-[var(--surface-card)]/30">
+             <div className="mt-auto p-8 border-t border-white/5 bg-[var(--surface-card)]/30">
                 <div className="flex items-center gap-4">
                   <div className="w-12 h-12 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-black text-sm">
                     {user.username.substring(0, 2).toUpperCase()}
