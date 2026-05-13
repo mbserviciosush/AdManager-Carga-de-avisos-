@@ -42,10 +42,10 @@ const Card = ({ children, title, action, className = "" }: any) => (
   <motion.div 
     initial={{ opacity: 0, y: 20 }}
     animate={{ opacity: 1, y: 0 }}
-    className={`glass-card bg-[var(--surface-card)] border border-[var(--outline)] shadow-sm ${className}`}
+    className={`glass-card bg-[var(--surface-card)] border border-transparent shadow-sm ${className}`}
   >
     {(title || action) && (
-      <div className="px-4 md:px-8 py-4 md:py-6 border-b border-[var(--outline)] flex justify-between items-center bg-[var(--surface)] rounded-t-[1.5rem] md:rounded-t-[2.5rem]">
+      <div className="px-4 md:px-8 py-4 md:py-6 border-b border-[#374151]/30 flex justify-between items-center bg-[var(--surface)] rounded-t-[1.5rem] md:rounded-t-[2.5rem]">
         <h3 className="font-display font-extrabold text-base md:text-lg text-[var(--on-surface)] tracking-tight">{title}</h3>
         {action}
       </div>
@@ -233,7 +233,7 @@ export function ScreenCampañas({ campañas, avisos, clientes, onAddCliente, edi
                         placeholder="Buscar aviso..."
                         value={searchAvisos}
                         onChange={e => setSearchAvisos(e.target.value)}
-                        className="pl-9 pr-4 py-2 bg-[var(--surface)] border border-[var(--outline)] rounded-xl text-xs font-bold focus:ring-2 focus:ring-primary/20 outline-none w-48"
+                        className="pl-9 pr-4 py-2 bg-[var(--surface)] border border-transparent rounded-xl text-xs font-bold focus:ring-2 focus:ring-primary/20 outline-none w-48"
                       />
                     </div>
                   )}
@@ -284,7 +284,7 @@ export function ScreenCampañas({ campañas, avisos, clientes, onAddCliente, edi
                       key={aviso.id}
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
-                      className="p-6 bg-[var(--surface)] border border-[var(--outline)] rounded-[var(--radius)] flex flex-col lg:flex-row items-center gap-6 group hover:border-primary/30 transition-all shadow-sm hover:shadow-md"
+                      className="p-6 bg-[var(--surface)] border border-transparent rounded-[var(--radius)] flex flex-col lg:flex-row items-center gap-6 group hover:border-primary/30 transition-all shadow-sm hover:shadow-md"
                     >
                       <div className="flex items-center gap-6 w-full lg:w-1/3">
                         <span className="w-12 h-12 rounded-xl bg-primary/10 text-primary font-black flex items-center justify-center shrink-0">
@@ -386,7 +386,7 @@ export function ScreenCampañas({ campañas, avisos, clientes, onAddCliente, edi
                 placeholder="Buscar por nombre de campaña..." 
                 value={search}
                 onChange={e => setSearch(e.target.value)}
-                className="w-full pl-16 pr-6 py-5 bg-[var(--surface-card)] border border-[var(--outline)] rounded-[2rem] outline-none shadow-sm font-medium text-[var(--on-surface)]"
+                className="w-full pl-16 pr-6 py-5 bg-[var(--surface-card)] border border-transparent rounded-[2rem] outline-none shadow-sm font-medium text-[var(--on-surface)]"
               />
           </div>
           <div className="md:col-span-4 transition-all">
@@ -399,11 +399,11 @@ export function ScreenCampañas({ campañas, avisos, clientes, onAddCliente, edi
           </div>
         </div>
 
-        <div className="bg-[var(--surface-card)] rounded-[1.5rem] md:rounded-[2.5rem] border border-[var(--outline)] shadow-sm">
+        <div className="bg-[var(--surface-card)] rounded-[1.5rem] md:rounded-[2.5rem] border border-transparent shadow-sm">
           <div className="overflow-x-auto md:overflow-visible min-h-[500px]">
             <table className="w-full text-left border-collapse min-w-[800px] md:min-w-0">
               <thead>
-                <tr className="bg-[var(--surface)] border-b border-[var(--outline)]">
+                <tr className="bg-[var(--surface)] border-b border-[#374151]/30">
                   <th className="px-10 py-6 text-[10px] font-black uppercase tracking-[0.2em] text-[var(--on-surface-variant)]">Nombre Campaña</th>
                   <th className="px-10 py-6 text-[10px] font-black uppercase tracking-[0.2em] text-[var(--on-surface-variant)]">Cliente</th>
                   <th className="px-10 py-6 text-[10px] font-black uppercase tracking-[0.2em] text-[var(--on-surface-variant)]">Inicio</th>
@@ -411,7 +411,7 @@ export function ScreenCampañas({ campañas, avisos, clientes, onAddCliente, edi
                   <th className="px-10 py-6 text-[10px] font-black uppercase tracking-[0.2em] text-[var(--on-surface-variant)] text-right">Acciones</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[var(--outline)]">
+              <tbody className="divide-y divide-[#374151]/30">
                 {filtered.map((camp: any) => {
                   const cliente = clientes.find((c: any) => c.id === camp.cliente_id);
                   const numAvisos = avisos.filter((a: any) => a.campaña_id === camp.id).length;
@@ -420,7 +420,7 @@ export function ScreenCampañas({ campañas, avisos, clientes, onAddCliente, edi
                       key={camp.id}
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
-                      className="group cursor-pointer hover:bg-[var(--surface)] transition-all"
+                      className="group cursor-pointer hover:bg-[#374151]/50 border-b border-[#374151]/30 last:border-0 transition-all"
                       onClick={() => { setSelectedID(camp.id); setView('DETAIL'); }}
                     >
                       <td className="px-10 py-6">
@@ -439,7 +439,7 @@ export function ScreenCampañas({ campañas, avisos, clientes, onAddCliente, edi
                       </td>
                       <td className="px-10 py-6 text-right">
                          <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <button className="p-3 bg-[var(--surface-card)] shadow-sm rounded-xl text-primary border border-[var(--outline)] group-hover:bg-primary group-hover:text-white transition-all">
+                            <button className="p-3 bg-[var(--surface-card)] shadow-sm rounded-xl text-primary border border-transparent group-hover:bg-primary group-hover:text-white transition-all">
                                <ChevronRight size={18} />
                             </button>
                          </div>
@@ -643,7 +643,7 @@ export function ScreenNuevaCampaña({
           <Card title="Configuración de Campaña">
             <div className="space-y-8">
               {/* Sección: Datos del Cliente */}
-              <div className="space-y-6 pb-6 border-b border-[var(--outline)]">
+              <div className="space-y-6 pb-6 border-b border-[#374151]/30">
                 <div className="space-y-4">
                   <label className="text-[11px] font-black uppercase tracking-widest text-primary">1. Cliente</label>
                   {!showQuickAdd ? (
@@ -726,7 +726,7 @@ export function ScreenNuevaCampaña({
                     />
                   </div>
                   {fechaInicio && (
-                    <div className="flex items-center gap-2 p-3 bg-[var(--surface)] rounded-2xl border border-[var(--outline)]">
+                    <div className="flex items-center gap-2 p-3 bg-[var(--surface)] rounded-2xl border border-transparent">
                       <Newspaper size={14} className="text-primary" />
                       <span className="text-[10px] font-black uppercase tracking-wider text-[var(--on-surface-variant)]">Edición:</span>
                       {(() => {
@@ -832,7 +832,7 @@ export function ScreenNuevaCampaña({
             title="Listado de Pauta" 
             action={
               <div className="flex items-center gap-3">
-                <div className="flex items-center gap-2 bg-[var(--surface)] rounded-xl px-3 py-1.5 border border-[var(--outline)]">
+                <div className="flex items-center gap-2 bg-[var(--surface)] rounded-xl px-3 py-1.5 border border-transparent">
                   <span className="text-[10px] font-black text-[var(--on-surface-variant)] uppercase">Cant:</span>
                   <input 
                     type="number"
@@ -877,9 +877,9 @@ export function ScreenNuevaCampaña({
                       <th className="px-8 py-4 text-[10px] font-black uppercase tracking-widest text-[var(--on-surface-variant)] text-right">Acción</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-[var(--outline)]">
+                  <tbody className="divide-y divide-[#374151]/30">
                     {avisosGenerated.map((aviso, idx) => (
-                      <tr key={aviso.id} className="group hover:bg-[var(--surface)] transition-all">
+                      <tr key={aviso.id} className="group hover:bg-[#374151]/50 border-b border-[#374151]/30 last:border-0 transition-all">
                         <td className="px-8 py-4">
                           <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-[var(--surface)] text-[var(--on-surface-variant)] font-black text-xs">
                             {idx + 1}
@@ -921,11 +921,11 @@ export function ScreenNuevaCampaña({
                         </td>
                         <td className="px-8 py-4">
                           {aviso.edicion_id ? (
-                            <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-full font-black text-[10px] tracking-widest uppercase">
+                            <div className="badge badge-vigente">
                               #{ediciones.find((e:any)=>e.id === aviso.edicion_id)?.numero}
                             </div>
                           ) : (
-                            <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-rose-50 dark:bg-rose-500/10 text-rose-500 rounded-full font-black text-[10px] tracking-widest uppercase italic border border-rose-100 dark:border-rose-900/10">
+                            <div className="badge badge-vencido">
                               Huerfano
                             </div>
                           )}
@@ -974,7 +974,7 @@ export function ScreenEdiciones({ ediciones, onExportPDF, clientes, avisos, onNa
            <h2 className="text-4xl font-display font-black text-[var(--on-surface)] tracking-tight">Ediciones Diarias</h2>
            <p className="text-[var(--on-surface-variant)] font-medium">Cronograma de publicaciones y control de inventario editorial.</p>
         </div>
-        <div className="flex bg-[var(--surface)] p-1.5 rounded-2xl border border-[var(--outline)]">
+        <div className="flex bg-[var(--surface)] p-1.5 rounded-2xl border border-transparent">
           <button 
             onClick={() => setViewMode('GRID')}
             className={`p-3 rounded-xl flex items-center gap-2 font-black transition-all ${viewMode === 'GRID' ? 'bg-[var(--surface-card)] shadow-sm text-primary' : 'text-[var(--on-surface-variant)]'}`}
@@ -991,7 +991,7 @@ export function ScreenEdiciones({ ediciones, onExportPDF, clientes, avisos, onNa
       </div>
 
       <div className="space-y-6">
-        <div className="flex items-center justify-between bg-[var(--surface-card)] p-2 pl-6 rounded-2xl border border-[var(--outline)] shadow-sm">
+        <div className="flex items-center justify-between bg-[var(--surface-card)] p-2 pl-6 rounded-2xl border border-transparent shadow-sm">
            <div className="relative flex-grow flex items-center">
               <Search className="text-slate-400" size={18} />
               <input 
@@ -1017,7 +1017,7 @@ export function ScreenEdiciones({ ediciones, onExportPDF, clientes, avisos, onNa
                   key={ed.id} 
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="group p-8 bg-[var(--surface-card)] border border-[var(--outline)] rounded-[2rem] hover:ring-2 hover:ring-primary/40 transition-all cursor-default shadow-sm"
+                  className="group p-8 bg-[var(--surface-card)] border border-transparent rounded-[2rem] hover:ring-2 hover:ring-primary/40 transition-all cursor-default shadow-sm"
                  >
                     <div className="flex justify-between items-start mb-8">
                        <div>
@@ -1049,16 +1049,16 @@ export function ScreenEdiciones({ ediciones, onExportPDF, clientes, avisos, onNa
              })}
           </div>
         ) : (
-          <div className="bg-[var(--surface-card)] rounded-[var(--radius)] border border-[var(--outline)] shadow-sm">
+          <div className="bg-[var(--surface-card)] rounded-[var(--radius)] border border-transparent shadow-sm">
             <div className="overflow-x-auto md:overflow-visible min-h-[500px]">
               <div className="w-full text-left min-w-[700px] md:min-w-0">
-                <div className="bg-[var(--surface)] border-b border-[var(--outline)] rounded-t-[var(--radius)] flex">
+                <div className="bg-[var(--surface)] border-b border-[#374151]/30 rounded-t-[var(--radius)] flex">
                     <div className="px-8 py-6 text-[10px] font-black uppercase tracking-[0.2em] text-[var(--on-surface-variant)] w-1/4">Edición</div>
                     <div className="px-8 py-6 text-[10px] font-black uppercase tracking-[0.2em] text-[var(--on-surface-variant)] w-1/4">Fecha</div>
                     <div className="px-8 py-6 text-[10px] font-black uppercase tracking-[0.2em] text-[var(--on-surface-variant)] text-center w-1/4">Avisos</div>
                     <div className="px-8 py-6 text-[10px] font-black uppercase tracking-[0.2em] text-[var(--on-surface-variant)] text-right w-1/4">Acciones</div>
                 </div>
-                <div className="divide-y divide-[var(--outline)]">
+                <div className="divide-y divide-[#374151]/30">
                   {filtered.map((ed: any) => {
                     const edAvisos = avisos.filter((a: any) => a.edicion_id === ed.id);
                     return (
@@ -1066,7 +1066,7 @@ export function ScreenEdiciones({ ediciones, onExportPDF, clientes, avisos, onNa
                         initial={{ opacity: 0, y: 5 }}
                         animate={{ opacity: 1, y: 0 }}
                         key={ed.id}
-                        className="group hover:bg-[var(--surface)] transition-all font-bold text-[var(--on-surface)] flex items-center"
+                        className="group hover:bg-[#374151]/50 border-b border-[#374151]/30 last:border-0 transition-all font-bold text-[var(--on-surface)] flex items-center"
                       >
                         <div className="px-8 py-6 w-1/4">
                            <span className="text-xl font-display font-black text-[var(--on-surface)]">#{ed.numero}</span>
@@ -1083,14 +1083,14 @@ export function ScreenEdiciones({ ediciones, onExportPDF, clientes, avisos, onNa
                            <div className="flex justify-end gap-3 opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity">
                               <button 
                                 onClick={() => onExportPDF(ed)}
-                                className="p-3 bg-[var(--surface-card)] text-[var(--on-surface-variant)] rounded-xl border border-[var(--outline)] hover:bg-primary hover:text-white transition-all shadow-sm"
+                                className="p-3 bg-[var(--surface-card)] text-[var(--on-surface-variant)] rounded-xl border border-transparent hover:bg-primary hover:text-white transition-all shadow-sm"
                                 title="Exportar PDF"
                               >
                                 <FileText size={18} />
                               </button>
                               <button 
                                 onClick={() => setViewDetail(ed)}
-                                className="p-3 bg-[var(--surface-card)] text-[var(--on-surface-variant)] rounded-xl border border-[var(--outline)] hover:bg-primary hover:text-white transition-all shadow-sm flex items-center gap-2"
+                                className="p-3 bg-[var(--surface-card)] text-[var(--on-surface-variant)] rounded-xl border border-transparent hover:bg-primary hover:text-white transition-all shadow-sm flex items-center gap-2"
                               >
                                 <span className="text-[10px] font-black uppercase tracking-widest hidden md:inline">Detalle</span>
                                 <ChevronRight size={18} />
@@ -1121,9 +1121,9 @@ export function ScreenEdiciones({ ediciones, onExportPDF, clientes, avisos, onNa
                 initial={{ scale: 0.9, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0.9, opacity: 0 }}
-                className="bg-[var(--surface-card)] rounded-[2.5rem] w-full max-w-4xl shadow-2xl overflow-hidden border border-[var(--outline)] max-h-[90vh] flex flex-col"
+                className="bg-[var(--surface-card)] rounded-[2.5rem] w-full max-w-4xl shadow-2xl overflow-hidden border border-transparent max-h-[90vh] flex flex-col"
               >
-                 <div className="px-10 py-8 border-b border-[var(--outline)] flex justify-between items-center bg-[var(--surface)]">
+                 <div className="px-10 py-8 border-b border-[#374151]/30 flex justify-between items-center bg-[var(--surface)]">
                     <div>
                       <div className="inline-flex items-center gap-2 px-3 py-1 bg-primary/10 text-primary rounded-full mb-1">
                         <Calendar size={14}/>
@@ -1134,7 +1134,7 @@ export function ScreenEdiciones({ ediciones, onExportPDF, clientes, avisos, onNa
                     <div className="flex gap-4">
                       <button 
                         onClick={() => onExportPDF(viewDetail)}
-                        className="px-6 py-3 bg-[var(--surface-card)] text-primary border border-[var(--outline)] rounded-2xl text-xs font-black hover:bg-primary hover:text-white transition-all flex items-center gap-2"
+                        className="px-6 py-3 bg-[var(--surface-card)] text-primary border border-transparent rounded-2xl text-xs font-black hover:bg-primary hover:text-white transition-all flex items-center gap-2"
                       >
                          <FileText size={18} /> PDF
                       </button>
@@ -1168,7 +1168,7 @@ export function ScreenEdiciones({ ediciones, onExportPDF, clientes, avisos, onNa
                            const clientDetail = clientes.find((cl: any) => cl.id === campDetail?.cliente_id);
 
                            return (
-                             <div key={av.id} className="p-6 bg-[var(--surface)] border border-[var(--outline)] rounded-2xl flex flex-col md:flex-row justify-between items-center gap-6 group hover:border-primary/20 transition-all">
+                             <div key={av.id} className="p-6 bg-[var(--surface)] border border-transparent rounded-2xl flex flex-col md:flex-row justify-between items-center gap-6 group hover:border-primary/20 transition-all">
                                 <div className="flex items-center gap-5 flex-grow">
                                    <div className="w-12 h-12 bg-primary/10 text-primary rounded-xl flex items-center justify-center font-black text-xs">
                                       {av.numero_salida}
@@ -1188,7 +1188,7 @@ export function ScreenEdiciones({ ediciones, onExportPDF, clientes, avisos, onNa
                                         onNavigateToCampaña(av.campaña_id);
                                         setViewDetail(null);
                                       }}
-                                      className="p-3 bg-[var(--surface-card)] rounded-xl text-[var(--on-surface-variant)] hover:text-primary hover:bg-primary/5 transition-all border border-[var(--outline)]"
+                                      className="p-3 bg-[var(--surface-card)] rounded-xl text-[var(--on-surface-variant)] hover:text-primary hover:bg-primary/5 transition-all border border-transparent"
                                    >
                                       <ChevronRight size={18} />
                                    </button>
@@ -1244,7 +1244,7 @@ export function ScreenClientes({ clientes, campañas, onNavigateToCampaña, onUp
                 placeholder="Buscar por razón social..." 
                 value={search}
                 onChange={e => setSearch(e.target.value)}
-                className="w-full pl-14 pr-6 py-5 bg-[var(--surface-card)] border border-[var(--outline)] rounded-3xl outline-none focus:ring-4 focus:ring-primary/5 shadow-sm font-medium transition-all"
+                className="w-full pl-14 pr-6 py-5 bg-[var(--surface-card)] border border-transparent rounded-3xl outline-none focus:ring-4 focus:ring-primary/5 shadow-sm font-medium transition-all"
               />
           </div>
 
@@ -1256,7 +1256,7 @@ export function ScreenClientes({ clientes, campañas, onNavigateToCampaña, onUp
                   key={c.id}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                   className="p-5 bg-[var(--surface-card)]/40 hover:bg-primary/10 border border-[var(--outline)]/50 hover:border-primary/30 rounded-2xl flex justify-between items-center shadow-sm hover:shadow-[0_0_20px_rgba(var(--color-primary-rgb),0.15)] transition-all duration-300 group"
+                   className="p-5 bg-[var(--surface-card)]/40 hover:bg-primary/10 border border-transparent/50 hover:border-primary/30 rounded-2xl flex justify-between items-center shadow-sm hover:shadow-[0_0_20px_rgba(var(--color-primary-rgb),0.15)] transition-all duration-300 group"
                   >
                     <div className="flex items-center gap-5 cursor-pointer flex-grow" onClick={() => setViewDetail(c)}>
                        <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[var(--on-surface)] to-[var(--on-surface-variant)] text-white flex items-center justify-center font-black text-xl shadow-lg ring-4 ring-[var(--surface)] shrink-0">
@@ -1369,7 +1369,7 @@ export function ScreenClientes({ clientes, campañas, onNavigateToCampaña, onUp
             <motion.div 
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              className="bg-[var(--surface-card)] rounded-[2.5rem] w-full max-w-lg shadow-2xl p-10 border border-[var(--outline)]"
+              className="bg-[var(--surface-card)] rounded-[2.5rem] w-full max-w-lg shadow-2xl p-10 border border-transparent"
             >
                <h3 className="text-3xl font-display font-black mb-2 text-[var(--on-surface)]">Perfil Cliente</h3>
                <p className="text-[var(--on-surface-variant)] font-medium mb-8">Administre los datos legales del anunciante.</p>
@@ -1480,7 +1480,7 @@ export function ScreenConfig({ user, onUpdateUser, onBatchGenerate, feriados, on
        <Card title="Generación de Ediciones" className="relative z-20">
           <div className="space-y-6">
             <p className="text-[var(--on-surface-variant)] text-sm font-medium">Cree un lote de ediciones diarias (Lunes a Viernes) de forma masiva.</p>
-            <div className="flex flex-col sm:flex-row gap-6 items-end bg-[var(--surface)] p-6 rounded-3xl border border-[var(--outline)]">
+            <div className="flex flex-col sm:flex-row gap-6 items-end bg-[var(--surface)] p-6 rounded-3xl border border-transparent">
                <div className="space-y-2 w-full sm:w-1/3">
                   <label className="text-[10px] font-black uppercase tracking-widest text-[var(--on-surface-variant)] ml-1">Fecha Inicial</label>
                   <CustomDatePicker value={dateIni} onChange={setDateIni} />
@@ -1567,7 +1567,7 @@ export function ScreenConfig({ user, onUpdateUser, onBatchGenerate, feriados, on
                 </thead>
                 <tbody className="divide-y divide-slate-50">
                   {sortedFeriados.map((f: any) => (
-                    <tr key={f.id} className="hover:bg-[var(--surface)] transition-colors">
+                    <tr key={f.id} className="hover:bg-[#374151]/50 border-b border-[#374151]/30 last:border-0 transition-colors">
                       <td className="px-6 py-3 font-mono font-bold text-sm whitespace-nowrap">{formatDateES(f.fecha)}</td>
                       <td className="px-6 py-3 text-sm text-[var(--on-surface)] font-medium">{f.nombre || '-'}</td>
                       <td className="px-6 py-3 text-right">
@@ -1590,7 +1590,7 @@ export function ScreenConfig({ user, onUpdateUser, onBatchGenerate, feriados, on
        
        <Card title="Preferencias Visuales">
           <div className="space-y-10">
-             <div className="flex items-center justify-between bg-[var(--surface)] p-8 rounded-[2.5rem] border border-[var(--outline)]">
+             <div className="flex items-center justify-between bg-[var(--surface)] p-8 rounded-[2.5rem] border border-transparent">
                 <div>
                    <span className="font-black text-lg block leading-none mb-1 text-[var(--on-surface)]">Modo Nocturno</span>
                    <span className="text-[var(--on-surface-variant)] text-[10px] font-black uppercase tracking-widest">Active para entornos de poca luz</span>
@@ -1627,8 +1627,8 @@ export function ScreenConfig({ user, onUpdateUser, onBatchGenerate, feriados, on
                           </div>
                           
                           <div className="mt-8 flex gap-2">
-                             <div className="w-8 h-8 rounded-full shadow-inner border border-[var(--outline)]" style={{ backgroundColor: t.color }} />
-                             <div className="w-8 h-8 rounded-full shadow-inner border border-[var(--outline)]" style={{ backgroundColor: t.accent }} />
+                             <div className="w-8 h-8 rounded-full shadow-inner border border-transparent" style={{ backgroundColor: t.color }} />
+                             <div className="w-8 h-8 rounded-full shadow-inner border border-transparent" style={{ backgroundColor: t.accent }} />
                           </div>
                        </div>
                        
@@ -1761,7 +1761,7 @@ export function ScreenUsuarios({ users, onUpsert, onDelete }: any) {
               placeholder="Buscar usuarios..." 
               value={search}
               onChange={e => setSearch(e.target.value)}
-              className="w-full pl-16 pr-6 py-5 bg-[var(--surface-card)] border border-[var(--outline)] rounded-[2rem] outline-none shadow-sm font-medium"
+              className="w-full pl-16 pr-6 py-5 bg-[var(--surface-card)] border border-transparent rounded-[2rem] outline-none shadow-sm font-medium"
             />
         </div>
 
@@ -1771,7 +1771,7 @@ export function ScreenUsuarios({ users, onUpsert, onDelete }: any) {
               key={u.id}
               initial={{ opacity: 0, scale: 0.98 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="p-6 bg-[var(--surface-card)] border border-[var(--outline)] rounded-[2rem] flex flex-col justify-between shadow-sm hover:shadow-xl hover:translate-y-[-2px] transition-all gap-6"
+              className="p-6 bg-[var(--surface-card)] border border-transparent rounded-[2rem] flex flex-col justify-between shadow-sm hover:shadow-xl hover:translate-y-[-2px] transition-all gap-6"
             >
               <div className="flex items-center gap-4">
                 <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[var(--on-surface)] to-[var(--on-surface-variant)] text-white flex items-center justify-center font-black text-xl shadow-lg ring-4 ring-[var(--surface)] shrink-0 uppercase">
@@ -1779,7 +1779,7 @@ export function ScreenUsuarios({ users, onUpsert, onDelete }: any) {
                 </div>
                 <div>
                   <span className="text-xl font-display font-black text-[var(--on-surface)] block leading-tight">{u.username}</span>
-                  <span className={`inline-block mt-2 px-3 py-1 rounded-xl text-[10px] uppercase tracking-[0.2em] font-black ${u.role === Role.ADMIN ? 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20' : 'bg-[var(--surface)] text-[var(--on-surface-variant)] border border-[var(--outline)]'}`}>
+                  <span className={`inline-block mt-2 px-3 py-1 rounded-xl text-[10px] uppercase tracking-[0.2em] font-black ${u.role === Role.ADMIN ? 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20' : 'bg-[var(--surface)] text-[var(--on-surface-variant)] border border-transparent'}`}>
                       {u.role}
                   </span>
                 </div>

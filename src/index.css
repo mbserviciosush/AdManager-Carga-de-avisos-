@@ -12,80 +12,46 @@
 
 @layer base {
   :root {
-    --surface: #fcfdfe;
-    --surface-card: #ffffff;
-    --on-surface: #1e293b;
-    --on-surface-variant: #64748b;
-    --outline: #f1f5f9;
-    --primary: #4f46e5;
+    /* Base configuration for Tech Admin Moderno */
+    --surface: #111827; /* Gris antracita muy oscuro */
+    --surface-card: #1F2937; /* Gris oscuro elevado */
+    --on-surface: #F9FAFB; /* Blanco hueso */
+    --on-surface-variant: #9CA3AF; /* Gris claro */
+    --outline: transparent; /* Sin bordes duros */
+    --primary: #0D9488; /* Turquesa vibrante */
     --on-primary: #ffffff;
-    --radius: 20px;
-    --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+    --radius: 12px;
+    --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
   }
 
   [data-dark='true'] {
-    --surface: #020617;
-    --surface-card: #0f172a;
-    --on-surface: #f1f5f9;
-    --on-surface-variant: #94a3b8;
-    --outline: #1e293b;
-    --primary: #6366f1;
+    /* Forzar siempre el tema Tech Admin Moderno */
+    --surface: #111827;
+    --surface-card: #1F2937;
+    --on-surface: #F9FAFB;
+    --on-surface-variant: #9CA3AF;
+    --outline: transparent;
+    --primary: #0D9488;
     --on-primary: #ffffff;
   }
 
-  /* Sapphire Pro - Modern Blue Business */
-  [data-theme='blue'] {
-    --primary: #2563eb;
-    --on-primary: #ffffff;
-  }
-  [data-theme='blue'][data-dark='true'] {
-    --primary: #3b82f6;
-    --surface: #020617;
-    --surface-card: #0f172a;
+  /* Ignite overrides for custom themes, ensuring Tech Admin aesthetic remains */
+  [data-theme='blue'], [data-theme='blue'][data-dark='true'] {
+    --primary: #06B6D4; /* Cian alternativo */
   }
 
-  /* Crimson Luxury - Sophisticated Warm */
-  [data-theme='rust'] {
-    --surface: #fffafb;
-    --surface-card: #ffffff;
-    --on-surface: #450a0a;
-    --on-surface-variant: #7f1d1d;
-    --outline: #fee2e2;
-    --primary: #be123c;
-    --on-primary: #ffffff;
-  }
-  [data-theme='rust'][data-dark='true'] {
-    --surface: #1a0505;
-    --surface-card: #2d0a0a;
-    --on-surface: #fff1f2;
-    --on-surface-variant: #fda4af;
-    --outline: #4c0505;
-    --primary: #f43f5e;
-    --on-primary: #ffffff;
+  [data-theme='rust'], [data-theme='rust'][data-dark='true'] {
+    --primary: #0D9488;
   }
 
-  /* Midnight - Pure Technical Noir */
-  [data-theme='slate'] {
-    --surface: #fcfcfc;
-    --surface-card: #ffffff;
-    --on-surface: #000000;
-    --on-surface-variant: #111827;
-    --outline: #000000;
-    --primary: #111827;
-    --on-primary: #ffffff;
-  }
-  [data-theme='slate'][data-dark='true'] {
-    --surface: #000000;
-    --surface-card: #0a0a0a;
-    --on-surface: #ffffff;
-    --on-surface-variant: #d1d5db;
-    --outline: #ffffff;
-    --primary: #ffffff;
-    --on-primary: #000000;
+  [data-theme='slate'], [data-theme='slate'][data-dark='true'] {
+    --primary: #0D9488;
   }
 
   body {
     @apply bg-[var(--surface)] text-[var(--on-surface)] transition-colors duration-300 antialiased selection:bg-primary/20;
+    font-family: var(--font-sans);
   }
 }
 
@@ -112,30 +78,51 @@
   }
 
   .glass-card {
-    @apply bg-[var(--surface-card)] border border-[var(--outline)] rounded-[var(--radius)] shadow-[var(--shadow-sm)] backdrop-blur-sm;
+    @apply bg-[var(--surface-card)] rounded-[var(--radius)] shadow-[var(--shadow)];
+    /* Removed transparent borders to use shadow for depth instead */
   }
   
   .modern-input {
-    @apply w-full bg-[var(--surface-card)] border border-[var(--outline)] rounded-xl px-4 py-3 outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition-all font-medium text-[var(--on-surface)];
+    /* Fondo oscuro interior #374151, focus anillo de turquesa */
+    @apply w-full bg-[#374151] rounded-[var(--radius)] px-4 py-3 outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all font-medium text-[var(--on-surface)] border-transparent;
   }
 
   .modern-button-primary {
-    @apply bg-primary text-primary-foreground px-6 py-3 rounded-xl font-bold shadow-lg shadow-primary/20 hover:shadow-primary/40 hover:-translate-y-0.5 active:translate-y-0 active:scale-95 transition-all text-sm;
+    @apply bg-primary text-primary-foreground px-6 py-3 rounded-[var(--radius)] font-bold shadow-md shadow-primary/20 hover:opacity-90 hover:shadow-primary/40 hover:-translate-y-0.5 active:translate-y-0 active:scale-95 transition-all text-sm border-transparent;
   }
 
   .modern-button-secondary {
-    @apply bg-transparent border border-[var(--outline)] text-[var(--on-surface)] px-6 py-3 rounded-xl font-bold hover:bg-[var(--outline)] transition-all text-sm;
+    @apply bg-transparent text-[var(--on-surface)] px-6 py-3 rounded-[var(--radius)] font-bold hover:bg-[#374151] transition-all text-sm border border-[#374151];
   }
 
   .nav-item {
-    @apply flex items-center gap-4 px-5 py-3.5 rounded-2xl font-bold transition-all relative;
+    @apply flex items-center gap-4 px-5 py-3.5 rounded-[var(--radius)] font-bold transition-all relative;
   }
 
   .nav-item-active {
-    @apply bg-primary text-primary-foreground shadow-xl shadow-primary/30;
+    @apply bg-primary/10 text-primary;
   }
 
   .nav-item-inactive {
-    @apply text-[var(--on-surface-variant)] hover:text-primary hover:bg-primary/5;
+    @apply text-[var(--on-surface-variant)] hover:text-primary hover:bg-[#374151];
+  }
+
+  /* Badges para estados */
+  .badge {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold uppercase tracking-wider;
+  }
+  .badge-vigente {
+    @apply bg-emerald-500/20 text-emerald-400 border border-emerald-500/30;
+  }
+  .badge-vencido {
+    @apply bg-rose-500/20 text-rose-400 border border-rose-500/30;
+  }
+  .badge-pendiente {
+    @apply bg-amber-500/20 text-amber-400 border border-amber-500/30;
+  }
+
+  /* Tabla de Gestión - Rediseño */
+  .table-row-modern {
+    @apply transition-colors hover:bg-[#374151]/50 border-b border-[#374151]/30 last:border-0;
   }
 }
