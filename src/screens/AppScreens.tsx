@@ -1192,10 +1192,11 @@ export function ScreenEdiciones({ ediciones, onExportPDF, clientes, avisos, onNa
                                    </div>
                                 </div>
                                 <div className="flex items-center gap-10">
-                                   <div className="text-right">
-                                      <p className="text-[10px] font-black uppercase tracking-widest text-[var(--on-surface-variant)] leading-none mb-1">Campaña</p>
-                                      <p className="text-xs font-bold text-[var(--on-surface)]">{campDetail?.nombre_campaña || 'Nueva Campaña'}</p>
-                                   </div>
+                                    <div className="text-right">
+                                       <p className="text-[10px] font-black uppercase tracking-widest text-[var(--on-surface-variant)] leading-none mb-1">Campaña / Cliente</p>
+                                       <p className="text-xs font-bold text-[var(--on-surface)] leading-tight">{campDetail?.nombre_campaña || 'Nueva Campaña'}</p>
+                                       <p className="text-[10px] text-primary font-bold">{clientDetail?.nombre || 'Sin Cliente'}</p>
+                                    </div>
                                    <button 
                                       onClick={() => {
                                         onNavigateToCampaña(av.campaña_id);
@@ -1222,7 +1223,7 @@ export function ScreenEdiciones({ ediciones, onExportPDF, clientes, avisos, onNa
 }
 
 // --- CLIENTES ---
-export function ScreenClientes({ clientes, campañas, onNavigateToCampaña, onUpsert, onDelete }: any) {
+export function ScreenClientes({ clientes, campañas, avisos, onNavigateToCampaña, onUpsert, onDelete }: any) {
   const [search, setSearch] = useState('');
   const [editing, setEditing] = useState<any>(null);
   const [viewDetail, setViewDetail] = useState<any>(null);
@@ -1342,9 +1343,13 @@ export function ScreenClientes({ clientes, campañas, onNavigateToCampaña, onUp
                             className="p-5 bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800 rounded-2xl flex justify-between items-center group hover:border-primary/30 transition-all"
                           >
                             <div>
-                               <p className="font-black text-slate-900 dark:text-white">{ca.nombre_campaña}</p>
-                               <p className="text-[10px] text-slate-400 font-medium">Inició el {formatDateES(ca.fecha_inicio)}</p>
-                            </div>
+                               <p className="font-black text-slate-900 dark:text-white leading-tight">{ca.nombre_campaña}</p>
+                               <div className="flex items-center gap-2 mt-1">
+                                 <p className="text-[10px] text-slate-400 font-medium">Desde {formatDateES(ca.fecha_inicio)}</p>
+                                 <span className="w-1 h-1 rounded-full bg-slate-300"></span>
+                                 <p className="text-[10px] text-primary font-bold uppercase tracking-tight">{avisos?.filter((a:any) => a.campaña_id === ca.id).length || 0} avisos</p>
+                               </div>
+                             </div>
                             <button 
                               onClick={() => {
                                 onNavigateToCampaña(ca.id);

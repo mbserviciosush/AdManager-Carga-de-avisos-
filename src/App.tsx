@@ -699,6 +699,8 @@ export default function App() {
                     {currentScreen === 'CLIENTES' && (
                       <ScreenClientes 
                         clientes={clientes} 
+                        campañas={campañas}
+                        avisos={avisos}
                         onNavigateToCampaña={(id) => { setTargetCampañaId(id); setCurrentScreen('CAMPAÑAS'); }}
                         onUpsert={(c) => {
                           if (c.id) setClientes(prev => prev.map(x => x.id === c.id ? c : x));
