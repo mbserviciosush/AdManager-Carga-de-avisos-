@@ -15,6 +15,7 @@ interface CustomSelectProps {
   placeholder?: string;
   id?: string;
   className?: string;
+  disabled?: boolean;
 }
 
 export const CustomSelect: React.FC<CustomSelectProps> = ({ 
@@ -24,6 +25,7 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
   onKeyDown,
   placeholder = "Seleccionar...",
   className = "",
+  disabled = false,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -71,8 +73,10 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
     <div className={`relative w-full ${isOpen ? 'z-[9999]' : 'z-10'}`} ref={containerRef}>
       <button
         type="button"
-        onClick={() => setIsOpen(!isOpen)}
+        disabled={disabled}
+        onClick={() => !disabled && setIsOpen(!isOpen)}
         onKeyDown={(e) => {
+          if (disabled) return;
           if (e.key === 'Enter' && !isOpen) {
             setIsOpen(true);
             e.preventDefault();
@@ -84,6 +88,7 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
         }}
         className={`modern-input text-left flex items-center justify-between transition-all duration-300
           ${isOpen ? 'ring-4 ring-primary/10 border-primary bg-[var(--surface)]' : ''}
+          ${disabled ? 'opacity-50 cursor-not-allowed select-none' : ''}
           ${className}
         `}
       >
