@@ -635,9 +635,11 @@ export default function App() {
                 <nav className="flex-1 px-4 space-y-2">
                   {[
                     { id: 'PLANILLA', label: 'Planilla', icon: FileSpreadsheet },
-                    { id: 'CAMPAÑAS', label: 'Campañas', icon: Megaphone },
-                    { id: 'EDICIONES', label: 'Ediciones', icon: Newspaper },
-                    { id: 'CLIENTES', label: 'Clientes', icon: Users },
+                    ...(user?.role !== Role.DIAGRAMACION ? [
+                      { id: 'CAMPAÑAS', label: 'Campañas', icon: Megaphone },
+                      { id: 'EDICIONES', label: 'Ediciones', icon: Newspaper },
+                      { id: 'CLIENTES', label: 'Clientes', icon: Users },
+                    ] : []),
                     ...(user?.role === Role.ADMIN ? [{ id: 'USUARIOS', label: 'Usuarios', icon: UserPlus }] : []),
                     { id: 'CONFIG', label: 'Ajustes', icon: Settings },
                   ].map(item => (
@@ -735,9 +737,11 @@ export default function App() {
                     <nav className="hidden md:flex items-center gap-2">
                       {[
                         { id: 'PLANILLA', label: 'Planilla', icon: FileSpreadsheet },
-                        { id: 'CAMPAÑAS', label: 'Campañas', icon: Megaphone },
-                        { id: 'EDICIONES', label: 'Ediciones', icon: Newspaper },
-                        { id: 'CLIENTES', label: 'Clientes', icon: Users },
+                        ...(user?.role !== Role.DIAGRAMACION ? [
+                          { id: 'CAMPAÑAS', label: 'Campañas', icon: Megaphone },
+                          { id: 'EDICIONES', label: 'Ediciones', icon: Newspaper },
+                          { id: 'CLIENTES', label: 'Clientes', icon: Users },
+                        ] : []),
                         ...(user?.role === Role.ADMIN ? [{ id: 'USUARIOS', label: 'Usuarios', icon: UserPlus }] : []),
                         { id: 'CONFIG', label: 'Ajustes', icon: Settings },
                       ].map(item => (
@@ -861,6 +865,7 @@ export default function App() {
                           setTargetCampañaId(id);
                           setCurrentScreen('CAMPAÑAS');
                         }}
+                        userRole={user?.role}
                       />
                     )}
                     {currentScreen === 'CLIENTES' && (

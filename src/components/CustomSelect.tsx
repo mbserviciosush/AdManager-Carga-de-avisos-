@@ -68,7 +68,7 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
   };
 
   return (
-    <div className={`relative w-full ${isOpen ? 'z-[100]' : 'z-auto'}`} ref={containerRef}>
+    <div className={`relative w-full ${isOpen ? 'z-[9999]' : 'z-10'}`} ref={containerRef}>
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
@@ -102,7 +102,7 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
             initial={{ opacity: 0, y: 10, scale: 0.95 }}
             animate={{ opacity: 1, y: 12, scale: 1 }}
             exit={{ opacity: 0, y: 10, scale: 0.95 }}
-            className="absolute top-full left-0 z-[999] w-full bg-[var(--surface-card)]/95 backdrop-blur-3xl border border-[var(--outline)] rounded-[1.5rem] md:rounded-[2rem] shadow-[0_25px_60px_rgba(0,0,0,0.4)] overflow-hidden"
+            className="absolute top-full left-0 z-[10000] w-full bg-[var(--surface-card)]/95 backdrop-blur-3xl border border-[var(--outline)] rounded-[1.5rem] md:rounded-[2rem] shadow-[0_30px_90px_rgba(0,0,0,0.5)] overflow-hidden"
           >
             {/* Search Input Area */}
             <div className="p-2 border-b border-[var(--outline)] bg-[var(--surface)]/50">

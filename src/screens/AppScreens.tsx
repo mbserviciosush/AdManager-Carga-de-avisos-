@@ -1722,42 +1722,44 @@ export function ScreenConfig({ user, onUpdateUser, onBatchGenerate, onSyncEdicio
           </Card>
         )}
 
-       <Card title="Generación de Ediciones" className="relative z-20">
-          <div className="space-y-6">
-            <p className="text-[var(--on-surface-variant)] text-sm font-medium">Cree un lote de ediciones diarias (Lunes a Viernes) de forma masiva.</p>
-            <div className="flex flex-col sm:flex-row gap-6 items-end bg-[var(--surface)] p-6 rounded-3xl border border-transparent relative z-30 overflow-visible">
-               <div className="space-y-2 w-full sm:w-1/3">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-[var(--on-surface-variant)] ml-1">Fecha Inicial</label>
-                  <CustomDatePicker value={dateIni} onChange={setDateIni} />
+        {user.role === Role.ADMIN && (
+          <Card title="Generación de Ediciones" className="relative z-20">
+             <div className="space-y-6">
+               <p className="text-[var(--on-surface-variant)] text-sm font-medium">Cree un lote de ediciones diarias (Lunes a Viernes) de forma masiva.</p>
+               <div className="flex flex-col sm:flex-row gap-6 items-end bg-[var(--surface)] p-6 rounded-3xl border border-transparent relative z-30 overflow-visible">
+                  <div className="space-y-2 w-full sm:w-1/3">
+                     <label className="text-[10px] font-black uppercase tracking-widest text-[var(--on-surface-variant)] ml-1">Fecha Inicial</label>
+                     <CustomDatePicker value={dateIni} onChange={setDateIni} />
+                  </div>
+                  <div className="space-y-2 w-full sm:w-1/3">
+                     <label className="text-[10px] font-black uppercase tracking-widest text-[var(--on-surface-variant)] ml-1">Número Inicial</label>
+                     <input type="number" value={numIni} onChange={e=>setNumIni(e.target.value)} className="modern-input" placeholder="0001" />
+                  </div>
+                  <div className="space-y-2 w-full sm:w-1/3">
+                     <label className="text-[10px] font-black uppercase tracking-widest text-[var(--on-surface-variant)] ml-1">Cantidad de Días</label>
+                     <input type="number" value={cant} onChange={e=>setCant(e.target.value)} className="modern-input" placeholder="30" />
+                  </div>
                </div>
-               <div className="space-y-2 w-full sm:w-1/3">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-[var(--on-surface-variant)] ml-1">Número Inicial</label>
-                  <input type="number" value={numIni} onChange={e=>setNumIni(e.target.value)} className="modern-input" placeholder="0001" />
-               </div>
-               <div className="space-y-2 w-full sm:w-1/3">
-                  <label className="text-[10px] font-black uppercase tracking-widest text-[var(--on-surface-variant)] ml-1">Cantidad de Días</label>
-                  <input type="number" value={cant} onChange={e=>setCant(e.target.value)} className="modern-input" placeholder="30" />
-               </div>
-            </div>
-            <button 
-              onClick={() => {
-                if(!numIni || !cant || !dateIni) return alert('Complete los parámetros de generación');
-                
-                const exists = ediciones.some((e: any) => e.fecha === dateIni);
-                if (exists) {
-                  if (!confirm(`Ya existe una edición para el día ${dateIni}. ¿Desea continuar de todas formas?`)) return;
-                }
-
-                onBatchGenerate(parseInt(numIni), parseInt(cant), dateIni);
-                setCant('');
-                alert('Ediciones generadas con éxito');
-              }}
-              className="w-full h-14 modern-button-primary flex items-center justify-center gap-2"
-            >
-              <Sparkles size={20} /> Ejecutar Proceso de Generación
-            </button>
-          </div>
-       </Card>
+               <button 
+                 onClick={() => {
+                   if(!numIni || !cant || !dateIni) return alert('Complete los parámetros de generación');
+                   
+                   const exists = ediciones.some((e: any) => e.fecha === dateIni);
+                   if (exists) {
+                     if (!confirm(`Ya existe una edición para el día ${dateIni}. ¿Desea continuar de todas formas?`)) return;
+                   }
+   
+                   onBatchGenerate(parseInt(numIni), parseInt(cant), dateIni);
+                   setCant('');
+                   alert('Ediciones generadas con éxito');
+                 }}
+                 className="w-full h-14 modern-button-primary flex items-center justify-center gap-2"
+               >
+                 <Sparkles size={20} /> Ejecutar Proceso de Generación
+               </button>
+             </div>
+          </Card>
+        )}
 
         {user.role === Role.ADMIN && (
           <Card title="Mantenimiento de Ediciones" className="relative z-15">
@@ -1794,7 +1796,8 @@ export function ScreenConfig({ user, onUpdateUser, onBatchGenerate, onSyncEdicio
           </Card>
         )}
 
-       <Card title="Calendario de Feriados" className="relative z-10">
+        {user.role === Role.ADMIN && (
+          <Card title="Calendario de Feriados" className="relative z-10">
           <div className="space-y-6">
             <p className="text-[var(--on-surface-variant)] text-sm font-medium">Configure los días no laborables para que el generador de avisos y ediciones los omita automáticamente.</p>
             
@@ -1877,6 +1880,7 @@ export function ScreenConfig({ user, onUpdateUser, onBatchGenerate, onSyncEdicio
             </div>
           </div>
        </Card>
+        )}
        
        <Card title="Preferencias Visuales">
           <div className="space-y-10">
@@ -2015,7 +2019,7 @@ export function ScreenUsuarios({ users, onUpsert, onDelete }: any) {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            className="overflow-hidden"
+            className="overflow-visible relative z-50 mb-8"
           >
             <Card title={editingId ? "Editar Usuario" : "Nuevo Usuario"}>
                <form onSubmit={handleSave} className="grid grid-cols-1 md:grid-cols-4 gap-6 items-end">
@@ -2043,7 +2047,8 @@ export function ScreenUsuarios({ users, onUpsert, onDelete }: any) {
                     <CustomSelect 
                       options={[
                         { label: 'Usuario (Operador)', value: Role.USER },
-                        { label: 'Administrador', value: Role.ADMIN }
+                        { label: 'Administrador', value: Role.ADMIN },
+                        { label: 'Diagramación', value: Role.DIAGRAMACION }
                       ]}
                       value={editRole}
                       onChange={val => setEditRole(val as Role)}
@@ -2130,7 +2135,9 @@ export function ScreenUsuarios({ users, onUpsert, onDelete }: any) {
 }
 
 // --- PLANILLA ---
-export function ScreenPlanilla({ ediciones, clientes, avisos, campañas, feriados, masterEdId, setMasterEdId, rows, setRows, onSaveCampaña, onAddCliente, onNavigateToCampaña }: any) {
+export function ScreenPlanilla({ ediciones, clientes, avisos, campañas, feriados, masterEdId, setMasterEdId, rows, setRows, onSaveCampaña, onAddCliente, onNavigateToCampaña, userRole }: any) {
+  const isReadOnly = userRole === Role.DIAGRAMACION;
+
   // Encontrar la edición del día siguiente a hoy (o la más cercana futura)
   const suggestedEdition = useMemo(() => {
     if (!ediciones || ediciones.length === 0) return null;
@@ -2220,18 +2227,29 @@ export function ScreenPlanilla({ ediciones, clientes, avisos, campañas, feriado
         <div className="flex gap-6 items-center bg-[var(--surface-card)] p-6 rounded-3xl border border-transparent shadow-sm">
            <div className="flex flex-col min-w-[280px]">
               <span className="text-[10px] font-black uppercase text-primary tracking-widest mb-2">Edición Trabajo</span>
-              <CustomSelect 
-                value={masterEdId}
-                onChange={(val) => setMasterEdId(val)}
-                options={[
-                  { value: '', label: 'Seleccionar Edición...' },
-                  ...ediciones.sort((a: any, b: any) => a.fecha.localeCompare(b.fecha)).map((e: any) => ({
-                    value: e.id,
-                    label: `N° ${e.numero} (${formatDateES(e.fecha)})`
-                  }))
-                ]}
-                className="w-full"
-              />
+              <div className="flex gap-2">
+                <CustomSelect 
+                  value={masterEdId}
+                  onChange={(val: any) => setMasterEdId(val)}
+                  options={[
+                    { value: '', label: 'Seleccionar Edición...' },
+                    ...ediciones.sort((a: any, b: any) => a.fecha.localeCompare(b.fecha)).map((e: any) => ({
+                      value: e.id,
+                      label: `N° ${e.numero} (${formatDateES(e.fecha)})`
+                    }))
+                  ]}
+                  className="w-full"
+                />
+                {masterEd && (
+                  <button 
+                    onClick={() => exportEdicionPDF(masterEd, avisos.filter((a: any) => a.edicion_id === masterEd.id))}
+                    className="p-3 bg-primary/10 text-primary rounded-xl hover:bg-primary hover:text-white transition-all shadow-sm"
+                    title="Exportar PDF de esta edición"
+                  >
+                    <FileText size={20} />
+                  </button>
+                )}
+              </div>
            </div>
         </div>
       </div>
@@ -2255,7 +2273,7 @@ export function ScreenPlanilla({ ediciones, clientes, avisos, campañas, feriado
                 <tr key={row.id} className={`group transition-colors ${row.status === 'DONE' ? 'bg-emerald-50/10' : 'hover:bg-slate-50/50 dark:hover:bg-white/5'}`}>
                   <td className="px-6 py-4">
                     <input 
-                      disabled={row.status === 'DONE'}
+                      disabled={row.status === 'DONE' || isReadOnly}
                       value={row.archivo}
                       onChange={e => setRows(prev => prev.map(r => r.id === row.id ? { ...r, archivo: e.target.value } : r))}
                       placeholder="Nombre del aviso..."
@@ -2267,13 +2285,13 @@ export function ScreenPlanilla({ ediciones, clientes, avisos, campañas, feriado
                       value={row.producto}
                       onChange={val => setRows(prev => prev.map(r => r.id === row.id ? { ...r, producto: val } : r))}
                       options={PRODUCTOS.map(p => ({ value: p, label: p }))}
-                      disabled={row.status === 'DONE'}
+                      disabled={row.status === 'DONE' || isReadOnly}
                       className="w-full"
                     />
                   </td>
                   <td className="px-6 py-4">
                     <input 
-                      disabled={row.status === 'DONE'}
+                      disabled={row.status === 'DONE' || isReadOnly}
                       value={row.salidas}
                       onChange={e => setRows(prev => prev.map(r => r.id === row.id ? { ...r, salidas: e.target.value } : r))}
                       className={`w-full bg-transparent border-none outline-none text-center font-bold ${row.salidas.toLowerCase() === 'cambio' ? 'text-rose-500' : 'text-[var(--on-surface)]'}`}
@@ -2281,7 +2299,7 @@ export function ScreenPlanilla({ ediciones, clientes, avisos, campañas, feriado
                   </td>
                   <td className="px-6 py-4">
                     <input 
-                      disabled={row.status === 'DONE'}
+                      disabled={row.status === 'DONE' || isReadOnly}
                       value={row.ubicacion}
                       onChange={e => setRows(prev => prev.map(r => r.id === row.id ? { ...r, ubicacion: e.target.value } : r))}
                       className="w-full bg-transparent border-none outline-none font-medium text-[var(--on-surface-variant)]"
@@ -2298,11 +2316,11 @@ export function ScreenPlanilla({ ediciones, clientes, avisos, campañas, feriado
                               { value: '', label: 'Seleccionar...' },
                               ...clientes.sort((a:any,b:any)=>a.nombre.localeCompare(b.nombre)).map((c: any) => ({ value: c.id, label: c.nombre }))
                             ]}
-                            disabled={row.status === 'DONE'}
+                            disabled={row.status === 'DONE' || isReadOnly}
                             className="w-full"
                           />
                         </div>
-                        {row.status !== 'DONE' && (
+                        {row.status !== 'DONE' && !isReadOnly && (
                           <button 
                             onClick={() => setRows(prev => prev.map(r => r.id === row.id ? { ...r, show_add: !r.show_add } : r))}
                             className={`p-2 rounded-xl transition-all ${(row as any).show_add ? 'bg-primary text-white' : 'bg-slate-100 dark:bg-white/5 text-[var(--on-surface-variant)] hover:text-primary'}`}
@@ -2343,7 +2361,7 @@ export function ScreenPlanilla({ ediciones, clientes, avisos, campañas, feriado
                   </td>
                   <td className="px-6 py-4">
                     <input 
-                      disabled={row.status === 'DONE'}
+                      disabled={row.status === 'DONE' || isReadOnly}
                       value={row.observaciones}
                       onChange={e => setRows(prev => prev.map(r => r.id === row.id ? { ...r, observaciones: e.target.value } : r))}
                       className="w-full bg-transparent border-none outline-none font-medium text-[var(--on-surface-variant)]"
@@ -2364,11 +2382,11 @@ export function ScreenPlanilla({ ediciones, clientes, avisos, campañas, feriado
                                <AlertCircle size={16} />
                              </div>
                            )}
-                           <button 
-                             onClick={() => handleGenerateRow(row.id)}
-                             disabled={!row.archivo || !row.cliente_id || !masterEd || row.salidas.toLowerCase() === 'cambio'}
-                             className="px-4 py-2 bg-rose-500 text-white rounded-xl font-black text-[10px] uppercase tracking-tighter hover:bg-emerald-500 transition-all shadow-lg shadow-rose-500/20 hover:shadow-emerald-500/20 disabled:opacity-20 disabled:cursor-not-allowed"
-                           >
+                            <button 
+                              onClick={() => handleGenerateRow(row.id)}
+                              disabled={!row.archivo || !row.cliente_id || !masterEd || row.salidas.toLowerCase() === 'cambio' || isReadOnly}
+                              className="px-4 py-2 bg-rose-500 text-white rounded-xl font-black text-[10px] uppercase tracking-tighter hover:bg-emerald-500 transition-all shadow-lg shadow-rose-500/20 hover:shadow-emerald-500/20 disabled:opacity-20 disabled:cursor-not-allowed"
+                            >
                              Generar
                            </button>
                         </div>
@@ -2380,25 +2398,27 @@ export function ScreenPlanilla({ ediciones, clientes, avisos, campañas, feriado
             </tbody>
           </table>
         </div>
-        <div className="p-6 bg-[var(--surface)] flex justify-end">
-           <button 
-            onClick={() => setRows(prev => [...prev, ...Array(5).fill(null).map(() => ({
-              id: Math.random().toString(36).slice(2, 9),
-              archivo: '',
-              producto: PRODUCTOS[0],
-              salidas: '1',
-              ubicacion: '',
-              cliente_id: '',
-              new_cliente_name: '',
-              observaciones: '',
-              status: 'PENDING' as 'PENDING' | 'DONE'
-            }))])}
-            className="flex items-center gap-2 px-6 py-3 bg-[var(--surface-card)] text-[var(--on-surface)] rounded-2xl font-bold hover:bg-slate-50 dark:hover:bg-white/5 transition-all border border-transparent"
-           >
-              <Plus size={18} />
-              Agregar más filas
-           </button>
-        </div>
+         {!isReadOnly && (
+           <div className="p-6 bg-[var(--surface)] flex justify-end">
+              <button 
+               onClick={() => setRows(prev => [...prev, ...Array(5).fill(null).map(() => ({
+                 id: Math.random().toString(36).slice(2, 9),
+                 archivo: '',
+                 producto: PRODUCTOS[0],
+                 salidas: '1',
+                 ubicacion: '',
+                 cliente_id: '',
+                 new_cliente_name: '',
+                 observaciones: '',
+                 status: 'PENDING' as 'PENDING' | 'DONE'
+               }))])}
+               className="flex items-center gap-2 px-6 py-3 bg-[var(--surface-card)] text-[var(--on-surface)] rounded-2xl font-bold hover:bg-slate-50 dark:hover:bg-white/5 transition-all border border-transparent"
+              >
+                 <Plus size={18} />
+                 Agregar más filas
+              </button>
+           </div>
+         )}
       </div>
     </div>
   );

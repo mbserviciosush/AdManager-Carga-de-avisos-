@@ -1,7 +1,8 @@
 
 export enum Role {
   ADMIN = 'ADMIN',
-  USER = 'USER'
+  USER = 'USER',
+  DIAGRAMACION = 'DIAGRAMACION'
 }
 
 export type Theme = 'blue' | 'rust' | 'slate';
