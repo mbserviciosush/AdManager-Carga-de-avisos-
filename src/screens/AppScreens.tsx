@@ -2510,7 +2510,7 @@ export function ScreenPlanilla({ ediciones, clientes, avisos, campañas, feriado
                         onChange={e => setRows(prev => prev.map(r => r.id === row.id ? { ...r, archivo: e.target.value } : r))}
                         className="w-full bg-transparent outline-none font-bold text-[var(--on-surface)] focus:text-primary transition-all px-0"
                       />
-                      <div className="h-[1px] w-full bg-black dark:bg-white/20 mt-1" />
+                      <div className="h-[2px] w-full bg-zinc-900 dark:bg-white/20" />
                     </div>
                   </td>
                   <td className="px-6 py-4">
@@ -2538,7 +2538,7 @@ export function ScreenPlanilla({ ediciones, clientes, avisos, campañas, feriado
                         onChange={e => setRows(prev => prev.map(r => r.id === row.id ? { ...r, ubicacion: e.target.value } : r))}
                         className="w-full bg-transparent outline-none font-medium text-[var(--on-surface-variant)] focus:text-primary transition-all px-0"
                       />
-                      <div className="h-[1px] w-full bg-black dark:bg-white/20 mt-1" />
+                      <div className="h-[2px] w-full bg-zinc-900 dark:bg-white/20" />
                     </div>
                   </td>
                   <td className="px-6 py-4">
@@ -2603,7 +2603,7 @@ export function ScreenPlanilla({ ediciones, clientes, avisos, campañas, feriado
                         onChange={e => setRows(prev => prev.map(r => r.id === row.id ? { ...r, observaciones: e.target.value } : r))}
                         className="w-full bg-transparent outline-none font-medium text-[var(--on-surface-variant)] focus:text-primary transition-all px-0"
                       />
-                      <div className="h-[1px] w-full bg-black dark:bg-white/20 mt-1" />
+                      <div className="h-[2px] w-full bg-zinc-900 dark:bg-white/20" />
                     </div>
                   </td>
                   <td className="px-6 py-4">
