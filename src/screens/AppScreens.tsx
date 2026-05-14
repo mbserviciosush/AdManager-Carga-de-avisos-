@@ -23,7 +23,8 @@ import {
   AlertCircle,
   Database,
   FileSpreadsheet,
-  ListPlus
+  ListPlus,
+  Users
 } from 'lucide-react';
 import { 
   Screen, 
@@ -55,20 +56,6 @@ import { exportEdicionPDF, exportCampañaPDF, previewEdicionPDF, previewCampaña
 import { motion, AnimatePresence } from 'motion/react';
 import { CustomDatePicker } from '../components/CustomDatePicker';
 import { CustomSelect } from '../components/CustomSelect';
-
-import { 
-  format, 
-  addMonths, 
-  subMonths, 
-  startOfMonth, 
-  endOfMonth, 
-  startOfWeek, 
-  endOfWeek, 
-  eachDayOfInterval, 
-  isSameMonth, 
-  isSameDay, 
-  parseISO 
-} from 'date-fns';
 import { es } from 'date-fns/locale';
 
 // --- SHARED COMPONENTS ---
@@ -76,20 +63,20 @@ const Card = ({ children, title, action, className = "" }: any) => (
   <motion.div 
     initial={{ opacity: 0, y: 20 }}
     animate={{ opacity: 1, y: 0 }}
-    className={`glass-card bg-[var(--surface-card)] border border-transparent shadow-sm ${className}`}
+    className={`modern-card ${className}`}
   >
     {(title || action) && (
-      <div className="px-4 md:px-8 py-4 md:py-6 border-b border-[#374151]/30 flex justify-between items-center bg-[var(--surface)] rounded-t-[inherit]">
-        <h3 className="font-display font-extrabold text-base md:text-lg text-[var(--on-surface)] tracking-tight">{title}</h3>
+      <div className="px-4 md:px-6 py-3 md:py-4 border-b border-[#374151]/30 flex justify-between items-center bg-[var(--surface)] rounded-t-[inherit]">
+        <h3 className="font-display font-extrabold text-base text-[var(--on-surface)] tracking-tight">{title}</h3>
         {action}
       </div>
     )}
-    <div className="p-4 md:p-8">{children}</div>
+    <div className="p-4 md:p-6">{children}</div>
   </motion.div>
 );
 
 // --- CAMPAÑAS ---
-export function ScreenCampañas({ campañas, avisos, clientes, onAddCliente, ediciones, feriados, onSaveCampaña, onDeleteCampaña, onUpdateAvisos, onUpdateCampaña, initialSelectedId, onClearInitialId, appLogo }: any) {
+export function ScreenCampañas({ campañas, avisos, clientes, onAddCliente, ediciones, feriados, onSaveCampaña, onDeleteCampaña, onUpdateAvisos, onUpdateCampaña, initialSelectedId, onClearInitialId, appLogo, productos }: any) {
   const [view, setView] = useState<'LIST' | 'CREATE' | 'DETAIL'>('LIST');
   const [selectedID, setSelectedID] = useState<string | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -180,6 +167,7 @@ export function ScreenCampañas({ campañas, avisos, clientes, onAddCliente, edi
             onSaveCampaña(camp, avs);
             setView('LIST');
           }}
+          productos={productos}
         />
       </div>
     );
@@ -449,62 +437,62 @@ export function ScreenCampañas({ campañas, avisos, clientes, onAddCliente, edi
           </div>
         </div>
 
-        <div className="bg-[var(--surface-card)] rounded-[1.5rem] md:rounded-[2.5rem] border border-transparent shadow-sm overflow-hidden">
-          <div className="overflow-x-auto md:overflow-visible min-h-[500px]">
-            <table className="w-full text-left border-collapse min-w-[800px] md:min-w-0">
-              <thead>
-                <tr className="bg-[var(--surface)] border-b border-[#374151]/30">
-                  <th className="px-10 py-6 text-[10px] font-black uppercase tracking-[0.2em] text-[var(--on-surface-variant)]">Nombre Campaña</th>
-                  <th className="px-10 py-6 text-[10px] font-black uppercase tracking-[0.2em] text-[var(--on-surface-variant)]">Cliente</th>
-                  <th className="px-10 py-6 text-[10px] font-black uppercase tracking-[0.2em] text-[var(--on-surface-variant)]">Inicio</th>
-                  <th className="px-10 py-6 text-[10px] font-black uppercase tracking-[0.2em] text-[var(--on-surface-variant)] text-center">Avisos</th>
-                  <th className="px-10 py-6 text-[10px] font-black uppercase tracking-[0.2em] text-[var(--on-surface-variant)] text-right">Acciones</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-[#374151]/30">
-                {filtered.map((camp: any) => {
-                  const cliente = clientes.find((c: any) => c.id === camp.cliente_id);
-                  const numAvisos = avisos.filter((a: any) => a.campaña_id === camp.id).length;
-                  return (
-                    <motion.tr 
-                      key={camp.id}
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      className="group cursor-pointer hover:bg-[#374151]/50 border-b border-[#374151]/30 last:border-0 transition-all"
-                      onClick={() => { setSelectedID(camp.id); setView('DETAIL'); }}
-                    >
-                      <td className="px-10 py-6">
-                        <p className="font-display font-black text-[var(--on-surface)] text-lg">{camp.nombre_campaña}</p>
-                      </td>
-                      <td className="px-10 py-6">
-                        <span className="font-bold text-[var(--on-surface)]">{cliente?.nombre || 'N/A'}</span>
-                      </td>
-                      <td className="px-10 py-6 font-mono text-xs font-bold text-[var(--on-surface-variant)] uppercase">
-                        {formatDateES(camp.fecha_inicio)}
-                      </td>
-                      <td className="px-10 py-6 text-center">
-                        <span className="inline-flex items-center justify-center min-w-[32px] h-8 px-2 bg-[var(--surface)] text-[var(--on-surface)] rounded-lg font-black text-xs">
-                          {numAvisos}
-                        </span>
-                      </td>
-                      <td className="px-10 py-6 text-right">
-                         <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <button className="p-3 bg-[var(--surface-card)] shadow-sm rounded-xl text-primary border border-transparent group-hover:bg-primary group-hover:text-white transition-all">
-                               <ChevronRight size={18} />
-                            </button>
-                         </div>
-                      </td>
-                    </motion.tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+        {/* Neon Grid Layout */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <AnimatePresence>
+            {filtered.map((camp: any) => {
+              const cliente = clientes.find((c: any) => c.id === camp.cliente_id);
+              const numAvisos = avisos.filter((a: any) => a.campaña_id === camp.id).length;
+              return (
+                <motion.div 
+                  key={camp.id}
+                  initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.9 }}
+                  whileHover={{ y: -5 }}
+                  className="modern-card p-6 cursor-pointer group flex flex-col h-full border border-transparent hover:border-primary/50 hover:shadow-lg transition-all duration-300"
+                  onClick={() => { setSelectedID(camp.id); setView('DETAIL'); }}
+                >
+                  <div className="flex justify-between items-start mb-4">
+                    <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-primary group-hover:bg-primary/20 group-hover:scale-110 transition-all duration-300">
+                      <Megaphone size={24} className="group-hover:text-white" />
+                    </div>
+                    <div className="bg-black/50 px-3 py-1 rounded-full border border-white/5 flex items-center gap-2 shadow-inner">
+                      <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></div>
+                      <span className="text-[10px] font-black text-white/70 uppercase tracking-widest">{numAvisos} Avisos</span>
+                    </div>
+                  </div>
+                  
+                  <div className="flex-1">
+                    <h3 className="text-xl font-display font-black text-white leading-tight mb-2 group-hover:text-primary transition-colors">{camp.nombre_campaña}</h3>
+                    <div className="flex items-center gap-2 mb-4">
+                      <Users size={14} className="text-secondary" />
+                      <span className="text-sm font-bold text-white/70">{cliente?.nombre || 'Cliente Desconocido'}</span>
+                    </div>
+                  </div>
+                  
+                  <div className="pt-4 border-t border-white/10 flex justify-between items-center mt-auto">
+                    <div className="flex flex-col">
+                      <span className="text-[9px] uppercase tracking-widest text-white/40 font-black mb-1">Inicio</span>
+                      <span className="text-xs font-mono font-bold text-white bg-white/5 px-2 py-1 rounded-md">{formatDateES(camp.fecha_inicio)}</span>
+                    </div>
+                    
+                    <button className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white/50 group-hover:bg-primary group-hover:text-white group-hover:border-primary group-hover:shadow-[0_0_15px_var(--primary-glow)] transition-all duration-300">
+                      <ChevronRight size={20} className="group-hover:translate-x-0.5 transition-transform" />
+                    </button>
+                  </div>
+                </motion.div>
+              );
+            })}
+          </AnimatePresence>
+          
           {filtered.length === 0 && (
-            <div className="py-32 text-center">
-              <Megaphone className="mx-auto text-[var(--outline)] mb-6" size={64} />
-              <h4 className="text-xl font-display font-bold text-[var(--on-surface-variant)] uppercase tracking-widest">Sin resultados</h4>
-              <p className="text-[var(--on-surface-variant)] font-medium">No se encontraron campañas con los criterios de búsqueda.</p>
+            <div className="col-span-full py-32 text-center flex flex-col items-center justify-center">
+              <div className="w-24 h-24 rounded-full bg-primary/10 flex items-center justify-center mb-6 relative">
+                <Megaphone className="text-primary/50" size={40} />
+              </div>
+              <h4 className="text-2xl font-display font-black text-[var(--on-surface)] uppercase tracking-widest mb-2">Sistema Vacío</h4>
+              <p className="text-white/50 font-medium">No se encontraron campañas o no coinciden con los filtros.</p>
             </div>
           )}
         </div>
@@ -531,8 +519,9 @@ export function ScreenNuevaCampaña({
   feriados,
   onSaveCampaña,
   initialCampaña,
-  initialAvisos
-}: ScreenNuevaCampañaProps) {
+  initialAvisos,
+  productos
+}: ScreenNuevaCampañaProps & { productos: string[] }) {
   const [nombreCamp, setNombreCamp] = useState(initialCampaña?.nombre_campaña || '');
   const [clienteId, setClienteId] = useState(initialCampaña?.cliente_id || '');
   const [fechaInicio, setFechaInicio] = useState(initialCampaña?.fecha_inicio || new Date(Date.now() + 86400000).toISOString().split('T')[0]);
@@ -540,7 +529,7 @@ export function ScreenNuevaCampaña({
   const [showQuickAdd, setShowQuickAdd] = useState(false);
   const [quickClientName, setQuickClientName] = useState('');
 
-  const [producto, setProducto] = useState(PRODUCTOS[0]);
+  const [producto, setProducto] = useState(productos[0]);
   const [cantidad, setCantidad] = useState<number | ''>(1);
   const [diasSemana, setDiasSemana] = useState([1, 2, 3, 4, 5]); // L-V
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -803,7 +792,7 @@ export function ScreenNuevaCampaña({
                   <div className="space-y-2">
                     <span className="text-[10px] font-black uppercase text-[var(--on-surface-variant)] ml-1">Producto</span>
                     <CustomSelect 
-                      options={PRODUCTOS}
+                      options={productos}
                       value={producto}
                       onChange={setProducto}
                       onKeyDown={(e) => handleEnter(e, cantidadRef)}
@@ -1455,9 +1444,9 @@ export function ScreenClientes({ clientes, campañas, avisos, onNavigateToCampa�
                        <div className="flex flex-col">
                           <span className="font-display font-bold text-[var(--on-surface)] text-lg leading-tight">{c.nombre}</span>
                           <div className="flex items-center gap-3 mt-1">
-                             <th className="px-6 py-4 text-left text-[10px] font-black text-[var(--on-surface-variant)] uppercase tracking-[0.2em] opacity-60">
-                    ARCHIVO !!! TEST !!!
-                  </th>
+                             <span className="text-[10px] font-black text-[var(--on-surface-variant)] uppercase tracking-[0.2em] opacity-60">
+                                Campañas Activas
+                             </span>
                              <div className="flex items-center gap-1.5 px-2 py-0.5 bg-[var(--surface)]/50 group-hover:bg-primary/20 group-hover:text-primary group-hover:shadow-[0_0_10px_var(--primary)] rounded-lg text-[10px] font-black text-[var(--on-surface-variant)] uppercase tracking-tighter transition-all">
                                <Megaphone size={10} className="text-primary group-hover:opacity-100 opacity-70" />
                                {clientCampañas.length} Campañas
@@ -1622,7 +1611,7 @@ export function ScreenClientes({ clientes, campañas, avisos, onNavigateToCampa�
 }
 
 // --- CONFIG ---
-export function ScreenConfig({ user, onUpdateUser, onBatchGenerate, onSyncEdiciones, feriados, onAddFeriado, onDeleteFeriado, onBulkAddFeriados, ediciones, onLoadDemo, onClearEdiciones, appLogo, onUpdateLogo }: any) {
+export function ScreenConfig({ user, onUpdateUser, onBatchGenerate, onSyncEdiciones, feriados, onAddFeriado, onDeleteFeriado, onBulkAddFeriados, ediciones, onLoadDemo, onClearEdiciones, appLogo, onUpdateLogo, productos, onUpdateProductos }: any) {
   const sortedFeriados = useMemo(() => {
     return [...feriados].sort((a: any, b: any) => a.fecha.localeCompare(b.fecha));
   }, [feriados]);
@@ -1654,6 +1643,7 @@ export function ScreenConfig({ user, onUpdateUser, onBatchGenerate, onSyncEdicio
   const [manualDate, setManualDate] = useState('');
   const [manualName, setManualName] = useState('');
   const [isFetching, setIsFetching] = useState(false);
+  const [newProd, setNewProd] = useState('');
 
   // Actualizar numIni y dateIni si cambia el sugerido (cuando se generan nuevas o se borra todo)
   useEffect(() => {
@@ -1686,320 +1676,269 @@ export function ScreenConfig({ user, onUpdateUser, onBatchGenerate, onSyncEdicio
   };
 
   return (
-    <div className="max-w-3xl mx-auto space-y-10 pb-20">
-       <div className="mb-4">
-         <h2 className="text-4xl font-display font-black text-[var(--on-surface)] tracking-tight">Sistema y Ajustes</h2>
-         <p className="text-[var(--on-surface-variant)] font-medium">Configuración de la plataforma y generación de recursos.</p>
-       </div>
+    <div className="max-w-[120rem] mx-auto px-4 h-[calc(100vh-140px)]">
+      <div className="modern-card h-full flex flex-col overflow-hidden">
+        {/* Header del Módulo */}
+        <div className="px-8 py-6 border-b border-[var(--outline)] bg-[var(--surface)] flex items-center gap-4 shrink-0">
+          <div className="w-12 h-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center">
+             <Settings size={24} />
+          </div>
+          <div>
+            <h2 className="text-3xl font-display font-black text-[var(--on-surface)] tracking-tight">Sistema y Ajustes</h2>
+            <p className="text-[var(--on-surface-variant)] text-sm mt-1 font-medium">Panel central unificado de configuración.</p>
+          </div>
+        </div>
 
-        {user.role === Role.ADMIN && (
-          <Card title="Identidad Visual" className="relative z-40">
-             <div className="flex flex-col md:flex-row items-center gap-10">
-                <div className="w-32 h-32 rounded-3xl bg-[var(--surface)] border-2 border-dashed border-[var(--outline)] flex items-center justify-center overflow-hidden shrink-0">
-                   {appLogo ? (
-                     <img src={appLogo} alt="App Logo" className="w-full h-full object-contain" />
-                   ) : (
-                     <div className="text-center p-4">
-                       <Layout className="mx-auto text-slate-300 mb-2" size={32} />
-                       <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">Sin Logo</p>
-                     </div>
-                   )}
-                </div>
-                <div className="flex-grow space-y-4">
-                   <h4 className="text-lg font-display font-black text-[var(--on-surface)]">Logo de la Aplicación</h4>
-                   <p className="text-sm text-[var(--on-surface-variant)] leading-relaxed">Este logo aparecerá en la cabecera del sistema y en todos los reportes PDF generados (Diagramación y Campañas). Se recomienda formato PNG con fondo transparente.</p>
-                   <div className="flex items-center gap-4">
-                      <label className="cursor-pointer">
-                         <input 
-                          type="file" 
-                          accept="image/*" 
-                          className="hidden" 
-                          onChange={(e) => {
-                            const file = e.target.files?.[0];
-                            if (file) {
-                              const reader = new FileReader();
-                              reader.onloadend = () => {
-                                onUpdateLogo(reader.result as string);
-                              };
-                              reader.readAsDataURL(file);
-                            }
-                          }}
-                         />
-                         <span className="modern-button-primary !py-2.5 !px-5 flex items-center gap-2 text-xs">
-                            <Plus size={16} /> {appLogo ? 'Cambiar Logo' : 'Subir Logo'}
-                         </span>
-                      </label>
-                      {appLogo && (
-                        <button 
-                          onClick={() => onUpdateLogo(null)}
-                          className="text-xs font-black text-rose-500 hover:underline"
-                        >
-                          Eliminar
-                        </button>
-                      )}
+        {/* Contenido del Módulo */}
+        <div className="flex-1 overflow-y-auto p-4 lg:p-6 custom-scrollbar">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+
+          {user.role === Role.ADMIN && (
+            <div className="space-y-4">
+              <div className="mb-3 flex items-center gap-3 border-b border-[var(--outline)] pb-2">
+                 <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center"><Sparkles size={16}/></div>
+                 <h3 className="text-sm font-black uppercase tracking-[0.15em] text-[var(--on-surface)]">Generación Masiva</h3>
+              </div>
+              <p className="text-[var(--on-surface-variant)] text-sm font-medium">Cree un lote de ediciones diarias (L-V) de forma automática.</p>
+              <div className="flex flex-col gap-3 bg-[var(--surface)] p-4 rounded-2xl border border-[var(--outline)]">
+                 <div className="space-y-1">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-[var(--on-surface-variant)] ml-1">Fecha Inicial</label>
+                    <CustomDatePicker value={dateIni} onChange={setDateIni} />
+                 </div>
+                 <div className="flex gap-3">
+                   <div className="space-y-1 flex-1">
+                      <label className="text-[10px] font-black uppercase tracking-widest text-[var(--on-surface-variant)] ml-1">Número</label>
+                      <input type="number" value={numIni} onChange={e=>setNumIni(e.target.value)} className="modern-input h-10" placeholder="0001" />
                    </div>
-                </div>
-             </div>
-          </Card>
-        )}
+                   <div className="space-y-1 flex-1">
+                      <label className="text-[10px] font-black uppercase tracking-widest text-[var(--on-surface-variant)] ml-1">Días</label>
+                      <input type="number" value={cant} onChange={e=>setCant(e.target.value)} className="modern-input h-10" placeholder="30" />
+                   </div>
+                 </div>
+                 <button 
+                   onClick={() => {
+                     if(!numIni || !cant || !dateIni) return alert('Complete los parámetros de generación');
+                     const exists = ediciones.some((e: any) => e.fecha === dateIni);
+                     if (exists) {
+                       if (!confirm(`Ya existe una edición para el día ${dateIni}. ¿Desea continuar de todas formas?`)) return;
+                     }
+                     onBatchGenerate(parseInt(numIni), parseInt(cant), dateIni);
+                     setCant('');
+                     alert('Ediciones generadas con éxito');
+                   }}
+                   className="w-full h-10 modern-button-primary mt-1"
+                 >
+                   Ejecutar Generación
+                 </button>
+              </div>
+            </div>
+          )}
 
-        {user.role === Role.ADMIN && (
-          <Card title="Modo Demostración" className="relative z-30 border-primary/20 bg-primary/5">
-             <div className="space-y-4">
-               <p className="text-[var(--on-surface-variant)] text-sm font-medium">¿Necesita probar el sistema? Genere instantáneamente una estructura completa de datos.</p>
-               <div className="flex items-center gap-4 p-4 bg-primary/10 rounded-2xl border border-primary/20">
-                  <div className="flex-grow">
-                    <p className="text-xs font-black text-primary uppercase tracking-widest mb-1">Carga Masiva</p>
-                    <p className="text-[11px] text-[var(--on-surface-variant)] font-medium">• 10 Clientes corporativos<br/>• 50 Ediciones diarias<br/>• 20 Campañas con avisos</p>
-                  </div>
-                  <button 
-                   onClick={onLoadDemo}
-                   className="modern-button-primary !py-3 !px-6 flex items-center gap-2 shadow-lg shadow-primary/20"
-                  >
-                    <Sparkles size={18} /> Cargar Demo
-                  </button>
-               </div>
-             </div>
-          </Card>
-        )}
+          {user.role === Role.ADMIN && (
+            <div className="space-y-4">
+              <div className="mb-3 flex items-center gap-3 border-b border-[var(--outline)] pb-2">
+                 <div className="w-8 h-8 rounded-lg bg-rose-500/10 text-rose-500 flex items-center justify-center"><Trash2 size={16}/></div>
+                 <h3 className="text-sm font-black uppercase tracking-[0.15em] text-[var(--on-surface)]">Mantenimiento</h3>
+              </div>
+              <p className="text-[var(--on-surface-variant)] text-xs font-medium">Elimine un bloque de ediciones para permitir su regeneración.</p>
+              <div className="flex flex-col gap-3 bg-[var(--surface)] p-4 rounded-2xl border border-rose-500/20">
+                 <div className="space-y-1">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-[var(--on-surface-variant)] ml-1">Borrar desde el número #</label>
+                    <input type="number" id="clearFromInput" placeholder="Ej: 0045" className="modern-input h-10 border-rose-500/20 focus:border-rose-500" />
+                 </div>
+                 <button 
+                   onClick={() => {
+                     const input = document.getElementById('clearFromInput') as HTMLInputElement;
+                     const val = parseInt(input.value);
+                     if (isNaN(val)) return alert('Ingrese un número válido');
+                     onClearEdiciones(val);
+                   }}
+                   className="w-full h-10 bg-rose-500 text-white rounded-[calc(var(--radius)-4px)] font-bold text-xs hover:bg-rose-600 transition-all shadow-md shadow-rose-500/20 mt-1"
+                 >
+                   Limpiar bloque
+                 </button>
+              </div>
+            </div>
+          )}
 
-        {user.role === Role.ADMIN && (
-          <Card title="Generación de Ediciones" className="relative z-20">
-             <div className="space-y-6">
-               <p className="text-[var(--on-surface-variant)] text-sm font-medium">Cree un lote de ediciones diarias (Lunes a Viernes) de forma masiva.</p>
-               <div className="flex flex-col sm:flex-row gap-6 items-end bg-[var(--surface)] p-6 rounded-3xl border border-transparent relative z-30 overflow-visible">
-                  <div className="space-y-2 w-full sm:w-1/3">
-                     <label className="text-[10px] font-black uppercase tracking-widest text-[var(--on-surface-variant)] ml-1">Fecha Inicial</label>
-                     <CustomDatePicker value={dateIni} onChange={setDateIni} />
-                  </div>
-                  <div className="space-y-2 w-full sm:w-1/3">
-                     <label className="text-[10px] font-black uppercase tracking-widest text-[var(--on-surface-variant)] ml-1">Número Inicial</label>
-                     <input type="number" value={numIni} onChange={e=>setNumIni(e.target.value)} className="modern-input" placeholder="0001" />
-                  </div>
-                  <div className="space-y-2 w-full sm:w-1/3">
-                     <label className="text-[10px] font-black uppercase tracking-widest text-[var(--on-surface-variant)] ml-1">Cantidad de Días</label>
-                     <input type="number" value={cant} onChange={e=>setCant(e.target.value)} className="modern-input" placeholder="30" />
-                  </div>
-               </div>
-               <button 
-                 onClick={() => {
-                   if(!numIni || !cant || !dateIni) return alert('Complete los parámetros de generación');
-                   
-                   const exists = ediciones.some((e: any) => e.fecha === dateIni);
-                   if (exists) {
-                     if (!confirm(`Ya existe una edición para el día ${dateIni}. ¿Desea continuar de todas formas?`)) return;
-                   }
-   
-                   onBatchGenerate(parseInt(numIni), parseInt(cant), dateIni);
-                   setCant('');
-                   alert('Ediciones generadas con éxito');
-                 }}
-                 className="w-full h-14 modern-button-primary flex items-center justify-center gap-2"
-               >
-                 <Sparkles size={20} /> Ejecutar Proceso de Generación
-               </button>
-             </div>
-          </Card>
-        )}
+          {user.role === Role.ADMIN && (
+            <div className="space-y-4">
+              <div className="mb-3 flex items-center gap-3 border-b border-[var(--outline)] pb-2">
+                 <div className="w-8 h-8 rounded-lg bg-amber-500/10 text-amber-500 flex items-center justify-center"><Calendar size={16}/></div>
+                 <h3 className="text-sm font-black uppercase tracking-[0.15em] text-[var(--on-surface)]">Días Feriados</h3>
+              </div>
+              <div className="flex gap-2">
+                 <button onClick={fetchHolidays} disabled={isFetching} className="flex-1 h-9 bg-[var(--surface)] border border-[var(--outline)] text-[var(--on-surface)] rounded-xl font-bold text-[10px] hover:bg-[var(--surface-card)] transition-all">
+                   Importar Oficiales
+                 </button>
+                 {ediciones.length > 0 && (
+                   <button onClick={onSyncEdiciones} className="flex-1 h-9 bg-amber-500/10 text-amber-600 rounded-xl font-bold text-[10px] hover:bg-amber-500 hover:text-white transition-all">
+                     Sincronizar
+                   </button>
+                 )}
+              </div>
+              <div className="flex gap-2 items-end bg-[var(--surface)] p-3 rounded-2xl border border-[var(--outline)]">
+                 <div className="flex-1 space-y-1">
+                   <CustomDatePicker value={manualDate} onChange={setManualDate} />
+                 </div>
+                 <div className="flex-1 space-y-1">
+                   <input type="text" value={manualName} onChange={e => setManualName(e.target.value)} placeholder="Ej: Navidad" className="modern-input h-9 text-xs" />
+                 </div>
+                 <button onClick={() => { if(manualDate) { onAddFeriado(manualDate, manualName); setManualDate(''); setManualName(''); } }} className="h-9 px-3 modern-button-primary shrink-0 text-xs">
+                   <Plus size={14}/>
+                 </button>
+              </div>
+              <div className="overflow-hidden border border-[var(--outline)] rounded-xl max-h-32 overflow-y-auto custom-scrollbar">
+                <table className="w-full text-left text-[10px]">
+                  <thead className="bg-[var(--surface)] sticky top-0">
+                    <tr>
+                      <th className="px-3 py-1.5 font-black uppercase text-[var(--on-surface-variant)]">Fecha</th>
+                      <th className="px-3 py-1.5 font-black uppercase text-[var(--on-surface-variant)]">Nombre</th>
+                      <th className="px-3"></th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-[var(--outline)]">
+                    {sortedFeriados.map((f: any) => (
+                      <tr key={f.id} className="hover:bg-[var(--surface)]">
+                        <td className="px-3 py-1.5 font-mono font-bold whitespace-nowrap">{formatDateES(f.fecha)}</td>
+                        <td className="px-3 py-1.5 text-[var(--on-surface)] truncate max-w-[80px]">{f.nombre || '-'}</td>
+                        <td className="px-3 py-1.5 text-right">
+                          <button onClick={() => onDeleteFeriado(f.id)} className="text-rose-500/50 hover:text-rose-500"><Trash2 size={12} /></button>
+                        </td>
+                      </tr>
+                    ))}
+                    {feriados.length === 0 && (
+                      <tr><td colSpan={3} className="px-3 py-4 text-center text-[var(--on-surface-variant)] italic">Sin feriados</td></tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
 
-        {user.role === Role.ADMIN && (
-          <Card title="Mantenimiento de Ediciones" className="relative z-15">
-             <div className="space-y-6">
-               <div className="p-4 bg-amber-50 dark:bg-amber-500/10 border border-amber-100 dark:border-amber-900/20 rounded-2xl">
-                  <p className="text-xs font-bold text-amber-600 flex items-center gap-2">
-                    <AlertCircle size={14} /> Zona de mantenimiento: Use con precaución.
-                  </p>
-               </div>
-               <p className="text-[var(--on-surface-variant)] text-sm font-medium">Elimine un bloque de ediciones a partir de un número específico para permitir su regeneración.</p>
-               <div className="flex flex-col sm:flex-row gap-6 items-end bg-[var(--surface)] p-6 rounded-3xl border border-transparent relative z-30 overflow-visible">
-                  <div className="space-y-2 w-full sm:w-2/3">
-                     <label className="text-[10px] font-black uppercase tracking-widest text-[var(--on-surface-variant)] ml-1">Borrar desde el número #</label>
-                     <input 
-                      type="number" 
-                      id="clearFromInput"
-                      placeholder="Ej: 0045" 
-                      className="modern-input" 
-                     />
+          {user.role === Role.ADMIN && (
+            <div className="space-y-4">
+              <div className="mb-3 flex items-center gap-3 border-b border-[var(--outline)] pb-2">
+                 <div className="w-8 h-8 rounded-lg bg-indigo-500/10 text-indigo-500 flex items-center justify-center"><Layout size={16}/></div>
+                 <h3 className="text-sm font-black uppercase tracking-[0.15em] text-[var(--on-surface)]">Gestión de Tamaños</h3>
+              </div>
+              <p className="text-[var(--on-surface-variant)] text-xs font-medium">Defina los formatos de avisos disponibles.</p>
+              
+              <div className="flex gap-2 bg-[var(--surface)] p-3 rounded-2xl border border-[var(--outline)]">
+                 <input 
+                   type="text" 
+                   value={newProd} 
+                   onChange={e => setNewProd(e.target.value)} 
+                   placeholder="Ej: 4x34" 
+                   className="modern-input h-9 text-xs flex-1" 
+                 />
+                 <button 
+                   onClick={() => { 
+                     if(!newProd) return;
+                     if(productos.includes(newProd)) return alert('Este tamaño ya existe');
+                     onUpdateProductos([...productos, newProd]);
+                     setNewProd('');
+                   }} 
+                   className="h-9 px-3 modern-button-primary shrink-0 text-xs"
+                 >
+                   <Plus size={14}/>
+                 </button>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2 max-h-32 overflow-y-auto custom-scrollbar pr-1">
+                {productos.map((p: string) => (
+                  <div key={p} className="flex items-center justify-between bg-[var(--surface)] px-3 py-2 rounded-xl border border-[var(--outline)] hover:border-primary/30 transition-all">
+                    <span className="text-[11px] font-bold font-mono text-[var(--on-surface)]">{p}</span>
+                    <button 
+                      onClick={() => {
+                        if(confirm(`¿Eliminar el tamaño ${p}?`)) {
+                          onUpdateProductos(productos.filter((x: string) => x !== p));
+                        }
+                      }}
+                      className="text-rose-500/40 hover:text-rose-500 transition-colors"
+                    >
+                      <X size={12} />
+                    </button>
                   </div>
-                  <button 
-                    onClick={() => {
-                      const input = document.getElementById('clearFromInput') as HTMLInputElement;
-                      const val = parseInt(input.value);
-                      if (isNaN(val)) return alert('Ingrese un número válido');
-                      onClearEdiciones(val);
-                    }}
-                    className="w-full sm:w-1/3 h-14 bg-rose-500 text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-rose-600 transition-all shadow-lg shadow-rose-500/20 flex items-center justify-center gap-2"
-                  >
-                    <Trash2 size={18} /> Limpiar bloque
-                  </button>
-               </div>
-             </div>
-          </Card>
-        )}
+                ))}
+              </div>
+            </div>
+          )}
 
-        {user.role === Role.ADMIN && (
-          <Card title="Calendario de Feriados" className="relative z-10">
-          <div className="space-y-6">
-            <p className="text-[var(--on-surface-variant)] text-sm font-medium">Configure los días no laborables para que el generador de avisos y ediciones los omita automáticamente.</p>
-            
-             <div className="flex flex-col sm:flex-row gap-4">
-                <button 
-                 onClick={fetchHolidays}
-                 disabled={isFetching}
-                 className="flex-1 h-14 bg-slate-900 dark:bg-slate-800 text-white rounded-2xl font-black text-sm flex items-center justify-center gap-3 hover:bg-slate-800 transition-all disabled:opacity-50"
-                >
-                  <Sparkles size={20} className={isFetching ? 'animate-spin' : ''} />
-                  {isFetching ? 'Conectando...' : 'Importar Feriados Oficiales (AR)'}
-                </button>
-                {ediciones.length > 0 && (
-                  <button 
-                   onClick={onSyncEdiciones}
-                   className="flex-1 h-14 bg-amber-500/10 text-amber-600 border border-amber-500/20 rounded-2xl font-black text-sm flex items-center justify-center gap-3 hover:bg-amber-500 hover:text-white transition-all shadow-sm"
-                  >
-                     <Calendar size={20} /> Re-sincronizar Calendario
-                  </button>
-                )}
-             </div>
+          <div className="space-y-4">
+            <div className="mb-3 flex items-center gap-3 border-b border-[var(--outline)] pb-2">
+               <div className="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-500 flex items-center justify-center"><Layout size={16}/></div>
+               <h3 className="text-sm font-black uppercase tracking-[0.15em] text-[var(--on-surface)]">Visual & Entorno</h3>
+              </div>
+              
+              <div className="flex items-center justify-between bg-[var(--surface)] p-4 rounded-2xl border border-[var(--outline)]">
+                 <div>
+                    <span className="font-bold text-xs block text-[var(--on-surface)]">Modo Nocturno</span>
+                 </div>
+                 <button onClick={() => onUpdateUser({...user, dark_mode: !user.dark_mode})} className={`w-10 h-6 rounded-full transition-all relative ${user.dark_mode ? 'bg-primary' : 'bg-[var(--outline)]'}`}>
+                   <div className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow-sm transition-all transform ${user.dark_mode ? 'translate-x-[18px]' : 'translate-x-[2px]'}`} style={{ left: 0 }} />
+                 </button>
+              </div>
 
-            <div className="border-t border-slate-100 pt-6">
-              <label className="text-[10px] font-black uppercase tracking-widest text-[var(--on-surface-variant)] ml-1">Agregar Feriado Manual</label>
-              <div className="flex flex-col sm:flex-row gap-4 mt-2">
-                <div className="w-full sm:w-64 shrink-0">
-                  <CustomDatePicker value={manualDate} onChange={setManualDate} />
-                </div>
-                <div className="flex-1">
-                  <input 
-                    type="text" 
-                    value={manualName}
-                    onChange={e => setManualName(e.target.value)}
-                    placeholder="Nombre del feriado (Ej: Navidad)"
-                    className="modern-input" 
-                  />
-                </div>
-                <button 
-                  onClick={() => {
-                    if(!manualDate) return;
-                    onAddFeriado(manualDate, manualName);
-                    setManualDate('');
-                    setManualName('');
-                  }}
-                  className="px-8 h-14 modern-button-primary shrink-0"
-                >
-                  Agregar Feriado
-                </button>
+              <div className="grid grid-cols-2 gap-2">
+                 {[ { id: 'TOP' as const, label: 'Superior', icon: Layout }, { id: 'SIDE' as const, label: 'Lateral', icon: Newspaper } ].map(layout => (
+                   <button key={layout.id} onClick={() => onUpdateUser({...user, menu_layout: layout.id})} className={`p-2.5 rounded-xl border-2 flex items-center justify-center gap-2 transition-all ${(user.menu_layout || 'TOP') === layout.id ? 'border-primary bg-primary/5 text-primary' : 'border-transparent bg-[var(--surface)] text-[var(--on-surface-variant)]'}`}>
+                      <layout.icon size={14} /> <span className="text-[10px] font-bold uppercase">{layout.label}</span>
+                   </button>
+                 ))}
+              </div>
+
+              <div className="grid grid-cols-3 gap-2">
+                 {[ { id: 'corporate' as const, color: '#2563eb' }, { id: 'minimalist' as const, color: '#10b981' }, { id: 'warmth' as const, color: '#f59e0b' } ].map(t => (
+                   <button key={t.id} onClick={() => onUpdateUser({...user, theme: t.id})} className={`p-1.5 rounded-xl border-2 flex items-center justify-center transition-all ${user.theme === t.id ? 'border-primary bg-[var(--surface)]' : 'border-[var(--outline)] opacity-50'}`}>
+                      <div className="w-5 h-5 rounded-full" style={{ backgroundColor: t.color }} />
+                   </button>
+                 ))}
               </div>
             </div>
 
-            <div className="overflow-hidden border border-slate-100 rounded-2xl">
-              <table className="w-full text-left">
-                <thead className="bg-[var(--surface)]">
-                  <tr>
-                    <th className="px-6 py-3 text-[10px] font-black uppercase text-[var(--on-surface-variant)]">Fecha</th>
-                    <th className="px-6 py-3 text-[10px] font-black uppercase text-[var(--on-surface-variant)]">Descripción</th>
-                    <th className="px-6 py-3 text-right"></th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-50">
-                  {sortedFeriados.map((f: any) => (
-                    <tr key={f.id} className="hover:bg-[#374151]/50 border-b border-[#374151]/30 last:border-0 transition-colors">
-                      <td className="px-6 py-3 font-mono font-bold text-sm whitespace-nowrap">{formatDateES(f.fecha)}</td>
-                      <td className="px-6 py-3 text-sm text-[var(--on-surface)] font-medium">{f.nombre || '-'}</td>
-                      <td className="px-6 py-3 text-right">
-                        <button onClick={() => onDeleteFeriado(f.id)} className="text-slate-300 hover:text-rose-500 transition-colors">
-                          <Trash2 size={16} />
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                  {feriados.length === 0 && (
-                    <tr>
-                      <td colSpan={2} className="px-6 py-8 text-center text-[var(--on-surface-variant)] text-xs font-bold uppercase italic tracking-widest">No hay feriados cargados</td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </div>
-       </Card>
-        )}
-       
-       <Card title="Preferencias Visuales">
-          <div className="space-y-10">
-             <div className="flex items-center justify-between bg-[var(--surface)] p-8 rounded-[2.5rem] border border-transparent">
-                <div>
-                   <span className="font-black text-lg block leading-none mb-1 text-[var(--on-surface)]">Modo Nocturno</span>
-                   <span className="text-[var(--on-surface-variant)] text-[10px] font-black uppercase tracking-widest">Active para entornos de poca luz</span>
-                </div>
-                <button 
-                  onClick={() => onUpdateUser({...user, dark_mode: !user.dark_mode})}
-                  className={`w-16 h-10 rounded-full transition-all relative ${user.dark_mode ? 'bg-primary shadow-lg shadow-primary/30' : 'bg-slate-200 dark:bg-slate-700'}`}
-                >
-                  <div className={`absolute top-1.5 w-7 h-7 rounded-full shadow-sm transition-all transform ${user.dark_mode ? 'translate-x-[30px] bg-[var(--on-primary)]' : 'translate-x-[6px] bg-white'}`} style={{ left: 0 }} />
-                </button>
-             </div>
-
-             <div className="space-y-6">
-                 <span className="text-xs font-black uppercase tracking-[0.2em] text-[var(--on-surface-variant)] ml-1">Estructura de Menú</span>
-                 <div className="grid grid-cols-2 gap-6">
-                    {[
-                      { id: 'TOP' as const, label: 'Menú Superior', icon: Layout },
-                      { id: 'SIDE' as const, label: 'Menú Lateral', icon: Newspaper }
-                    ].map(layout => (
-                      <button 
-                        key={layout.id}
-                        onClick={() => onUpdateUser({...user, menu_layout: layout.id})}
-                        className={`p-6 rounded-[2rem] border-2 transition-all flex flex-col items-center gap-4 ${(user.menu_layout || 'TOP') === layout.id ? 'border-primary bg-primary/5' : 'border-transparent bg-[var(--surface)] hover:border-primary/20'}`}
-                      >
-                         <layout.icon size={32} className={(user.menu_layout || 'TOP') === layout.id ? 'text-primary' : 'text-[var(--on-surface-variant)]'} />
-                         <span className={`text-sm font-black uppercase tracking-widest ${(user.menu_layout || 'TOP') === layout.id ? 'text-primary' : 'text-[var(--on-surface-variant)]'}`}>{layout.label}</span>
-                      </button>
-                    ))}
+          {user.role === Role.ADMIN && (
+            <div className="space-y-4">
+              <div className="mb-3 flex items-center gap-3 border-b border-[var(--outline)] pb-2">
+                 <div className="w-8 h-8 rounded-lg bg-indigo-500/10 text-indigo-500 flex items-center justify-center"><Layout size={16}/></div>
+                 <h3 className="text-sm font-black uppercase tracking-[0.15em] text-[var(--on-surface)]">Identidad Visual</h3>
+              </div>
+              <p className="text-[var(--on-surface-variant)] text-xs font-medium">Logo corporativo para PDFs y cabecera.</p>
+              <div className="flex items-center gap-4 bg-[var(--surface)] p-4 rounded-2xl border border-[var(--outline)]">
+                 <div className="w-14 h-14 rounded-xl bg-[var(--surface-card)] border-2 border-dashed border-[var(--outline)] flex items-center justify-center overflow-hidden shrink-0">
+                    {appLogo ? <img src={appLogo} alt="Logo" className="w-full h-full object-contain" /> : <p className="text-[8px] font-bold text-[var(--outline)] uppercase text-center leading-tight">Sin Logo</p>}
+                 </div>
+                 <div className="flex-1 space-y-2">
+                    <label className="cursor-pointer block">
+                       <input type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if(f){ const r = new FileReader(); r.onloadend = () => onUpdateLogo(r.result as string); r.readAsDataURL(f); } }} />
+                       <span className="modern-button-secondary w-full text-[10px] !py-1.5 font-black uppercase tracking-widest"><Plus size={12} /> Subir</span>
+                    </label>
+                    {appLogo && <button onClick={() => onUpdateLogo(null)} className="text-[10px] font-black uppercase tracking-widest text-rose-500 w-full text-center hover:underline">Eliminar</button>}
                  </div>
               </div>
-             
-             <div className="space-y-6">
-                <span className="text-xs font-black uppercase tracking-[0.2em] text-[var(--on-surface-variant)] ml-1">Ambiente de Trabajo</span>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                   {[
-                     { id: 'blue' as const, label: 'Sapphire Pro', desc: 'Modern Blue Business', color: '#2563eb', accent: '#3b82f6' },
-                     { id: 'rust' as const, label: 'Crimson Rose', desc: 'Sophisticated Warm', color: '#be123c', accent: '#fb7185' },
-                     { id: 'slate' as const, label: 'Midnight Slate', desc: 'Technical Elegance', color: '#475569', accent: '#94a3b8' }
-                   ].map(t => (
-                     <button 
-                      key={t.id}
-                      onClick={() => onUpdateUser({...user, theme: t.id})}
-                      className={`group relative p-6 rounded-[2.5rem] border-4 text-left transition-all hover:translate-y-[-4px] ${
-                        user.theme === t.id 
-                        ? 'border-primary bg-[var(--surface-card)] shadow-2xl z-10' 
-                        : 'border-transparent bg-[var(--surface)] opacity-70 grayscale'
-                      }`}
-                     >
-                       <div className="flex flex-col h-full justify-between">
-                          <div className="space-y-2">
-                             <h4 className={`font-display font-black text-lg ${user.theme === t.id ? 'text-[var(--on-surface)]' : 'text-[var(--on-surface-variant)]'}`}>{t.label}</h4>
-                             <p className="text-[10px] font-bold text-[var(--on-surface-variant)] uppercase tracking-tight">{t.desc}</p>
-                          </div>
-                          
-                          <div className="mt-8 flex gap-2">
-                             <div className="w-8 h-8 rounded-full shadow-inner border border-transparent" style={{ backgroundColor: t.color }} />
-                             <div className="w-8 h-8 rounded-full shadow-inner border border-transparent" style={{ backgroundColor: t.accent }} />
-                          </div>
-                       </div>
-                       
-                       {user.theme === t.id && (
-                         <motion.div layoutId="theme-check" className="absolute top-6 right-6 w-8 h-8 bg-primary rounded-full flex items-center justify-center text-white shadow-lg">
-                            <Check size={16} />
-                         </motion.div>
-                       )}
-                     </button>
-                   ))}
-                </div>
-             </div>
-          </div>
-       </Card>
+            </div>
+          )}
 
+          {user.role === Role.ADMIN && (
+            <div className="space-y-4">
+              <div className="mb-3 flex items-center gap-3 border-b border-[var(--outline)] pb-2">
+                 <div className="w-8 h-8 rounded-lg bg-cyan-500/10 text-cyan-500 flex items-center justify-center"><Settings size={16}/></div>
+                 <h3 className="text-sm font-black uppercase tracking-[0.15em] text-[var(--on-surface)]">Modo Demostración</h3>
+              </div>
+              <p className="text-[var(--on-surface-variant)] text-xs font-medium">Llene la base de datos con contenido de prueba al instante.</p>
+              <div className="bg-[var(--surface)] p-5 rounded-2xl border border-cyan-500/20 text-center">
+                 <p className="text-[10px] font-bold text-cyan-600 mb-3 uppercase tracking-tighter">+10 Clientes, +50 Ediciones, +20 Campañas</p>
+                 <button onClick={onLoadDemo} className="w-full h-10 bg-cyan-500 text-white rounded-xl font-bold text-xs hover:bg-cyan-600 transition-all flex items-center justify-center gap-2 shadow-lg shadow-cyan-500/20">
+                   <Sparkles size={14} /> Cargar Demo
+                 </button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
     </div>
-  );
+  </div>
+);
 }
 
 // --- USUARIOS ---
@@ -2033,7 +1972,7 @@ export function ScreenUsuarios({ users, onUpsert, onDelete }: any) {
       username: editUsername,
       password: editPassword,
       role: editRole,
-      theme: 'blue',
+      theme: 'corporate',
       dark_mode: false
     });
     resetForm();
@@ -2290,7 +2229,7 @@ function CalendarEditionSelect({ value, onChange, ediciones }: any) {
             initial={{ opacity: 0, y: 10, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 10, scale: 0.95 }}
-            className="absolute top-full left-0 mt-3 w-[320px] bg-[var(--surface-card)] border border-white/10 rounded-3xl shadow-2xl z-[200] overflow-hidden backdrop-blur-xl"
+            className="absolute top-full right-0 mt-3 w-[320px] bg-[var(--surface-card)] border border-[var(--outline)] rounded-3xl shadow-2xl z-[200] overflow-hidden"
           >
             <div className="p-5">
               <div className="flex items-center justify-between mb-6">
@@ -2365,7 +2304,24 @@ function CalendarEditionSelect({ value, onChange, ediciones }: any) {
 }
 
 // --- PLANILLA ---
-export function ScreenPlanilla({ ediciones, clientes, avisos, campañas, feriados, masterEdId, setMasterEdId, rows, setRows, onSaveCampaña, onAddCliente, onNavigateToCampaña, userRole, appLogo }: any) {
+export function ScreenPlanilla({ 
+  ediciones, 
+  clientes, 
+  avisos, 
+  campañas, 
+  feriados, 
+  productos,
+  masterEdId, 
+  setMasterEdId,
+  rows,
+  setRows,
+  onSaveCampaña,
+  onAddCliente,
+  onNavigateToCampaña,
+  userRole,
+  appLogo,
+  menuLayout 
+}: any) {
   const isReadOnly = userRole === Role.DIAGRAMACION;
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [showPreview, setShowPreview] = useState(false);
@@ -2442,55 +2398,66 @@ export function ScreenPlanilla({ ediciones, clientes, avisos, campañas, feriado
   const handleAddCliente = (rowId: string) => {
     const row = rows.find(r => r.id === rowId);
     if (!row || !row.new_cliente_name) return;
-    
     const newC = onAddCliente(row.new_cliente_name);
     if (newC) {
       alert(`Cliente "${row.new_cliente_name}" creado.`);
-      setRows(prev => prev.map(r => r.id === rowId ? { ...r, new_cliente_name: '' } : r));
+      setRows(prev => prev.map(r => r.id === rowId ? { ...r, new_cliente_name: '', cliente_id: newC.id, show_add: false } : r));
     }
   };
 
   return (
-    <div className="max-w-7xl mx-auto space-y-12 pb-20">
-      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-8">
-        <div>
-           <h2 className="text-4xl font-display font-black text-[var(--on-surface)] tracking-tight">Planilla Publicidades</h2>
-           <p className="text-[var(--on-surface-variant)] font-medium">Carga masiva y rápida de avisos diarios.</p>
-        </div>
-        
-        <div className="flex gap-6 items-center bg-[var(--surface-card)] p-6 rounded-3xl border border-transparent shadow-sm">
-           <div className="flex flex-col min-w-[280px]">
-              <span className="text-[10px] font-black uppercase text-primary tracking-widest mb-2">Edición Trabajo</span>
-              <div className="flex gap-2">
-                <CalendarEditionSelect 
-                  value={masterEdId}
-                  onChange={(val: any) => setMasterEdId(val)}
-                  ediciones={ediciones}
-                />
-                {masterEd && (
-                  <button 
-                    onClick={() => {
-                      const url = previewEdicionPDF(masterEd, avisos.filter((a: any) => a.edicion_id === masterEd.id), clientes, campañas, avisos, appLogo);
-                      setPreviewUrl(url);
-                      setShowPreview(true);
-                    }}
-                    className="p-3 bg-primary/10 text-primary rounded-xl hover:bg-primary hover:text-white transition-all shadow-sm"
-                    title="Vista previa PDF de esta edición"
-                  >
-                    <FileText size={20} />
-                  </button>
-                )}
-              </div>
-           </div>
+    <div className="max-w-7xl mx-auto space-y-8 pb-20">
+      {/* Sticky Header Section */}
+      <div className={`sticky ${menuLayout === 'TOP' ? 'top-16 lg:top-20' : 'top-16 lg:top-0'} z-[60] bg-[var(--surface)]/90 backdrop-blur-xl py-3 border-b border-[var(--outline)] -mx-4 px-4 lg:-mx-8 lg:px-8 mb-4 transition-all`}>
+        <div className="flex flex-row justify-between items-center gap-4">
+          <div className="hidden sm:block">
+             <h2 className="text-xl lg:text-3xl font-display font-black text-[var(--on-surface)] tracking-tight">Planilla</h2>
+             <p className="text-[var(--on-surface-variant)] text-[10px] font-medium hidden lg:block">Carga masiva de avisos</p>
+          </div>
+          
+          <div className="flex gap-2 items-center bg-[var(--surface-card)] p-2 rounded-xl border border-[var(--outline)] shadow-sm w-full lg:w-auto">
+             <div className="flex flex-col gap-0.5 flex-1">
+                <span className="text-[8px] font-black uppercase text-primary tracking-[0.2em]">Edición</span>
+                <div className="flex gap-2 w-full">
+                  <div className="flex-1 min-w-[140px]">
+                    <CalendarEditionSelect 
+                      value={masterEdId}
+                      onChange={(val: any) => setMasterEdId(val)}
+                      ediciones={ediciones}
+                    />
+                  </div>
+                  {masterEd && (
+                    <button 
+                      onClick={() => {
+                        const url = previewEdicionPDF(masterEd, avisos.filter((a: any) => a.edicion_id === masterEd.id), clientes, campañas, avisos, appLogo);
+                        setPreviewUrl(url);
+                        setShowPreview(true);
+                      }}
+                      className="p-2 bg-primary/10 text-primary rounded-lg hover:bg-primary hover:text-white transition-all"
+                      title="Vista previa PDF"
+                    >
+                      <FileText size={16} />
+                    </button>
+                  )}
+                </div>
+             </div>
+          </div>
         </div>
       </div>
 
-      <div className="bg-[var(--surface-card)] rounded-[2.5rem] border border-transparent shadow-xl overflow-hidden">
+      <div className="modern-card overflow-hidden">
+        <div className="p-4 bg-[var(--surface)] border-b border-[var(--outline)] flex items-center justify-between">
+           <div className="flex items-center gap-3">
+             <div className="w-3 h-3 rounded-full bg-emerald-500 shadow-[0_0_10px_#10b981] animate-pulse"></div>
+             <span className="text-xs font-black text-[var(--on-surface)] uppercase tracking-widest">Estado del Sistema</span>
+           </div>
+           <div className="text-xs font-mono text-[var(--on-surface-variant)]">{rows.filter(r => r.status === 'DONE').length} / {rows.length} Procesados</div>
+        </div>
         <div className="overflow-x-auto">
           <table className="w-full border-collapse">
             <thead>
-              <tr className="bg-[var(--surface)] text-[var(--on-surface-variant)] text-[10px] font-black uppercase tracking-widest border-b border-slate-100 dark:border-white/5">
-                <th className="px-6 py-5 text-left w-[20%]">Archivo</th>
+              <tr className="bg-black/40 text-white/50 text-[10px] font-black uppercase tracking-[0.2em] border-b border-white/10">
+                <th className="px-6 py-5 text-left w-[20%]">Archivo / Producto</th>
                 <th className="px-6 py-5 text-left w-[15%]">Tamaño</th>
                 <th className="px-6 py-5 text-center w-[10%]">Salidas</th>
                 <th className="px-6 py-5 text-left w-[15%]">Ubicación</th>
@@ -2499,7 +2466,7 @@ export function ScreenPlanilla({ ediciones, clientes, avisos, campañas, feriado
                 <th className="px-6 py-5 text-center w-[10%]">Estado</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-white/5">
+            <tbody className="divide-y divide-white/5">
               {rows.map((row) => (
                 <tr key={row.id} className={`group transition-colors ${row.status === 'DONE' ? 'bg-emerald-50/10' : 'hover:bg-slate-50/50 dark:hover:bg-white/5'}`}>
                   <td className="px-6 py-4">
@@ -2510,25 +2477,28 @@ export function ScreenPlanilla({ ediciones, clientes, avisos, campañas, feriado
                         onChange={e => setRows(prev => prev.map(r => r.id === row.id ? { ...r, archivo: e.target.value } : r))}
                         className="w-full bg-transparent outline-none font-bold text-[var(--on-surface)] focus:text-primary transition-all px-0"
                       />
-                      <div className="h-[2px] w-full bg-zinc-900 dark:bg-white/20" />
+                      <div className="h-[2px] w-full bg-primary/40 transition-colors" />
                     </div>
                   </td>
                   <td className="px-6 py-4">
                     <CustomSelect 
                       value={row.producto}
                       onChange={val => setRows(prev => prev.map(r => r.id === row.id ? { ...r, producto: val } : r))}
-                      options={PRODUCTOS.map(p => ({ value: p, label: p }))}
+                      options={productos.map((p: string) => ({ value: p, label: p }))}
                       disabled={row.status === 'DONE' || isReadOnly}
-                      className="w-full"
+                      className="w-full !font-display !font-black !text-sm !uppercase !tracking-tighter text-center"
                     />
                   </td>
                   <td className="px-6 py-4">
-                    <input 
-                      disabled={row.status === 'DONE' || isReadOnly}
-                      value={row.salidas}
-                      onChange={e => setRows(prev => prev.map(r => r.id === row.id ? { ...r, salidas: e.target.value } : r))}
-                      className={`w-full bg-transparent border-none outline-none text-center font-bold ${row.salidas.toLowerCase() === 'cambio' ? 'text-rose-500' : 'text-[var(--on-surface)]'}`}
-                    />
+                    <div className="flex flex-col relative z-50">
+                      <input 
+                        disabled={row.status === 'DONE' || isReadOnly}
+                        value={row.salidas}
+                        onChange={e => setRows(prev => prev.map(r => r.id === row.id ? { ...r, salidas: e.target.value } : r))}
+                        className={`w-full bg-transparent border-none outline-none text-center font-bold ${row.salidas.toLowerCase() === 'cambio' ? 'text-rose-400' : 'text-[var(--on-surface)]'}`}
+                      />
+                      <div className="h-[2px] w-full bg-primary/40 transition-colors" />
+                    </div>
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex flex-col relative z-50">
@@ -2536,9 +2506,9 @@ export function ScreenPlanilla({ ediciones, clientes, avisos, campañas, feriado
                         disabled={row.status === 'DONE' || isReadOnly}
                         value={row.ubicacion}
                         onChange={e => setRows(prev => prev.map(r => r.id === row.id ? { ...r, ubicacion: e.target.value } : r))}
-                        className="w-full bg-transparent outline-none font-medium text-[var(--on-surface-variant)] focus:text-primary transition-all px-0"
+                        className="w-full bg-transparent outline-none font-medium text-[var(--on-surface)] focus:text-primary transition-all px-0"
                       />
-                      <div className="h-[2px] w-full bg-zinc-900 dark:bg-white/20" />
+                      <div className="h-[2px] w-full bg-primary/40 transition-colors" />
                     </div>
                   </td>
                   <td className="px-6 py-4">
@@ -2601,9 +2571,9 @@ export function ScreenPlanilla({ ediciones, clientes, avisos, campañas, feriado
                         disabled={row.status === 'DONE' || isReadOnly}
                         value={row.observaciones}
                         onChange={e => setRows(prev => prev.map(r => r.id === row.id ? { ...r, observaciones: e.target.value } : r))}
-                        className="w-full bg-transparent outline-none font-medium text-[var(--on-surface-variant)] focus:text-primary transition-all px-0"
+                        className="w-full bg-transparent outline-none font-medium text-[var(--on-surface)] focus:text-primary transition-all px-0"
                       />
-                      <div className="h-[2px] w-full bg-zinc-900 dark:bg-white/20" />
+                      <div className="h-[2px] w-full bg-primary/40 transition-colors" />
                     </div>
                   </td>
                   <td className="px-6 py-4">
@@ -2643,7 +2613,7 @@ export function ScreenPlanilla({ ediciones, clientes, avisos, campañas, feriado
                 onClick={() => setRows(prev => [...prev, {
                   id: Math.random().toString(36).slice(2, 9),
                   archivo: '',
-                  producto: PRODUCTOS[0],
+                  producto: productos[0],
                   salidas: '1',
                   ubicacion: '',
                   cliente_id: '',

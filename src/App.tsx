@@ -11,7 +11,8 @@ import {
   X,
   UserPlus,
   ChevronRight,
-  FileSpreadsheet
+  FileSpreadsheet,
+  Layout
 } from 'lucide-react';
 import { 
   Screen, 
@@ -62,6 +63,7 @@ export default function App() {
   const [avisos, setAvisos] = useState<Aviso[]>([]);
   const [feriados, setFeriados] = useState<Feriado[]>([]);
   const [appLogo, setAppLogo] = useState<string | null>(null);
+  const [productos, setProductos] = useState<string[]>(PRODUCTOS);
   
   const [currentScreen, setCurrentScreen] = useState<Screen>('PLANILLA');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -69,36 +71,28 @@ export default function App() {
   const [planillaMasterEdId, setPlanillaMasterEdId] = useState<string | null>(null);
   const [planillaRowsByEdition, setPlanillaRowsByEdition] = useState<Record<string, any[]>>({});
 
+  const defaultPlanillaRows = useMemo(() => Array(8).fill(null).map((_, i) => ({
+    id: `default-${i}`,
+    archivo: '',
+    producto: PRODUCTOS[0],
+    salidas: '1',
+    ubicacion: '',
+    cliente_id: '',
+    new_cliente_name: '',
+    observaciones: '',
+    status: 'PENDING' as 'PENDING' | 'DONE'
+  })), []);
+
   const getRowsForEdition = useMemo(() => (edId: string) => {
     const key = edId || 'default';
     if (planillaRowsByEdition[key]) return planillaRowsByEdition[key];
-    return Array(8).fill(null).map(() => ({
-      id: Math.random().toString(36).slice(2, 9),
-      archivo: '',
-      producto: PRODUCTOS[0],
-      salidas: '1',
-      ubicacion: '',
-      cliente_id: '',
-      new_cliente_name: '',
-      observaciones: '',
-      status: 'PENDING' as 'PENDING' | 'DONE'
-    }));
-  }, [planillaRowsByEdition]);
+    return defaultPlanillaRows;
+  }, [planillaRowsByEdition, defaultPlanillaRows]);
 
   const updateRowsForEdition = (edId: string, rowsOrFn: any | ((prev: any[]) => any[])) => {
     const key = edId || 'default';
     setPlanillaRowsByEdition(prevMap => {
-      const currentRows = prevMap[key] || Array(8).fill(null).map(() => ({
-        id: Math.random().toString(36).slice(2, 9),
-        archivo: '',
-        producto: PRODUCTOS[0],
-        salidas: '1',
-        ubicacion: '',
-        cliente_id: '',
-        new_cliente_name: '',
-        observaciones: '',
-        status: 'PENDING' as 'PENDING' | 'DONE'
-      }));
+      const currentRows = prevMap[key] || defaultPlanillaRows;
       
       const newRows = typeof rowsOrFn === 'function' ? rowsOrFn(currentRows) : rowsOrFn;
       return { ...prevMap, [key]: newRows };
@@ -128,6 +122,7 @@ export default function App() {
       setAvisos(data.avisos || []);
       setFeriados(data.feriados || []);
       setAppLogo(data.appLogo || null);
+      setProductos(data.productos || PRODUCTOS);
       setPlanillaRowsByEdition(data.planillaRowsByEdition || {});
         if (data.user) {
           // Ensure backward compatibility with missing fields
@@ -136,6 +131,10 @@ export default function App() {
             menu_layout: data.user.menu_layout || 'TOP',
             sidebar_collapsed: data.user.sidebar_collapsed !== undefined ? data.user.sidebar_collapsed : true
           };
+          // Force TOP layout if loading on a small screen for the first time or if layout is missing
+          if (window.innerWidth < 1024 && !data.user.menu_layout) {
+            migratedUser.menu_layout = 'TOP';
+          }
           setUser(migratedUser);
           if (data.user.dark_mode !== undefined) setIsDark(data.user.dark_mode);
           if (data.user.theme !== undefined) setTheme(data.user.theme);
@@ -143,7 +142,7 @@ export default function App() {
     } else {
       // --- LOAD DEMO DATA ---
       const demoUsers: Usuario[] = [
-        { id: 'admin-root', username: 'admin', password: 'admin', role: Role.ADMIN, theme: 'blue', dark_mode: false, menu_layout: 'TOP', sidebar_collapsed: false }
+        { id: 'admin-root', username: 'admin', password: 'admin', role: Role.ADMIN, theme: 'corporate', dark_mode: false, menu_layout: 'TOP', sidebar_collapsed: false }
       ];
       const demoClientes: Cliente[] = [
         { id: 'c1', nombre: 'Agencia El Sol' },
@@ -226,7 +225,8 @@ export default function App() {
     const tomorrow = addDays(startOfToday(), 1);
     let count = 0;
     let offset = 0;
-    let startNum = ediciones.length > 0 ? Math.max(...ediciones.map(e => parseInt(e.numero))) + 1 : 1000;
+    const maxExisting = ediciones.length > 0 ? Math.max(...ediciones.map(e => parseInt(e.numero) || 0)) : 999;
+    let startNum = maxExisting + 1;
 
     while (count < 50) {
       const d = addDays(tomorrow, offset);
@@ -291,9 +291,9 @@ export default function App() {
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify({
       clientes, ediciones, campañas, avisos, feriados, user, users, planillaRowsByEdition,
-      appLogo
+      appLogo, productos
     }));
-  }, [clientes, ediciones, campañas, avisos, feriados, user, users, planillaRowsByEdition]);
+  }, [clientes, ediciones, campañas, avisos, feriados, user, users, planillaRowsByEdition, productos]);
 
   // Sync isDark and theme with document
   useEffect(() => {
@@ -489,26 +489,10 @@ export default function App() {
 
   return (
     <div 
-      className="min-h-screen font-sans flex flex-col text-[var(--on-surface)] transition-all duration-500"
+      className="min-h-screen font-sans flex flex-col transition-all duration-300"
       data-theme={theme}
       data-dark={isDark}
     >
-      {/* Dynamic Atmospheric Background */}
-      <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none bg-[var(--surface)]">
-        {/* Abstract blur shapes using primary color */}
-        <div className="absolute -top-40 -left-40 w-96 h-96 bg-primary/20 rounded-full blur-3xl opacity-60 dark:opacity-40 animate-pulse" style={{ animationDuration: '8s' }} />
-        <div className="absolute top-1/3 -right-20 w-80 h-80 bg-primary/30 rounded-full blur-3xl opacity-50 dark:opacity-30" />
-        <div className="absolute -bottom-40 left-1/4 w-[500px] h-[500px] bg-primary/10 rounded-full blur-3xl opacity-70 dark:opacity-40 animate-pulse" style={{ animationDuration: '12s' }} />
-
-        <img 
-          src="https://excursionesenushuaia.com/wp-content/uploads/2023/10/1-85-2-e1700135504863.jpg" 
-          className="w-full h-full object-cover blur-3xl opacity-20 dark:opacity-10 transition-opacity duration-1000 mix-blend-overlay"
-          alt="Background Texture"
-          referrerPolicy="no-referrer"
-        />
-        <div className="absolute inset-0 bg-gradient-to-tr from-[var(--surface)] via-[var(--surface)]/60 to-transparent" />
-      </div>
-
       <AnimatePresence mode="wait">
         {!user ? (
           <motion.div 
@@ -516,20 +500,16 @@ export default function App() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="min-h-screen flex items-center justify-center p-6 bg-[#111827] relative"
+            className="min-h-screen flex items-center justify-center p-6 bg-[var(--surface)] relative"
           >
-            {/* Minimalist floating dark circles for tech vibe */}
-            <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-[100px] pointer-events-none"></div>
-            <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-primary/5 rounded-full blur-[100px] pointer-events-none"></div>
-
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-md bg-[var(--surface-card)] rounded-2xl shadow-[var(--shadow)] overflow-hidden relative z-10 border border-transparent">
-              <div className="p-12">
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-md modern-card border border-[var(--outline)] shadow-xl relative z-10">
+              <div className="p-10">
                 <div className="mb-10 text-center">
-                  <div className="w-16 h-16 bg-[#374151] rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-inner border border-transparent">
+                  <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-6">
                     <Database className="text-primary" size={32} />
                   </div>
                   <h1 className="text-3xl font-display font-black text-[var(--on-surface)] tracking-tight mb-2">AdManager</h1>
-                  <p className="text-[var(--on-surface-variant)] font-medium tracking-wide text-xs">SISTEMA ADMINISTRATIVO</p>
+                  <p className="text-[var(--on-surface-variant)] font-semibold tracking-wide text-xs">SISTEMA ADMINISTRATIVO</p>
                 </div>
                 <form onSubmit={handleLogin} className="space-y-6">
                   <div className="space-y-2">
@@ -551,36 +531,36 @@ export default function App() {
                       placeholder="••••••••"
                     />
                   </div>
-                  <button className="w-full py-4 modern-button-primary !text-lg mt-4 shadow-lg shadow-primary/20">
+                  <button className="w-full modern-button-primary !py-4 !text-base mt-2">
                     Acceder al Sistema
                   </button>
                 </form>
               </div>
-              <div className="bg-[#111827]/50 p-4 text-center border-t border-white/5">
-                <p className="text-[10px] text-[var(--on-surface-variant)] font-medium tracking-widest uppercase">Seguridad Cifrada 256-bit</p>
+              <div className="bg-[var(--surface)] p-4 text-center border-t border-[var(--outline)]">
+                <p className="text-[10px] text-[var(--on-surface-variant)] font-bold tracking-widest uppercase">Seguridad Cifrada 256-bit</p>
               </div>
             </motion.div>
           </motion.div>
         ) : (
-          <div className={`min-h-screen flex ${(user.menu_layout || 'TOP') === 'SIDE' ? 'flex-row' : 'flex-col'}`}>
+          <div className={`min-h-screen flex ${user.menu_layout === 'TOP' ? 'flex-col' : 'flex-col lg:flex-row'} relative bg-[var(--surface)]`}>
             
-            {/* --- SIDEBAR --- */}
-            {(user.menu_layout || 'TOP') === 'SIDE' && (
+            {/* --- SOLID SIDEBAR (Only if SIDE layout) --- */}
+            {user.menu_layout !== 'TOP' && (
               <motion.aside 
                 onMouseEnter={() => setIsSidebarHovered(true)}
                 onMouseLeave={() => setIsSidebarHovered(false)}
                 initial={false}
                 animate={{ width: (user.sidebar_collapsed === false || isSidebarHovered) ? 280 : 80 }}
                 transition={{ type: 'spring', stiffness: 300, damping: 30, mass: 0.8 }}
-                className="hidden md:flex flex-col bg-[var(--surface-card)] border-r border-white/5 sticky top-0 h-screen z-[60] overflow-hidden shadow-2xl shrink-0"
+                className="hidden md:flex flex-col bg-[var(--surface-card)] border-r border-[var(--outline)] sticky top-0 h-screen z-[60] overflow-hidden shrink-0 shadow-sm"
               >
-                <div className="h-24 flex items-center px-5 mb-8 justify-between shrink-0 overflow-hidden">
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center shadow-sm shrink-0 overflow-hidden border border-primary/20">
+                <div className="h-20 flex items-center px-5 mt-2 mb-2 justify-between shrink-0 overflow-hidden relative">
+                  <div className="flex items-center gap-4 relative z-10">
+                    <div className="w-10 h-10 bg-primary/10 text-primary rounded-xl flex items-center justify-center shrink-0 overflow-hidden">
                       {appLogo ? (
                         <img src={appLogo} alt="Logo" className="w-full h-full object-contain p-1" />
                       ) : (
-                        <Newspaper className="text-primary" size={20} />
+                        <Layout size={20} />
                       )}
                     </div>
                     <AnimatePresence>
@@ -591,7 +571,7 @@ export default function App() {
                           exit={{ opacity: 0, x: -10 }}
                           className="text-xl font-display font-black tracking-tighter text-[var(--on-surface)] truncate"
                         >
-                          AdManager<span className="text-primary">.</span>
+                          AMP<span className="text-primary text-2xl leading-none">.</span>
                         </motion.h1>
                       )}
                     </AnimatePresence>
@@ -604,35 +584,35 @@ export default function App() {
                         animate={{ opacity: 1, scale: 1 }}
                         exit={{ opacity: 0, scale: 0.8 }}
                         onClick={() => updateUser({...user, sidebar_collapsed: !user.sidebar_collapsed})}
-                        className={`p-2 rounded-xl transition-all ${user.sidebar_collapsed === false ? 'bg-primary text-white' : 'text-[var(--on-surface-variant)] hover:bg-white/5 hover:text-primary'}`}
+                        className={`p-1.5 rounded-lg transition-all ${user.sidebar_collapsed === false ? 'bg-primary/10 text-primary' : 'text-[var(--on-surface-variant)] hover:bg-[var(--surface)] hover:text-[var(--on-surface)]'}`}
                         title={user.sidebar_collapsed === false ? "Desanclar menú" : "Fijar menú"}
                       >
-                        <ChevronRight size={18} className={user.sidebar_collapsed === false ? 'rotate-180' : ''} />
+                        <ChevronRight size={16} className={user.sidebar_collapsed === false ? 'rotate-180' : ''} />
                       </motion.button>
                     )}
                   </AnimatePresence>
                 </div>
 
-                  <AnimatePresence>
-                    {(user.sidebar_collapsed === false || isSidebarHovered) && (
-                      <motion.div 
-                        initial={{ opacity: 0, y: -10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -10 }}
-                        className="px-2 mb-6"
-                      >
-                        <div className="relative">
-                          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--on-surface-variant)]/50" size={16} />
-                          <input 
-                            className="w-full pl-10 pr-4 py-2.5 bg-black/20 border border-white/5 rounded-xl text-xs font-medium outline-none focus:ring-2 focus:ring-primary/20 transition-all text-[var(--on-surface)]" 
-                            placeholder="Buscar..." 
-                          />
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
+                <AnimatePresence>
+                  {(user.sidebar_collapsed === false || isSidebarHovered) && (
+                    <motion.div 
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      exit={{ opacity: 0, height: 0 }}
+                      className="px-4 mb-4"
+                    >
+                      <div className="relative">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--on-surface-variant)]" size={16} />
+                        <input 
+                          className="w-full pl-10 pr-4 py-2 bg-[var(--surface)] border border-[var(--outline)] rounded-lg text-xs font-medium outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-[var(--on-surface)] placeholder:text-[var(--on-surface-variant)]" 
+                          placeholder="Buscar..." 
+                        />
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
 
-                <nav className="flex-1 px-4 space-y-2">
+                <nav className="flex-1 px-4 space-y-2 mt-4">
                   {[
                     { id: 'PLANILLA', label: 'Planilla', icon: FileSpreadsheet },
                     ...(user?.role !== Role.DIAGRAMACION ? [
@@ -646,63 +626,38 @@ export default function App() {
                     <button 
                       key={item.id}
                       onClick={() => setCurrentScreen(item.id as Screen)}
-                      className={`w-full px-4 py-3.5 rounded-2xl transition-all flex items-center gap-4 group relative ${
-                        currentScreen === item.id 
-                        ? 'bg-primary text-white shadow-lg shadow-primary/20' 
-                        : 'text-[var(--on-surface-variant)] hover:bg-[var(--surface)] hover:text-[var(--on-surface)]'
-                      }`}
+                      className={`w-full nav-item ${currentScreen === item.id ? 'nav-item-active' : 'nav-item-inactive'}`}
                     >
-                      <item.icon size={22} className={currentScreen === item.id ? 'opacity-100' : 'opacity-60 group-hover:opacity-100'} />
+                      <item.icon size={22} className={currentScreen === item.id ? 'opacity-100' : 'opacity-60'} />
                       <AnimatePresence>
                         {(user.sidebar_collapsed === false || isSidebarHovered) && (
-                          <motion.span 
-                            initial={{ opacity: 0, x: -5 }}
+                          <motion.span
+                            initial={{ opacity: 0, x: -10 }}
                             animate={{ opacity: 1, x: 0 }}
-                            exit={{ opacity: 0, x: -5 }}
-                            className="text-sm font-black tracking-tight whitespace-nowrap"
+                            exit={{ opacity: 0, x: -10 }}
+                            className="text-sm font-display font-black tracking-tight whitespace-nowrap"
                           >
                             {item.label}
                           </motion.span>
                         )}
                       </AnimatePresence>
-                      
-                      {!(user.sidebar_collapsed === false || isSidebarHovered) && currentScreen === item.id && (
-                        <div className="absolute left-0 w-1 h-6 bg-white rounded-r-full" />
-                      )}
                     </button>
                   ))}
                 </nav>
 
-                <div className="p-4 mt-auto border-t border-white/5 bg-black/5">
-                  <div className="flex items-center gap-3 px-2 mb-4 overflow-hidden">
-                    <div className="w-10 h-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-black text-xs shrink-0">
-                      {user.username.substring(0, 2).toUpperCase()}
-                    </div>
-                    <AnimatePresence>
-                      {(user.sidebar_collapsed === false || isSidebarHovered) && (
-                        <motion.div
-                          initial={{ opacity: 0, x: -10 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          exit={{ opacity: 0, x: -10 }}
-                          className="truncate"
-                        >
-                          <p className="text-xs font-display font-black text-[var(--on-surface)] uppercase truncate">{user.username}</p>
-                          <p className="text-[9px] font-black text-primary uppercase tracking-widest opacity-70">Sistema {user.role}</p>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </div>
+                <div className="p-4 border-t border-white/10 mt-auto">
                   <button 
-                    onClick={logout}
-                    className="flex items-center gap-4 text-rose-500 hover:bg-rose-500/10 transition-all font-display font-bold text-sm w-full p-3 rounded-xl group"
+                    onClick={logout} 
+                    className="w-full flex items-center gap-4 px-5 py-3 rounded-xl text-white/50 hover:bg-rose-500/20 hover:text-rose-400 hover:border-rose-500/30 border border-transparent transition-all group"
                   >
-                    <LogOut size={20} className="group-hover:-translate-x-1 transition-transform" />
+                    <LogOut size={22} className="group-hover:-translate-x-1 transition-transform" />
                     <AnimatePresence>
                       {(user.sidebar_collapsed === false || isSidebarHovered) && (
                         <motion.span
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: 1 }}
-                          exit={{ opacity: 0 }}
+                          initial={{ opacity: 0, x: -10 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          exit={{ opacity: 0, x: -10 }}
+                          className="text-sm font-bold whitespace-nowrap"
                         >
                           Cerrar Sesión
                         </motion.span>
@@ -713,92 +668,65 @@ export default function App() {
               </motion.aside>
             )}
 
-            <div className="flex-1 flex flex-col min-h-screen">
-              {/* --- HEADER (Only for TOP layout) --- */}
-              {(user.menu_layout || 'TOP') === 'TOP' && (
-                <header className="sticky top-0 bg-[var(--surface-card)]/95 backdrop-blur-2xl h-20 md:h-24 flex items-center justify-between px-4 md:px-8 z-50 border-b border-white/10 shadow-lg">
-                  <div className="flex items-center gap-4 md:gap-12 w-full">
-                    <div className="flex items-center gap-4 shrink-0">
-                      <button className="md:hidden p-3 bg-[var(--surface)] rounded-xl text-[var(--on-surface)]" onClick={() => setMobileMenuOpen(true)}>
-                        <Menu size={20} />
-                      </button>
+            <div className="flex-1 flex flex-col min-h-screen min-w-0">
+              
+              {/* --- TOP NAVIGATION (Shown if TOP layout OR on Mobile) --- */}
+              {(user.menu_layout === 'TOP' || true) && (
+                <header className={`${user.menu_layout === 'TOP' ? 'flex' : 'flex lg:hidden'} h-16 lg:h-20 border-b border-[var(--outline)] bg-[var(--surface-card)] sticky top-0 z-[100] px-4 lg:px-8 items-center justify-between shadow-md`}>
+                   <div className="flex items-center gap-8">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 md:w-11 md:h-11 bg-primary/20 rounded-2xl flex items-center justify-center shadow-sm shrink-0 overflow-hidden border border-primary/30">
-                          {appLogo ? (
-                            <img src={appLogo} alt="Logo" className="w-full h-full object-contain p-1" />
-                          ) : (
-                            <Newspaper className="text-primary" size={20} />
-                          )}
+                        <div className="w-10 h-10 bg-primary/10 text-primary rounded-xl flex items-center justify-center shrink-0">
+                          {appLogo ? <img src={appLogo} alt="Logo" className="w-full h-full object-contain p-1" /> : <Layout size={20} />}
                         </div>
-                        <h1 className="text-xl font-display font-black tracking-tighter text-[var(--on-surface)]">AdManager<span className="text-primary">.</span></h1>
+                        <h1 className="text-xl font-display font-black tracking-tighter text-[var(--on-surface)] hidden md:block">
+                          AMP<span className="text-primary text-2xl leading-none">.</span>
+                        </h1>
                       </div>
-                    </div>
 
-                    <nav className="hidden md:flex items-center gap-2">
-                      {[
-                        { id: 'PLANILLA', label: 'Planilla', icon: FileSpreadsheet },
-                        ...(user?.role !== Role.DIAGRAMACION ? [
-                          { id: 'CAMPAÑAS', label: 'Campañas', icon: Megaphone },
-                          { id: 'EDICIONES', label: 'Ediciones', icon: Newspaper },
-                          { id: 'CLIENTES', label: 'Clientes', icon: Users },
-                        ] : []),
-                        ...(user?.role === Role.ADMIN ? [{ id: 'USUARIOS', label: 'Usuarios', icon: UserPlus }] : []),
-                        { id: 'CONFIG', label: 'Ajustes', icon: Settings },
-                      ].map(item => (
-                        <button 
-                          key={item.id}
-                          onClick={() => setCurrentScreen(item.id as Screen)}
-                          className={`px-5 py-2.5 rounded-2xl transition-all flex items-center gap-2.5 group ${
-                            currentScreen === item.id 
-                            ? 'bg-primary text-white shadow-md shadow-primary/20' 
-                            : 'text-[var(--on-surface-variant)] hover:bg-white/5 hover:text-primary'
-                          }`}
-                        >
-                          <item.icon size={18} className={currentScreen === item.id ? 'text-white' : 'opacity-60 group-hover:opacity-100'} />
-                          <span className="text-sm font-display font-black tracking-tight">{item.label}</span>
-                        </button>
-                      ))}
-                    </nav>
-                  </div>
+                      <nav className="hidden lg:flex items-center gap-1">
+                        {[
+                          { id: 'PLANILLA', label: 'Planilla', icon: FileSpreadsheet },
+                          ...(user?.role !== Role.DIAGRAMACION ? [
+                            { id: 'CAMPAÑAS', label: 'Campañas', icon: Megaphone },
+                            { id: 'EDICIONES', label: 'Ediciones', icon: Newspaper },
+                            { id: 'CLIENTES', label: 'Clientes', icon: Users },
+                          ] : []),
+                          ...(user?.role === Role.ADMIN ? [{ id: 'USUARIOS', label: 'Usuarios', icon: UserPlus }] : []),
+                          { id: 'CONFIG', label: 'Ajustes', icon: Settings },
+                        ].map(item => (
+                          <button 
+                            key={item.id}
+                            onClick={() => setCurrentScreen(item.id as Screen)}
+                            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl transition-all ${currentScreen === item.id ? 'bg-primary text-slate-900 font-bold shadow-lg shadow-primary/20' : 'text-[var(--on-surface-variant)] hover:bg-[var(--surface)] hover:text-[var(--on-surface)]'}`}
+                          >
+                            <item.icon size={18} />
+                            <span className="text-xs font-display font-black uppercase tracking-tight">{item.label}</span>
+                          </button>
+                        ))}
+                      </nav>
+                   </div>
 
-                  <div className="flex items-center gap-6">
-                    <div className="hidden lg:flex relative">
-                      <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--on-surface-variant)]" size={16} />
-                      <input className="pl-11 pr-6 py-2.5 bg-[var(--surface)] border border-transparent rounded-2xl text-xs font-medium w-64 shadow-sm outline-none focus:ring-4 focus:ring-primary/5 transition-all text-[var(--on-surface)]" placeholder="Buscar..." />
-                    </div>
-
-                    <div className="flex items-center gap-4 pl-6 border-l border-white/5">
-                      <div className="hidden md:flex items-center gap-5">
-                        <div className="flex items-center gap-3 pr-1">
-                          <div className="text-right">
-                            <p className="text-[13px] font-display font-bold text-[var(--on-surface)] tracking-tight leading-none uppercase">{user.username}</p>
-                            <p className="text-[9px] font-black text-primary uppercase tracking-[0.1em] mt-1 opacity-70">Sistema {user.role}</p>
-                          </div>
-                          <div className="w-10 h-10 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-black text-xs">
-                            {user.username.substring(0, 2).toUpperCase()}
-                          </div>
-                        </div>
-                        <button onClick={logout} className="p-2.5 bg-[var(--surface-card)] hover:bg-rose-500 hover:text-white text-[var(--on-surface-variant)] rounded-2xl transition-all border border-transparent shadow-sm group">
-                          <LogOut size={16} className="group-hover:-translate-x-0.5 transition-transform" />
-                        </button>
+                   <div className="flex items-center gap-4">
+                      <div className="hidden sm:block relative">
+                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--on-surface-variant)]" size={14} />
+                         <input className="w-48 pl-9 pr-4 py-2 bg-[var(--surface)] border border-[var(--outline)] rounded-lg text-xs font-medium outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-[var(--on-surface)]" placeholder="Buscar..." />
                       </div>
-                    </div>
-                  </div>
+                      <div className="h-8 w-px bg-[var(--outline)] mx-2 hidden sm:block" />
+                      <div className="flex items-center gap-3 bg-[var(--surface)] px-3 py-1.5 rounded-xl border border-[var(--outline)]">
+                         <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary font-bold text-[10px]">{user.username.substring(0, 2).toUpperCase()}</div>
+                         <div className="hidden md:block">
+                            <p className="text-[10px] font-black text-[var(--on-surface)] leading-none uppercase">{user.username}</p>
+                            <p className="text-[8px] font-bold text-primary leading-none uppercase tracking-widest mt-1">{user.role}</p>
+                         </div>
+                         <button onClick={logout} className="ml-2 p-1.5 text-rose-500 hover:bg-rose-500/10 rounded-lg transition-all"><LogOut size={16}/></button>
+                      </div>
+                      <button onClick={() => setMobileMenuOpen(true)} className="lg:hidden p-2 text-[var(--on-surface)]"><Menu size={24} /></button>
+                   </div>
                 </header>
               )}
 
-              {/* Mobile Toggle for SIDE layout */}
-              {(user.menu_layout || 'TOP') === 'SIDE' && (
-                <button 
-                  onClick={() => setMobileMenuOpen(true)}
-                  className="md:hidden fixed top-6 right-6 z-[70] p-4 bg-primary text-white rounded-2xl shadow-xl shadow-primary/30"
-                >
-                  <Menu size={24} />
-                </button>
-              )}
-
               {/* Main Content Area */}
-              <main className="flex-1 p-4 md:p-10 relative z-10">
+              <main className="flex-1 p-4 lg:p-8 relative z-10 w-full max-w-[1600px] mx-auto">
                 <div className="max-w-[1600px] mx-auto">
                 <AnimatePresence mode="wait">
                   <motion.div
@@ -828,6 +756,7 @@ export default function App() {
                         initialSelectedId={targetCampañaId}
                         onClearInitialId={() => setTargetCampañaId(null)}
                         appLogo={appLogo}
+                        productos={productos}
                       />
                     )}
                     {currentScreen === 'EDICIONES' && (
@@ -851,6 +780,7 @@ export default function App() {
                         avisos={avisos}
                         campañas={campañas}
                         feriados={feriados}
+                        productos={productos}
                         masterEdId={planillaMasterEdId}
                         setMasterEdId={setPlanillaMasterEdId}
                         rows={getRowsForEdition(planillaMasterEdId || '')}
@@ -876,6 +806,7 @@ export default function App() {
                         }}
                         userRole={user?.role}
                         appLogo={appLogo}
+                        menuLayout={user?.menu_layout}
                       />
                     )}
                     {currentScreen === 'CLIENTES' && (
@@ -917,6 +848,8 @@ export default function App() {
                         onBulkAddFeriados={(nh) => setFeriados(prev => [...prev, ...nh])}
                         onLoadDemo={loadDemoData}
                         onClearEdiciones={clearEdicionesFrom}
+                        productos={productos}
+                        onUpdateProductos={setProductos}
                       />
                     )}
                     {currentScreen === 'USUARIOS' && (
@@ -949,26 +882,27 @@ export default function App() {
             animate={{ opacity: 1, x: 0 }} 
             exit={{ opacity: 0, x: '100%' }}
             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-            className="fixed inset-0 bg-[var(--surface)]/95 backdrop-blur-2xl z-[100] flex flex-col pt-24"
+            className="fixed inset-0 bg-[var(--surface)] z-[100] flex flex-col"
           >
-             <button 
-               onClick={() => setMobileMenuOpen(false)} 
-               className="absolute top-6 right-6 w-14 h-14 bg-[var(--surface-card)] border border-transparent rounded-2xl flex items-center justify-center text-[var(--on-surface)] shadow-lg hover:rotate-90 transition-all duration-300 active:scale-90"
-             >
-               <X size={24}/>
-             </button>
-
-             <div className="px-8 mb-12">
-                <div className="flex items-center gap-3 mb-2">
-                  <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center shadow-inner">
-                    <Newspaper className="text-primary" size={24} />
+             <div className="p-6 flex justify-between items-center border-b border-[var(--outline)] bg-[var(--surface-card)]">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center">
+                    <Newspaper className="text-primary" size={20} />
                   </div>
-                  <h1 className="text-2xl font-display font-black tracking-tighter text-[var(--on-surface)]">AdManager<span className="text-primary">.</span></h1>
+                  <div>
+                    <h1 className="text-lg font-display font-black tracking-tighter text-[var(--on-surface)]">AdManager<span className="text-primary">.</span></h1>
+                    <p className="text-[10px] font-bold text-[var(--on-surface-variant)] uppercase tracking-wider leading-none">Gestión Editorial</p>
+                  </div>
                 </div>
-                <p className="text-[var(--on-surface-variant)] text-xs font-bold tracking-widest uppercase opacity-60">Gestión Editorial Profesional</p>
+                <button 
+                  onClick={() => setMobileMenuOpen(false)} 
+                  className="w-10 h-10 bg-[var(--surface)] border border-[var(--outline)] rounded-lg flex items-center justify-center text-[var(--on-surface)] shadow-sm active:scale-90 transition-all"
+                >
+                  <X size={20}/>
+                </button>
              </div>
 
-             <div className="flex flex-col gap-2 px-6 overflow-y-auto pb-10">
+             <div className="flex-1 flex flex-col gap-2 px-6 py-8 overflow-y-auto custom-scrollbar">
                 {(() => {
                   const menuItems = [
                     { id: 'PLANILLA', label: 'Planilla', icon: FileSpreadsheet },
@@ -983,37 +917,37 @@ export default function App() {
                       key={item.id}
                       whileTap={{ scale: 0.98 }}
                       onClick={() => { setCurrentScreen(item.id as Screen); setMobileMenuOpen(false); }}
-                      className={`flex items-center gap-5 px-6 py-5 rounded-[2rem] transition-all border ${
+                      className={`flex items-center gap-4 px-6 py-4 rounded-xl transition-all border ${
                         currentScreen === item.id 
-                        ? 'bg-primary border-primary text-white shadow-xl shadow-primary/30' 
-                        : 'bg-[var(--surface-card)] border-white/5 text-[var(--on-surface)] hover:border-primary/30'
+                        ? 'bg-primary border-primary text-slate-900 shadow-md font-bold' 
+                        : 'bg-[var(--surface-card)] border-[var(--outline)] text-[var(--on-surface)] hover:border-primary/30'
                       }`}
                     >
-                      <item.icon size={24} className={currentScreen === item.id ? 'text-white' : 'text-primary'} />
-                      <span className="text-xl font-display font-black tracking-tight">{item.label}</span>
+                      <item.icon size={22} className={currentScreen === item.id ? 'opacity-100' : 'opacity-60'} />
+                      <span className="text-lg font-display font-black tracking-tight uppercase">{item.label}</span>
                     </motion.button>
                   ));
                 })()}
 
-                <div className="h-px bg-[var(--outline)] mx-4 my-6 opacity-50" />
+                <div className="h-px bg-[var(--outline)] mx-4 my-6 shrink-0" />
 
                 <button 
                   onClick={logout} 
-                  className="flex items-center gap-5 px-6 py-5 rounded-[2rem] bg-rose-500/10 border border-rose-500/20 text-rose-500 font-display font-black text-xl"
+                  className="flex items-center gap-4 px-6 py-4 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-500 font-bold text-lg shrink-0"
                 >
-                  <LogOut size={24} />
-                  Cerrar Sesión
+                  <LogOut size={22} />
+                  <span className="font-display font-black tracking-tight uppercase">Cerrar Sesión</span>
                 </button>
              </div>
 
-             <div className="mt-auto p-8 border-t border-white/5 bg-[var(--surface-card)]/30">
+             <div className="p-6 border-t border-[var(--outline)] bg-[var(--surface-card)]">
                 <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-black text-sm">
+                  <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary font-bold text-lg">
                     {user.username.substring(0, 2).toUpperCase()}
                   </div>
                   <div>
                     <p className="text-sm font-display font-black text-[var(--on-surface)] uppercase">{user.username}</p>
-                    <p className="text-[10px] font-black text-primary uppercase tracking-widest opacity-70">Sístema {user.role}</p>
+                    <p className="text-[10px] font-bold text-primary uppercase tracking-widest leading-none mt-1">Sístema {user.role}</p>
                   </div>
                 </div>
              </div>

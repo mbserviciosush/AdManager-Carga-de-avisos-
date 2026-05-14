@@ -5,7 +5,7 @@ export enum Role {
   DIAGRAMACION = 'DIAGRAMACION'
 }
 
-export type Theme = 'blue' | 'rust' | 'slate';
+export type Theme = 'corporate' | 'minimalist' | 'warmth';
 
 export interface Usuario {
   id: string;

@@ -120,19 +120,21 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
         disabled={disabled}
         onClick={() => !disabled && setIsOpen(!isOpen)}
         onKeyDown={handleGlobalKeyDown}
-        className={`modern-input text-left flex items-center justify-between transition-all duration-300
+        className={`modern-input flex items-center transition-all duration-300 relative
           ${isOpen ? 'ring-4 ring-primary/10 border-primary bg-[var(--surface)]' : ''}
           ${disabled ? 'opacity-50 cursor-not-allowed select-none' : ''}
           ${className}
         `}
       >
-        <span className={`truncate mr-2 ${value ? 'text-[var(--on-surface)]' : 'text-[var(--on-surface-variant)] opacity-60'}`}>
+        <span className={`w-full px-4 ${className.includes('text-center') ? 'text-center' : 'text-left'} truncate ${value ? 'text-[var(--on-surface)]' : 'text-[var(--on-surface-variant)] opacity-60'}`}>
           {getLabel(value)}
         </span>
-        <ChevronDown 
-          size={18} 
-          className={`shrink-0 transition-transform duration-300 ${isOpen ? 'rotate-180 text-primary' : 'text-[var(--on-surface-variant)]'}`} 
-        />
+        <div className="absolute right-4 top-1/2 -translate-y-1/2">
+          <ChevronDown 
+            size={18} 
+            className={`shrink-0 transition-transform duration-300 ${isOpen ? 'rotate-180 text-primary' : 'text-[var(--on-surface-variant)]'}`} 
+          />
+        </div>
       </button>
 
       <AnimatePresence>
