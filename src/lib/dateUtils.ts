@@ -8,11 +8,11 @@ export function isHoliday(date: Date, feriados: Feriado[]): boolean {
 
 export function isValidWorkDay(date: Date, feriados: Feriado[], allowedDays: number[]): boolean {
   const day = date.getDay();
-  // 0 is Sunday, 6 is Saturday. Explicitly exclude them to avoid future errors.
-  if (day === 0 || day === 6) return false;
   if (isHoliday(date, feriados)) return false;
   
-  return allowedDays.includes(day);
+  // Si no se especifican días, por defecto es Lunes a Viernes (1-5)
+  const allowed = allowedDays.length > 0 ? allowedDays : [1, 2, 3, 4, 5];
+  return allowed.includes(day);
 }
 
 export function getNextValidDate(startDate: Date, feriados: Feriado[], allowedDays: number[]): Date {

@@ -20,7 +20,9 @@ import {
   Megaphone,
   Settings,
   AlertCircle,
-  Database
+  Database,
+  FileSpreadsheet,
+  ListPlus
 } from 'lucide-react';
 import { 
   Screen, 
@@ -815,8 +817,8 @@ export function ScreenNuevaCampaña({
                                 type="button"
                                 className={`flex-1 h-11 rounded-xl font-black text-xs transition-all border ${
                                   isActive 
-                                  ? 'bg-primary text-white border-primary shadow-md shadow-primary/20' 
-                                  : 'bg-[var(--surface)] text-[var(--on-surface-variant)] border-transparent hover:bg-[var(--outline)]'
+                                  ? 'bg-primary text-slate-900 border-primary shadow-md shadow-primary/20' 
+                                  : 'bg-white/5 text-white border-white/10 hover:bg-white/10'
                                 }`}
                                 title={['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes'][idx]}
                               >
@@ -2122,6 +2124,278 @@ export function ScreenUsuarios({ users, onUpsert, onDelete }: any) {
             <p className="text-slate-400 font-black uppercase tracking-widest">No hay resultados</p>
           </div>
         )}
+      </div>
+    </div>
+  );
+}
+
+// --- PLANILLA ---
+export function ScreenPlanilla({ ediciones, clientes, avisos, campañas, feriados, rows, setRows, onSaveCampaña, onAddCliente, onNavigateToCampaña }: any) {
+  // Encontrar la edición del día siguiente a hoy (o la más cercana futura)
+  const suggestedEdition = useMemo(() => {
+    if (!ediciones || ediciones.length === 0) return null;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    // Buscar la edición más próxima después de hoy
+    const futureEditions = ediciones
+      .filter((e: any) => new Date(e.fecha + 'T12:00:00') > today)
+      .sort((a: any, b: any) => a.fecha.localeCompare(b.fecha));
+      
+    return futureEditions[0] || null;
+  }, [ediciones]);
+
+  const [masterEd, setMasterEd] = useState<any>(suggestedEdition);
+  
+  useEffect(() => {
+    if (suggestedEdition && !masterEd) {
+      setMasterEd(suggestedEdition);
+    }
+  }, [suggestedEdition, masterEd]);
+
+  const handleGenerateRow = (rowId: string) => {
+    const row = rows.find(r => r.id === rowId);
+    if (!row || !masterEd || row.salidas.toLowerCase() === 'cambio') return;
+
+    const clienteId = row.cliente_id;
+    if (!clienteId) {
+      alert('Debe seleccionar o crear un cliente primero.');
+      return;
+    }
+
+    const cantSalidas = parseInt(row.salidas) || 1;
+    
+    // Generar fechas para la campaña (usando la lógica de planilla: consecutivas)
+    const startDate = new Date(masterEd.fecha + 'T12:00:00');
+    const validDates = generateValidDates(startDate, cantSalidas, feriados, [0,1,2,3,4,5,6]); // Todos los días
+
+    // Crear la campaña
+    const newCamp = {
+      nombre_campaña: `${row.archivo} (${row.producto})`,
+      cliente_id: clienteId,
+      fecha_inicio: masterEd.fecha
+    };
+
+    // Crear los avisos
+    const newAvisos = validDates.map((date, idx) => {
+      const dateStr = format(date, 'yyyy-MM-dd');
+      const edTarget = ediciones.find((e: any) => e.fecha === dateStr);
+      
+      return {
+        id: Math.random().toString(36).slice(2, 11),
+        nombre: row.archivo,
+        producto: row.producto,
+        fecha_publicacion: dateStr,
+        edicion_id: edTarget?.id || '',
+        numero_salida: idx + 1
+      };
+    });
+
+    onSaveCampaña(newCamp, newAvisos);
+    
+    // Actualizar estado de la fila
+    setRows(prev => prev.map(r => r.id === rowId ? { ...r, status: 'DONE' } : r));
+  };
+
+  const handleAddCliente = (rowId: string) => {
+    const row = rows.find(r => r.id === rowId);
+    if (!row || !row.new_cliente_name) return;
+    
+    onAddCliente(row.new_cliente_name);
+    alert(`Cliente "${row.new_cliente_name}" creado.`);
+    setRows(prev => prev.map(r => r.id === rowId ? { ...r, new_cliente_name: '' } : r));
+  };
+
+  return (
+    <div className="max-w-7xl mx-auto space-y-12 pb-20">
+      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-8">
+        <div>
+           <h2 className="text-4xl font-display font-black text-[var(--on-surface)] tracking-tight">Planilla Publicidades</h2>
+           <p className="text-[var(--on-surface-variant)] font-medium">Carga masiva y rápida de avisos diarios.</p>
+        </div>
+        
+        <div className="flex gap-6 items-center bg-[var(--surface-card)] p-6 rounded-3xl border border-transparent shadow-sm">
+           <div className="flex flex-col min-w-[280px]">
+              <span className="text-[10px] font-black uppercase text-primary tracking-widest mb-2">Edición Trabajo</span>
+              <CustomSelect 
+                value={masterEd?.id || ''}
+                onChange={(val) => setMasterEd(ediciones.find((ed: any) => ed.id === val))}
+                options={[
+                  { value: '', label: 'Seleccionar Edición...' },
+                  ...ediciones.sort((a: any, b: any) => b.fecha.localeCompare(a.fecha)).map((e: any) => ({
+                    value: e.id,
+                    label: `N° ${e.numero} (${formatDateES(e.fecha)})`
+                  }))
+                ]}
+                className="w-full"
+              />
+           </div>
+        </div>
+      </div>
+
+      <div className="bg-[var(--surface-card)] rounded-[2.5rem] border border-transparent shadow-xl overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full border-collapse">
+            <thead>
+              <tr className="bg-[var(--surface)] text-[var(--on-surface-variant)] text-[10px] font-black uppercase tracking-widest border-b border-slate-100 dark:border-white/5">
+                <th className="px-6 py-5 text-left w-[20%]">Archivo</th>
+                <th className="px-6 py-5 text-left w-[15%]">Tamaño</th>
+                <th className="px-6 py-5 text-center w-[10%]">Salidas</th>
+                <th className="px-6 py-5 text-left w-[15%]">Ubicación</th>
+                <th className="px-6 py-5 text-left w-[20%]">Cliente</th>
+                <th className="px-6 py-5 text-left w-[15%]">Observaciones</th>
+                <th className="px-6 py-5 text-center w-[10%]">Estado</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100 dark:divide-white/5">
+              {rows.map((row) => (
+                <tr key={row.id} className={`group transition-colors ${row.status === 'DONE' ? 'bg-emerald-50/10' : 'hover:bg-slate-50/50 dark:hover:bg-white/5'}`}>
+                  <td className="px-6 py-4">
+                    <input 
+                      disabled={row.status === 'DONE'}
+                      value={row.archivo}
+                      onChange={e => setRows(prev => prev.map(r => r.id === row.id ? { ...r, archivo: e.target.value } : r))}
+                      placeholder="Nombre del aviso..."
+                      className="w-full bg-transparent border-none outline-none font-bold text-[var(--on-surface)] placeholder:text-slate-300 dark:placeholder:text-slate-700"
+                    />
+                  </td>
+                  <td className="px-6 py-4">
+                    <CustomSelect 
+                      value={row.producto}
+                      onChange={val => setRows(prev => prev.map(r => r.id === row.id ? { ...r, producto: val } : r))}
+                      options={PRODUCTOS.map(p => ({ value: p, label: p }))}
+                      disabled={row.status === 'DONE'}
+                      className="w-full"
+                    />
+                  </td>
+                  <td className="px-6 py-4">
+                    <input 
+                      disabled={row.status === 'DONE'}
+                      value={row.salidas}
+                      onChange={e => setRows(prev => prev.map(r => r.id === row.id ? { ...r, salidas: e.target.value } : r))}
+                      className={`w-full bg-transparent border-none outline-none text-center font-bold ${row.salidas.toLowerCase() === 'cambio' ? 'text-rose-500' : 'text-[var(--on-surface)]'}`}
+                    />
+                  </td>
+                  <td className="px-6 py-4">
+                    <input 
+                      disabled={row.status === 'DONE'}
+                      value={row.ubicacion}
+                      onChange={e => setRows(prev => prev.map(r => r.id === row.id ? { ...r, ubicacion: e.target.value } : r))}
+                      className="w-full bg-transparent border-none outline-none font-medium text-[var(--on-surface-variant)]"
+                    />
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className="flex flex-col gap-2">
+                      <div className="flex items-center gap-2">
+                        <div className="flex-1">
+                          <CustomSelect 
+                            value={row.cliente_id}
+                            onChange={val => setRows(prev => prev.map(r => r.id === row.id ? { ...r, cliente_id: val } : r))}
+                            options={[
+                              { value: '', label: 'Seleccionar...' },
+                              ...clientes.sort((a:any,b:any)=>a.nombre.localeCompare(b.nombre)).map((c: any) => ({ value: c.id, label: c.nombre }))
+                            ]}
+                            disabled={row.status === 'DONE'}
+                            className="w-full"
+                          />
+                        </div>
+                        {row.status !== 'DONE' && (
+                          <button 
+                            onClick={() => setRows(prev => prev.map(r => r.id === row.id ? { ...r, show_add: !r.show_add } : r))}
+                            className={`p-2 rounded-xl transition-all ${(row as any).show_add ? 'bg-primary text-white' : 'bg-slate-100 dark:bg-white/5 text-[var(--on-surface-variant)] hover:text-primary'}`}
+                            title="Nuevo Cliente"
+                          >
+                            <Plus size={16} />
+                          </button>
+                        )}
+                      </div>
+
+                      {row.status !== 'DONE' && (row as any).show_add && (
+                        <motion.div 
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: 'auto' }}
+                          className="flex gap-2"
+                        >
+                           <input 
+                             autoFocus
+                             value={row.new_cliente_name}
+                             onChange={e => setRows(prev => prev.map(r => r.id === row.id ? { ...r, new_cliente_name: e.target.value } : r))}
+                             onKeyDown={e => { if(e.key === 'Enter') handleAddCliente(row.id); }}
+                             placeholder="Nombre nuevo cliente..."
+                             className="text-[11px] bg-slate-100 dark:bg-white/5 px-3 py-2 rounded-xl border border-primary/20 outline-none w-full font-bold text-primary"
+                           />
+                           <button 
+                             onClick={() => {
+                               handleAddCliente(row.id);
+                               setRows(prev => prev.map(r => r.id === row.id ? { ...r, show_add: false } : r));
+                             }}
+                             disabled={!row.new_cliente_name}
+                             className="px-3 py-2 bg-primary text-white rounded-xl disabled:opacity-30 shadow-lg shadow-primary/20"
+                           >
+                             <Check size={14} />
+                           </button>
+                        </motion.div>
+                      )}
+                    </div>
+                  </td>
+                  <td className="px-6 py-4">
+                    <input 
+                      disabled={row.status === 'DONE'}
+                      value={row.observaciones}
+                      onChange={e => setRows(prev => prev.map(r => r.id === row.id ? { ...r, observaciones: e.target.value } : r))}
+                      className="w-full bg-transparent border-none outline-none font-medium text-[var(--on-surface-variant)]"
+                    />
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className="flex items-center justify-center gap-3">
+                      {row.status === 'DONE' ? (
+                        <div className="flex items-center gap-2 text-emerald-500 font-bold text-[10px] uppercase tracking-widest">
+                          <div className="w-8 h-8 bg-emerald-500 text-white rounded-full flex items-center justify-center shadow-lg shadow-emerald-500/20">
+                            <Check size={16} />
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-3">
+                           {row.archivo && row.cliente_id && (
+                             <div className="w-8 h-8 bg-rose-500/10 text-rose-500 rounded-full flex items-center justify-center animate-pulse">
+                               <AlertCircle size={16} />
+                             </div>
+                           )}
+                           <button 
+                             onClick={() => handleGenerateRow(row.id)}
+                             disabled={!row.archivo || !row.cliente_id || !masterEd || row.salidas.toLowerCase() === 'cambio'}
+                             className="px-4 py-2 bg-rose-500 text-white rounded-xl font-black text-[10px] uppercase tracking-tighter hover:bg-emerald-500 transition-all shadow-lg shadow-rose-500/20 hover:shadow-emerald-500/20 disabled:opacity-20 disabled:cursor-not-allowed"
+                           >
+                             Generar
+                           </button>
+                        </div>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <div className="p-6 bg-[var(--surface)] flex justify-end">
+           <button 
+            onClick={() => setRows(prev => [...prev, ...Array(5).fill(null).map(() => ({
+              id: Math.random().toString(36).slice(2, 9),
+              archivo: '',
+              producto: PRODUCTOS[0],
+              salidas: '1',
+              ubicacion: '',
+              cliente_id: '',
+              new_cliente_name: '',
+              observaciones: '',
+              status: 'PENDING' as 'PENDING' | 'DONE'
+            }))])}
+            className="flex items-center gap-2 px-6 py-3 bg-[var(--surface-card)] text-[var(--on-surface)] rounded-2xl font-bold hover:bg-slate-50 dark:hover:bg-white/5 transition-all border border-transparent"
+           >
+              <Plus size={18} />
+              Agregar más filas
+           </button>
+        </div>
       </div>
     </div>
   );

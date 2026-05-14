@@ -10,7 +10,8 @@ import {
   Menu,
   X,
   UserPlus,
-  ChevronRight
+  ChevronRight,
+  FileSpreadsheet
 } from 'lucide-react';
 import { 
   Screen, 
@@ -29,7 +30,8 @@ import {
   ScreenEdiciones, 
   ScreenClientes, 
   ScreenConfig,
-  ScreenUsuarios
+  ScreenUsuarios,
+  ScreenPlanilla
 } from './screens/AppScreens';
 import { exportEdicionPDF } from './lib/pdfUtils';
 import { addDays, startOfToday, format } from 'date-fns';
@@ -61,9 +63,20 @@ export default function App() {
   const [feriados, setFeriados] = useState<Feriado[]>([]);
   const [appLogo, setAppLogo] = useState<string | null>(null);
   
-  const [currentScreen, setCurrentScreen] = useState<Screen>('CAMPAÑAS');
+  const [currentScreen, setCurrentScreen] = useState<Screen>('PLANILLA');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [targetCampañaId, setTargetCampañaId] = useState<string | null>(null);
+  const [planillaRows, setPlanillaRows] = useState<any[]>(() => Array(15).fill(null).map(() => ({
+    id: Math.random().toString(36).slice(2, 9),
+    archivo: '',
+    producto: PRODUCTOS[0],
+    salidas: '1',
+    ubicacion: '',
+    cliente_id: '',
+    new_cliente_name: '',
+    observaciones: '',
+    status: 'PENDING' as 'PENDING' | 'DONE'
+  })));
 
   const addCliente = (nombre: string) => {
     const newC: Cliente = { 
@@ -545,6 +558,7 @@ export default function App() {
 
                 <nav className="flex-1 px-4 space-y-2">
                   {[
+                    { id: 'PLANILLA', label: 'Planilla', icon: FileSpreadsheet },
                     { id: 'CAMPAÑAS', label: 'Campañas', icon: Megaphone },
                     { id: 'EDICIONES', label: 'Ediciones', icon: Newspaper },
                     { id: 'CLIENTES', label: 'Clientes', icon: Users },
@@ -597,6 +611,7 @@ export default function App() {
                     {(user.menu_layout || 'TOP') === 'TOP' && (
                       <nav className="hidden md:flex items-center gap-1">
                         {[
+                          { id: 'PLANILLA', label: 'Planilla', icon: FileSpreadsheet },
                           { id: 'CAMPAÑAS', label: 'Campañas', icon: Megaphone },
                           { id: 'EDICIONES', label: 'Ediciones', icon: Newspaper },
                           { id: 'CLIENTES', label: 'Clientes', icon: Users },
@@ -697,6 +712,27 @@ export default function App() {
                         onExportPDF={(ed: Edición) => exportEdicionPDF(ed, avisos.filter(a => a.edicion_id === ed.id), clientes, campañas, avisos, appLogo)}
                       />
                     )}
+                    {currentScreen === 'PLANILLA' && (
+                      <ScreenPlanilla 
+                        ediciones={ediciones}
+                        clientes={clientes}
+                        avisos={avisos}
+                        campañas={campañas}
+                        feriados={feriados}
+                        rows={planillaRows}
+                        setRows={setPlanillaRows}
+                        onSaveCampaña={(c, a) => {
+                          const campId = Math.random().toString(36).slice(2, 11);
+                          setCampañas(prev => [...prev, { ...c, id: campId }]);
+                          setAvisos(prev => [...prev, ...a.map(av => ({ ...av, campaña_id: campId }))]);
+                        }}
+                        onAddCliente={(n) => setClientes(prev => [...prev, { id: Math.random().toString(36), nombre: n }])}
+                        onNavigateToCampaña={(id: string) => {
+                          setTargetCampañaId(id);
+                          setCurrentScreen('CAMPAÑAS');
+                        }}
+                      />
+                    )}
                     {currentScreen === 'CLIENTES' && (
                       <ScreenClientes 
                         clientes={clientes} 
@@ -784,6 +820,7 @@ export default function App() {
              <div className="flex flex-col gap-2 px-6 overflow-y-auto pb-10">
                 {(() => {
                   const menuItems = [
+                    { id: 'PLANILLA', label: 'Planilla', icon: FileSpreadsheet },
                     { id: 'CAMPAÑAS', label: 'Campañas', icon: Megaphone },
                     { id: 'EDICIONES', label: 'Ediciones', icon: Newspaper },
                     { id: 'CLIENTES', label: 'Clientes', icon: Users },

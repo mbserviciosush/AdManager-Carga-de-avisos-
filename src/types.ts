@@ -54,7 +54,7 @@ export interface Feriado {
   nombre?: string;
 }
 
-export type Screen = 'LOGIN' | 'DASHBOARD' | 'EDICIONES' | 'CLIENTES' | 'CAMPAÑAS' | 'CONFIG' | 'USUARIOS';
+export type Screen = 'LOGIN' | 'DASHBOARD' | 'EDICIONES' | 'CLIENTES' | 'CAMPAÑAS' | 'CONFIG' | 'USUARIOS' | 'PLANILLA';
 
 export const PRODUCTOS = [
   '2x5',
