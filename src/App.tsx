@@ -866,6 +866,7 @@ export default function App() {
                           setCurrentScreen('CAMPAÑAS');
                         }}
                         userRole={user?.role}
+                        appLogo={appLogo}
                       />
                     )}
                     {currentScreen === 'CLIENTES' && (

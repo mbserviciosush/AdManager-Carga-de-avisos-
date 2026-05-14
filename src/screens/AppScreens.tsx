@@ -2135,7 +2135,7 @@ export function ScreenUsuarios({ users, onUpsert, onDelete }: any) {
 }
 
 // --- PLANILLA ---
-export function ScreenPlanilla({ ediciones, clientes, avisos, campañas, feriados, masterEdId, setMasterEdId, rows, setRows, onSaveCampaña, onAddCliente, onNavigateToCampaña, userRole }: any) {
+export function ScreenPlanilla({ ediciones, clientes, avisos, campañas, feriados, masterEdId, setMasterEdId, rows, setRows, onSaveCampaña, onAddCliente, onNavigateToCampaña, userRole, appLogo }: any) {
   const isReadOnly = userRole === Role.DIAGRAMACION;
 
   // Encontrar la edición del día siguiente a hoy (o la más cercana futura)
@@ -2242,7 +2242,7 @@ export function ScreenPlanilla({ ediciones, clientes, avisos, campañas, feriado
                 />
                 {masterEd && (
                   <button 
-                    onClick={() => exportEdicionPDF(masterEd, avisos.filter((a: any) => a.edicion_id === masterEd.id))}
+                    onClick={() => exportEdicionPDF(masterEd, avisos.filter((a: any) => a.edicion_id === masterEd.id), clientes, campañas, avisos, appLogo)}
                     className="p-3 bg-primary/10 text-primary rounded-xl hover:bg-primary hover:text-white transition-all shadow-sm"
                     title="Exportar PDF de esta edición"
                   >
