@@ -2504,8 +2504,7 @@ export function ScreenPlanilla({ ediciones, clientes, avisos, campañas, feriado
                       disabled={row.status === 'DONE' || isReadOnly}
                       value={row.archivo}
                       onChange={e => setRows(prev => prev.map(r => r.id === row.id ? { ...r, archivo: e.target.value } : r))}
-                      placeholder="Nombre del aviso..."
-                      className="w-full bg-slate-50 dark:bg-white/5 px-4 py-2 rounded-xl border border-transparent focus:border-primary/30 outline-none font-bold text-[var(--on-surface)] placeholder:text-slate-300 dark:placeholder:text-slate-700 transition-all"
+                      className="w-full bg-transparent border-b border-slate-200 dark:border-white/10 px-0 py-2 outline-none font-bold text-[var(--on-surface)] focus:border-primary transition-all"
                     />
                   </td>
                   <td className="px-6 py-4">
@@ -2530,8 +2529,7 @@ export function ScreenPlanilla({ ediciones, clientes, avisos, campañas, feriado
                       disabled={row.status === 'DONE' || isReadOnly}
                       value={row.ubicacion}
                       onChange={e => setRows(prev => prev.map(r => r.id === row.id ? { ...r, ubicacion: e.target.value } : r))}
-                      placeholder="Ej: Página 3..."
-                      className="w-full bg-slate-50 dark:bg-white/5 px-4 py-2 rounded-xl border border-transparent focus:border-primary/30 outline-none font-medium text-[var(--on-surface-variant)] placeholder:text-slate-300 dark:placeholder:text-slate-600 transition-all"
+                      className="w-full bg-transparent border-b border-slate-200 dark:border-white/10 px-0 py-2 outline-none font-medium text-[var(--on-surface-variant)] focus:border-primary transition-all"
                     />
                   </td>
                   <td className="px-6 py-4">
@@ -2593,8 +2591,7 @@ export function ScreenPlanilla({ ediciones, clientes, avisos, campañas, feriado
                       disabled={row.status === 'DONE' || isReadOnly}
                       value={row.observaciones}
                       onChange={e => setRows(prev => prev.map(r => r.id === row.id ? { ...r, observaciones: e.target.value } : r))}
-                      placeholder="Notas adicionales..."
-                      className="w-full bg-slate-50 dark:bg-white/5 px-4 py-2 rounded-xl border border-transparent focus:border-primary/30 outline-none font-medium text-[var(--on-surface-variant)] placeholder:text-slate-300 dark:placeholder:text-slate-600 transition-all"
+                      className="w-full bg-transparent border-b border-slate-200 dark:border-white/10 px-0 py-2 outline-none font-medium text-[var(--on-surface-variant)] focus:border-primary transition-all"
                     />
                   </td>
                   <td className="px-6 py-4">

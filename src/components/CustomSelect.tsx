@@ -29,8 +29,10 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [activeIndex, setActiveIndex] = useState(-1);
   const containerRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const optionsRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -45,22 +47,25 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
   useEffect(() => {
     if (isOpen) {
       setSearchTerm('');
+      setActiveIndex(-1);
       // Give time for animation to focus
       setTimeout(() => searchInputRef.current?.focus(), 100);
     }
   }, [isOpen]);
 
   const filteredOptions = useMemo(() => {
-    if (!searchTerm.trim()) return options;
-    return options.filter(o => {
-      const label = typeof o === 'string' ? o : o.label;
-      return label.toLowerCase().includes(searchTerm.toLowerCase());
-    });
+    return !searchTerm.trim() 
+      ? options 
+      : options.filter(o => {
+          const label = typeof o === 'string' ? o : o.label;
+          return label.toLowerCase().includes(searchTerm.toLowerCase());
+        });
   }, [options, searchTerm]);
 
   const handleSelect = (optValue: string) => {
     onChange(optValue);
     setIsOpen(false);
+    setActiveIndex(-1);
   };
 
   const getLabel = (val: string) => {
@@ -69,23 +74,52 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
     return typeof opt === 'string' ? opt : opt.label;
   };
 
+  const handleGlobalKeyDown = (e: React.KeyboardEvent) => {
+    if (disabled) return;
+
+    if (!isOpen) {
+      if (e.key === 'Enter' || e.key === ' ' || e.key === 'ArrowDown') {
+        setIsOpen(true);
+        e.preventDefault();
+      }
+    } else {
+      if (e.key === 'ArrowDown') {
+        setActiveIndex(prev => (prev < filteredOptions.length - 1 ? prev + 1 : 0));
+        e.preventDefault();
+      } else if (e.key === 'ArrowUp') {
+        setActiveIndex(prev => (prev > 0 ? prev - 1 : filteredOptions.length - 1));
+        e.preventDefault();
+      } else if (e.key === 'Enter' && activeIndex >= 0) {
+        const opt = filteredOptions[activeIndex];
+        const val = typeof opt === 'string' ? opt : opt.value;
+        handleSelect(val);
+        e.preventDefault();
+      } else if (e.key === 'Escape') {
+        setIsOpen(false);
+        e.preventDefault();
+      }
+    }
+    
+    if (onKeyDown) onKeyDown(e);
+  };
+
+  // Auto-scroll to active item
+  useEffect(() => {
+    if (activeIndex >= 0 && optionsRef.current) {
+      const activeEl = optionsRef.current.children[activeIndex] as HTMLElement;
+      if (activeEl) {
+        activeEl.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+      }
+    }
+  }, [activeIndex]);
+
   return (
     <div className={`relative w-full ${isOpen ? 'z-[9999]' : 'z-10'}`} ref={containerRef}>
       <button
         type="button"
         disabled={disabled}
         onClick={() => !disabled && setIsOpen(!isOpen)}
-        onKeyDown={(e) => {
-          if (disabled) return;
-          if (e.key === 'Enter' && !isOpen) {
-            setIsOpen(true);
-            e.preventDefault();
-          } else if (e.key === 'Escape') {
-            setIsOpen(false);
-          } else if (onKeyDown) {
-            onKeyDown(e);
-          }
-        }}
+        onKeyDown={handleGlobalKeyDown}
         className={`modern-input text-left flex items-center justify-between transition-all duration-300
           ${isOpen ? 'ring-4 ring-primary/10 border-primary bg-[var(--surface)]' : ''}
           ${disabled ? 'opacity-50 cursor-not-allowed select-none' : ''}
@@ -109,7 +143,6 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
             exit={{ opacity: 0, y: 10, scale: 0.95 }}
             className="absolute top-full left-0 z-[10000] w-full bg-[var(--surface-card)]/95 backdrop-blur-3xl border border-[var(--outline)] rounded-[1.5rem] md:rounded-[2rem] shadow-[0_30px_90px_rgba(0,0,0,0.5)] overflow-hidden"
           >
-            {/* Search Input Area */}
             <div className="p-2 border-b border-[var(--outline)] bg-[var(--surface)]/50">
               <div className="relative">
                 <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--on-surface-variant)]" />
@@ -117,14 +150,13 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
                   ref={searchInputRef}
                   type="text"
                   value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
+                  onChange={(e) => {
+                    setSearchTerm(e.target.value);
+                    setActiveIndex(0);
+                  }}
                   placeholder="Buscar..."
                   className="w-full bg-transparent border-none pl-9 pr-8 py-2 text-sm font-bold text-[var(--on-surface)] outline-none placeholder:text-[var(--on-surface-variant)]/40"
-                  onKeyDown={(e) => {
-                    if (e.key === 'ArrowDown') {
-                      // Logic could be added here for keyboard navigation
-                    }
-                  }}
+                  onKeyDown={handleGlobalKeyDown}
                 />
                 {searchTerm && (
                   <button 
@@ -137,22 +169,29 @@ export const CustomSelect: React.FC<CustomSelectProps> = ({
               </div>
             </div>
 
-            <div className="max-h-[240px] overflow-y-auto custom-scrollbar pt-1 pb-2">
+            <div 
+              ref={optionsRef}
+              className="max-h-[240px] overflow-y-auto custom-scrollbar pt-1 pb-2"
+            >
               {filteredOptions.length > 0 ? (
-                filteredOptions.map((o) => {
+                filteredOptions.map((o, index) => {
                   const optValue = typeof o === 'string' ? o : o.value;
                   const optLabel = typeof o === 'string' ? o : o.label;
                   const isSelected = value === optValue;
+                  const isActive = activeIndex === index;
                   
                   return (
                     <button
                       key={optValue}
                       type="button"
+                      onMouseEnter={() => setActiveIndex(index)}
                       onClick={() => handleSelect(optValue)}
                       className={`w-full px-6 py-3.5 text-left text-sm font-bold flex items-center justify-between transition-all
                         ${isSelected 
-                          ? 'bg-primary/10 text-primary' 
-                          : 'hover:bg-primary/5 text-[var(--on-surface)]'}
+                          ? 'bg-primary text-slate-900' 
+                          : isActive 
+                            ? 'bg-primary/20 text-primary' 
+                            : 'hover:bg-primary/5 text-[var(--on-surface)]'}
                       `}
                     >
                       <span className="truncate">{optLabel}</span>
