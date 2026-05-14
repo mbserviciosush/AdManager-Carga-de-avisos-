@@ -384,19 +384,18 @@ export function ScreenCampañas({ campañas, avisos, clientes, onAddCliente, edi
             </Card>
           </div>
         </div>
+        <AnimatePresence>
+          {showPreview && previewUrl && (
+            <PDFPreviewModal 
+              isOpen={showPreview}
+              onClose={() => setShowPreview(false)}
+              pdfUrl={previewUrl}
+              title={`Campaña: ${editNombre}`}
+            />
+          )}
+        </AnimatePresence>
       </div>
-      <AnimatePresence>
-        {showPreview && previewUrl && (
-          <PDFPreviewModal 
-            isOpen={showPreview}
-            onClose={() => setShowPreview(false)}
-            pdfUrl={previewUrl}
-            title={`Campaña: ${editNombre}`}
-          />
-        )}
-      </AnimatePresence>
-    </div>
-  );
+    );
   }
 
   return (
