@@ -36,7 +36,7 @@ import {
   Usuario
 } from '../types';
 import { generateValidDates, formatDateES } from '../lib/dateUtils';
-import { exportEdicionPDF, exportCampañaPDF } from '../lib/pdfUtils';
+import { exportEdicionPDF, exportCampañaPDF, previewEdicionPDF, previewCampañaPDF } from '../lib/pdfUtils';
 import { motion, AnimatePresence } from 'motion/react';
 import { CustomDatePicker } from '../components/CustomDatePicker';
 import { CustomSelect } from '../components/CustomSelect';
@@ -77,6 +77,8 @@ const Card = ({ children, title, action, className = "" }: any) => (
 export function ScreenCampañas({ campañas, avisos, clientes, onAddCliente, ediciones, feriados, onSaveCampaña, onDeleteCampaña, onUpdateAvisos, onUpdateCampaña, initialSelectedId, onClearInitialId, appLogo }: any) {
   const [view, setView] = useState<'LIST' | 'CREATE' | 'DETAIL'>('LIST');
   const [selectedID, setSelectedID] = useState<string | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [showPreview, setShowPreview] = useState(false);
 
   useEffect(() => {
     if (initialSelectedId) {
@@ -188,10 +190,14 @@ export function ScreenCampañas({ campañas, avisos, clientes, onAddCliente, edi
               <Trash2 size={18} /> Eliminar Campaña
             </button>
             <button 
-              onClick={() => exportCampañaPDF({ ...selectedCampaña, nombre_campaña: editNombre, cliente_id: editClienteId, fecha_inicio: editFechaInicio } as any, editingAvisos, cliente?.nombre || 'Desconocido', appLogo)} 
+              onClick={() => {
+                const url = previewCampañaPDF({ ...selectedCampaña, nombre_campaña: editNombre, cliente_id: editClienteId, fecha_inicio: editFechaInicio } as any, editingAvisos, cliente?.nombre || 'Desconocido', appLogo);
+                setPreviewUrl(url);
+                setShowPreview(true);
+              }}
               className="modern-button-secondary bg-[var(--surface-card)] flex items-center gap-2"
             >
-              <FileText size={18} /> Exportar PDF
+              <FileText size={18} /> Vista Previa PDF
             </button>
             {hasChanges && (
               <button 
@@ -379,7 +385,18 @@ export function ScreenCampañas({ campañas, avisos, clientes, onAddCliente, edi
           </div>
         </div>
       </div>
-    );
+      <AnimatePresence>
+        {showPreview && previewUrl && (
+          <PDFPreviewModal 
+            isOpen={showPreview}
+            onClose={() => setShowPreview(false)}
+            pdfUrl={previewUrl}
+            title={`Campaña: ${editNombre}`}
+          />
+        )}
+      </AnimatePresence>
+    </div>
+  );
   }
 
   return (
@@ -2134,9 +2151,64 @@ export function ScreenUsuarios({ users, onUpsert, onDelete }: any) {
   );
 }
 
+// --- SHARED COMPONENTS ---
+function PDFPreviewModal({ isOpen, onClose, pdfUrl, title }: any) {
+  if (!isOpen) return null;
+  return (
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 md:p-10">
+      <motion.div 
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        onClick={onClose}
+        className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
+      />
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.9, y: 20 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.9, y: 20 }}
+        className="relative w-full max-w-5xl h-full bg-white dark:bg-slate-900 rounded-[2.5rem] shadow-2xl overflow-hidden flex flex-col"
+      >
+        <div className="p-6 border-b border-slate-100 dark:border-white/5 flex justify-between items-center bg-[var(--surface)]">
+           <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-primary/10 text-primary rounded-xl flex items-center justify-center">
+                <FileText size={20} />
+              </div>
+              <div>
+                <h3 className="font-display font-black text-lg text-[var(--on-surface)] leading-none">{title}</h3>
+                <p className="text-[10px] font-black uppercase tracking-widest text-[var(--on-surface-variant)] mt-1">Vista Previa del Documento</p>
+              </div>
+           </div>
+           <button 
+            onClick={onClose}
+            className="w-10 h-10 rounded-full bg-slate-100 dark:bg-white/5 flex items-center justify-center text-[var(--on-surface-variant)] hover:bg-rose-500 hover:text-white transition-all"
+           >
+              <X size={20} />
+           </button>
+        </div>
+        <div className="flex-grow bg-slate-100 dark:bg-slate-800/50 p-4">
+           <iframe src={pdfUrl} className="w-full h-full rounded-2xl border-none shadow-inner" title="PDF Preview" />
+        </div>
+        <div className="p-6 border-t border-slate-100 dark:border-white/5 bg-[var(--surface)] flex justify-end gap-4">
+           <button onClick={onClose} className="px-6 py-3 font-bold text-[var(--on-surface-variant)] hover:text-[var(--on-surface)]">Cerrar</button>
+           <a 
+            href={pdfUrl} 
+            download={`${title.replace(/\s+/g, '_')}.pdf`}
+            className="px-8 py-3 bg-primary text-white rounded-2xl font-black text-sm flex items-center gap-2 shadow-lg shadow-primary/20"
+           >
+              <Save size={18} /> Descargar PDF
+           </a>
+        </div>
+      </motion.div>
+    </div>
+  );
+}
+
 // --- PLANILLA ---
 export function ScreenPlanilla({ ediciones, clientes, avisos, campañas, feriados, masterEdId, setMasterEdId, rows, setRows, onSaveCampaña, onAddCliente, onNavigateToCampaña, userRole, appLogo }: any) {
   const isReadOnly = userRole === Role.DIAGRAMACION;
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [showPreview, setShowPreview] = useState(false);
 
   // Encontrar la edición del día siguiente a hoy (o la más cercana futura)
   const suggestedEdition = useMemo(() => {
@@ -2242,9 +2314,13 @@ export function ScreenPlanilla({ ediciones, clientes, avisos, campañas, feriado
                 />
                 {masterEd && (
                   <button 
-                    onClick={() => exportEdicionPDF(masterEd, avisos.filter((a: any) => a.edicion_id === masterEd.id), clientes, campañas, avisos, appLogo)}
+                    onClick={() => {
+                      const url = previewEdicionPDF(masterEd, avisos.filter((a: any) => a.edicion_id === masterEd.id), clientes, campañas, avisos, appLogo);
+                      setPreviewUrl(url);
+                      setShowPreview(true);
+                    }}
                     className="p-3 bg-primary/10 text-primary rounded-xl hover:bg-primary hover:text-white transition-all shadow-sm"
-                    title="Exportar PDF de esta edición"
+                    title="Vista previa PDF de esta edición"
                   >
                     <FileText size={20} />
                   </button>
@@ -2420,6 +2496,17 @@ export function ScreenPlanilla({ ediciones, clientes, avisos, campañas, feriado
            </div>
          )}
       </div>
+
+      <AnimatePresence>
+        {showPreview && previewUrl && (
+          <PDFPreviewModal 
+            isOpen={showPreview}
+            onClose={() => setShowPreview(false)}
+            pdfUrl={previewUrl}
+            title={`Edición Nº ${masterEd?.numero}`}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }

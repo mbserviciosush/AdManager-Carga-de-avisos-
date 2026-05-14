@@ -3,7 +3,7 @@ import autoTable from 'jspdf-autotable';
 import { Aviso, Edición, Cliente, Campaña } from '../types';
 import { formatDateES } from './dateUtils';
 
-export function exportEdicionPDF(edicion: Edición, avisosEnEdicion: Aviso[], clientes: Cliente[], campañas: Campaña[], allAvisos: Aviso[], logoUrl?: string | null) {
+function createEdicionDoc(edicion: Edición, avisosEnEdicion: Aviso[], clientes: Cliente[], campañas: Campaña[], allAvisos: Aviso[], logoUrl?: string | null) {
   const doc = new jsPDF();
   
   if (logoUrl) {
@@ -44,10 +44,20 @@ export function exportEdicionPDF(edicion: Edición, avisosEnEdicion: Aviso[], cl
     headStyles: { fillColor: [200, 200, 200], textColor: 20 },
   });
 
+  return doc;
+}
+
+export function exportEdicionPDF(edicion: Edición, avisosEnEdicion: Aviso[], clientes: Cliente[], campañas: Campaña[], allAvisos: Aviso[], logoUrl?: string | null) {
+  const doc = createEdicionDoc(edicion, avisosEnEdicion, clientes, campañas, allAvisos, logoUrl);
   doc.save(`Edicion_${edicion.numero}.pdf`);
 }
 
-export function exportCampañaPDF(campaña: Campaña, avisos: Aviso[], clienteNombre: string, logoUrl?: string | null) {
+export function previewEdicionPDF(edicion: Edición, avisosEnEdicion: Aviso[], clientes: Cliente[], campañas: Campaña[], allAvisos: Aviso[], logoUrl?: string | null) {
+  const doc = createEdicionDoc(edicion, avisosEnEdicion, clientes, campañas, allAvisos, logoUrl);
+  return doc.output('bloburl');
+}
+
+function createCampañaDoc(campaña: Campaña, avisos: Aviso[], clienteNombre: string, logoUrl?: string | null) {
   const doc = new jsPDF();
   
   if (logoUrl) {
@@ -76,5 +86,15 @@ export function exportCampañaPDF(campaña: Campaña, avisos: Aviso[], clienteNo
     theme: 'grid',
   });
 
+  return doc;
+}
+
+export function exportCampañaPDF(campaña: Campaña, avisos: Aviso[], clienteNombre: string, logoUrl?: string | null) {
+  const doc = createCampañaDoc(campaña, avisos, clienteNombre, logoUrl);
   doc.save(`Campaña_${campaña.nombre_campaña}.pdf`);
+}
+
+export function previewCampañaPDF(campaña: Campaña, avisos: Aviso[], clienteNombre: string, logoUrl?: string | null) {
+  const doc = createCampañaDoc(campaña, avisos, clienteNombre, logoUrl);
+  return doc.output('bloburl');
 }
