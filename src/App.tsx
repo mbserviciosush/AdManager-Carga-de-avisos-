@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { 
   Newspaper, Database,
   Users, 
@@ -66,17 +66,46 @@ export default function App() {
   const [currentScreen, setCurrentScreen] = useState<Screen>('PLANILLA');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [targetCampañaId, setTargetCampañaId] = useState<string | null>(null);
-  const [planillaRows, setPlanillaRows] = useState<any[]>(() => Array(15).fill(null).map(() => ({
-    id: Math.random().toString(36).slice(2, 9),
-    archivo: '',
-    producto: PRODUCTOS[0],
-    salidas: '1',
-    ubicacion: '',
-    cliente_id: '',
-    new_cliente_name: '',
-    observaciones: '',
-    status: 'PENDING' as 'PENDING' | 'DONE'
-  })));
+  const [planillaMasterEdId, setPlanillaMasterEdId] = useState<string | null>(null);
+  const [planillaRowsByEdition, setPlanillaRowsByEdition] = useState<Record<string, any[]>>({});
+
+  const getRowsForEdition = useMemo(() => (edId: string) => {
+    const key = edId || 'default';
+    if (planillaRowsByEdition[key]) return planillaRowsByEdition[key];
+    return Array(15).fill(null).map(() => ({
+      id: Math.random().toString(36).slice(2, 9),
+      archivo: '',
+      producto: PRODUCTOS[0],
+      salidas: '1',
+      ubicacion: '',
+      cliente_id: '',
+      new_cliente_name: '',
+      observaciones: '',
+      status: 'PENDING' as 'PENDING' | 'DONE'
+    }));
+  }, [planillaRowsByEdition]);
+
+  const updateRowsForEdition = (edId: string, rowsOrFn: any | ((prev: any[]) => any[])) => {
+    const key = edId || 'default';
+    setPlanillaRowsByEdition(prevMap => {
+      const currentRows = prevMap[key] || Array(15).fill(null).map(() => ({
+        id: Math.random().toString(36).slice(2, 9),
+        archivo: '',
+        producto: PRODUCTOS[0],
+        salidas: '1',
+        ubicacion: '',
+        cliente_id: '',
+        new_cliente_name: '',
+        observaciones: '',
+        status: 'PENDING' as 'PENDING' | 'DONE'
+      }));
+      
+      const newRows = typeof rowsOrFn === 'function' ? rowsOrFn(currentRows) : rowsOrFn;
+      return { ...prevMap, [key]: newRows };
+    });
+  };
+
+  const [isSidebarHovered, setIsSidebarHovered] = useState(false);
 
   const addCliente = (nombre: string) => {
     const newC: Cliente = { 
@@ -99,12 +128,13 @@ export default function App() {
       setAvisos(data.avisos || []);
       setFeriados(data.feriados || []);
       setAppLogo(data.appLogo || null);
+      setPlanillaRowsByEdition(data.planillaRowsByEdition || {});
         if (data.user) {
           // Ensure backward compatibility with missing fields
           const migratedUser = {
             ...data.user,
             menu_layout: data.user.menu_layout || 'TOP',
-            sidebar_collapsed: data.user.sidebar_collapsed || false
+            sidebar_collapsed: data.user.sidebar_collapsed !== undefined ? data.user.sidebar_collapsed : true
           };
           setUser(migratedUser);
           if (data.user.dark_mode !== undefined) setIsDark(data.user.dark_mode);
@@ -260,9 +290,10 @@ export default function App() {
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify({
-      clientes, ediciones, campañas, avisos, feriados, user, users, appLogo
+      clientes, ediciones, campañas, avisos, feriados, user, users, planillaRowsByEdition,
+      appLogo
     }));
-  }, [clientes, ediciones, campañas, avisos, feriados, user, users]);
+  }, [clientes, ediciones, campañas, avisos, feriados, user, users, planillaRowsByEdition]);
 
   // Sync isDark and theme with document
   useEffect(() => {
@@ -293,24 +324,27 @@ export default function App() {
     
     // Default admin if no users exists or for first setup
     if (users.length === 0 && username.toLowerCase() === 'admin' && password === 'admin') {
-      const initialAdmin: Usuario = { 
-        id: 'admin-root', 
-        username: 'admin', 
-        password: 'admin', 
-        role: Role.ADMIN, 
-        theme: 'blue', 
-        dark_mode: true,
-        menu_layout: 'TOP',
-        sidebar_collapsed: false
-      };
-      setUsers([initialAdmin]);
-      setUser(initialAdmin);
+      const newUser = { 
+          id: '1', 
+          username: 'admin', 
+          role: Role.ADMIN, 
+          dark_mode: true, 
+          theme: 'blue',
+          menu_layout: 'SIDE',
+          sidebar_collapsed: true
+        };
+      setUsers([newUser]);
+      setUser(newUser);
       return;
     }
 
     const found = users.find(u => u.username.toLowerCase() === username.toLowerCase() && u.password === password);
     if (found) {
-      setUser(found);
+      const loggedUser = { 
+        ...found, 
+        sidebar_collapsed: true 
+      };
+      setUser(loggedUser);
       // Adoption of user visual settings on login
       setIsDark(found.dark_mode);
       setTheme(found.theme);
@@ -532,29 +566,71 @@ export default function App() {
             
             {/* --- SIDEBAR --- */}
             {(user.menu_layout || 'TOP') === 'SIDE' && (
-              <aside 
-                className={`hidden md:flex flex-col bg-[var(--surface-card)] border-r border-white/5 transition-all duration-300 relative z-[60] ${user.sidebar_collapsed ? 'w-24' : 'w-72'}`}
+              <motion.aside 
+                onMouseEnter={() => setIsSidebarHovered(true)}
+                onMouseLeave={() => setIsSidebarHovered(false)}
+                initial={false}
+                animate={{ width: (user.sidebar_collapsed === false || isSidebarHovered) ? 280 : 80 }}
+                transition={{ type: 'spring', stiffness: 300, damping: 30, mass: 0.8 }}
+                className="hidden md:flex flex-col bg-[var(--surface-card)] border-r border-white/5 sticky top-0 h-screen z-[60] overflow-hidden shadow-2xl shrink-0"
               >
-                <div className={`h-24 flex items-center px-6 mb-8 transition-all ${user.sidebar_collapsed ? 'flex-col justify-center gap-2' : 'justify-between'}`}>
-                  <div className="flex items-center gap-3 overflow-hidden">
-                    <div className="w-11 h-11 bg-primary/10 rounded-2xl flex items-center justify-center shadow-sm shrink-0 overflow-hidden">
+                <div className="h-24 flex items-center px-5 mb-8 justify-between shrink-0 overflow-hidden">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center shadow-sm shrink-0 overflow-hidden border border-primary/20">
                       {appLogo ? (
                         <img src={appLogo} alt="Logo" className="w-full h-full object-contain p-1" />
                       ) : (
                         <Newspaper className="text-primary" size={20} />
                       )}
                     </div>
-                    {!user.sidebar_collapsed && (
-                      <h1 className="text-xl font-display font-black tracking-tighter text-[var(--on-surface)] truncate">AdManager<span className="text-primary">.</span></h1>
-                    )}
+                    <AnimatePresence>
+                      {(user.sidebar_collapsed === false || isSidebarHovered) && (
+                        <motion.h1 
+                          initial={{ opacity: 0, x: -10 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          exit={{ opacity: 0, x: -10 }}
+                          className="text-xl font-display font-black tracking-tighter text-[var(--on-surface)] truncate"
+                        >
+                          AdManager<span className="text-primary">.</span>
+                        </motion.h1>
+                      )}
+                    </AnimatePresence>
                   </div>
-                  <button 
-                    onClick={() => user && updateUser({...user, sidebar_collapsed: !user.sidebar_collapsed})}
-                    className={`bg-[var(--surface)] rounded-xl flex items-center justify-center text-[var(--on-surface-variant)] hover:text-primary transition-all shrink-0 ${user.sidebar_collapsed ? 'w-full h-8' : 'w-10 h-10'}`}
-                  >
-                    <ChevronRight size={18} className={user.sidebar_collapsed ? '' : 'rotate-180'} />
-                  </button>
+                  
+                  <AnimatePresence>
+                    {(user.sidebar_collapsed === false || isSidebarHovered) && (
+                      <motion.button
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.8 }}
+                        onClick={() => updateUser({...user, sidebar_collapsed: !user.sidebar_collapsed})}
+                        className={`p-2 rounded-xl transition-all ${user.sidebar_collapsed === false ? 'bg-primary text-white' : 'text-[var(--on-surface-variant)] hover:bg-white/5 hover:text-primary'}`}
+                        title={user.sidebar_collapsed === false ? "Desanclar menú" : "Fijar menú"}
+                      >
+                        <ChevronRight size={18} className={user.sidebar_collapsed === false ? 'rotate-180' : ''} />
+                      </motion.button>
+                    )}
+                  </AnimatePresence>
                 </div>
+
+                  <AnimatePresence>
+                    {(user.sidebar_collapsed === false || isSidebarHovered) && (
+                      <motion.div 
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        className="px-2 mb-6"
+                      >
+                        <div className="relative">
+                          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--on-surface-variant)]/50" size={16} />
+                          <input 
+                            className="w-full pl-10 pr-4 py-2.5 bg-black/20 border border-white/5 rounded-xl text-xs font-medium outline-none focus:ring-2 focus:ring-primary/20 transition-all text-[var(--on-surface)]" 
+                            placeholder="Buscar..." 
+                          />
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
 
                 <nav className="flex-1 px-4 space-y-2">
                   {[
@@ -568,102 +644,130 @@ export default function App() {
                     <button 
                       key={item.id}
                       onClick={() => setCurrentScreen(item.id as Screen)}
-                      className={`w-full px-4 py-3.5 rounded-2xl transition-all flex items-center gap-4 group ${
+                      className={`w-full px-4 py-3.5 rounded-2xl transition-all flex items-center gap-4 group relative ${
                         currentScreen === item.id 
                         ? 'bg-primary text-white shadow-lg shadow-primary/20' 
                         : 'text-[var(--on-surface-variant)] hover:bg-[var(--surface)] hover:text-[var(--on-surface)]'
                       }`}
                     >
                       <item.icon size={22} className={currentScreen === item.id ? 'opacity-100' : 'opacity-60 group-hover:opacity-100'} />
-                      {!user.sidebar_collapsed && <span className="text-sm font-black tracking-tight">{item.label}</span>}
+                      <AnimatePresence>
+                        {(user.sidebar_collapsed === false || isSidebarHovered) && (
+                          <motion.span 
+                            initial={{ opacity: 0, x: -5 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, x: -5 }}
+                            className="text-sm font-black tracking-tight whitespace-nowrap"
+                          >
+                            {item.label}
+                          </motion.span>
+                        )}
+                      </AnimatePresence>
+                      
+                      {!(user.sidebar_collapsed === false || isSidebarHovered) && currentScreen === item.id && (
+                        <div className="absolute left-0 w-1 h-6 bg-white rounded-r-full" />
+                      )}
                     </button>
                   ))}
                 </nav>
 
-              </aside>
+                <div className="p-4 mt-auto border-t border-white/5 bg-black/5">
+                  <div className="flex items-center gap-3 px-2 mb-4 overflow-hidden">
+                    <div className="w-10 h-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-black text-xs shrink-0">
+                      {user.username.substring(0, 2).toUpperCase()}
+                    </div>
+                    <AnimatePresence>
+                      {(user.sidebar_collapsed === false || isSidebarHovered) && (
+                        <motion.div
+                          initial={{ opacity: 0, x: -10 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          exit={{ opacity: 0, x: -10 }}
+                          className="truncate"
+                        >
+                          <p className="text-xs font-display font-black text-[var(--on-surface)] uppercase truncate">{user.username}</p>
+                          <p className="text-[9px] font-black text-primary uppercase tracking-widest opacity-70">Sistema {user.role}</p>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                  <button 
+                    onClick={logout}
+                    className="flex items-center gap-4 text-rose-500 hover:bg-rose-500/10 transition-all font-display font-bold text-sm w-full p-3 rounded-xl group"
+                  >
+                    <LogOut size={20} className="group-hover:-translate-x-1 transition-transform" />
+                    <AnimatePresence>
+                      {(user.sidebar_collapsed === false || isSidebarHovered) && (
+                        <motion.span
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          exit={{ opacity: 0 }}
+                        >
+                          Cerrar Sesión
+                        </motion.span>
+                      )}
+                    </AnimatePresence>
+                  </button>
+                </div>
+              </motion.aside>
             )}
 
             <div className="flex-1 flex flex-col min-h-screen">
-              {/* --- HEADER --- */}
-              <header className={`sticky top-0 bg-[var(--surface-card)]/80 backdrop-blur-xl h-20 md:h-24 flex items-center justify-between px-4 md:px-8 z-50 border-b border-white/5`}>
-                 <div className="flex items-center gap-4 md:gap-10">
-                    {/* Mobile Toggle & Logo if TOP */}
+              {/* --- HEADER (Only for TOP layout) --- */}
+              {(user.menu_layout || 'TOP') === 'TOP' && (
+                <header className="sticky top-0 bg-[var(--surface-card)]/80 backdrop-blur-xl h-20 md:h-24 flex items-center justify-between px-4 md:px-8 z-50 border-b border-white/5">
+                  <div className="flex items-center gap-4 md:gap-10">
                     <div className="flex items-center gap-4">
-                      {(user.menu_layout || 'TOP') === 'SIDE' ? (
-                        <button className="md:hidden p-3 bg-[var(--surface)] rounded-xl text-[var(--on-surface)]" onClick={() => setMobileMenuOpen(true)}>
-                          <Menu size={20} />
-                        </button>
-                      ) : (
-                        <div className="flex items-center gap-2 md:gap-3">
-                          <div className="w-10 h-10 md:w-11 md:h-11 bg-primary/10 rounded-2xl flex items-center justify-center shadow-sm shrink-0 overflow-hidden">
-                            {appLogo ? (
-                              <img src={appLogo} alt="Logo" className="w-full h-full object-contain p-1" />
-                            ) : (
-                              <Newspaper className="text-primary" size={20} />
-                            )}
-                          </div>
-                          <h1 className="text-lg md:text-xl font-display font-black tracking-tighter text-[var(--on-surface)] truncate">AdManager<span className="text-primary">.</span></h1>
+                      <button className="md:hidden p-3 bg-[var(--surface)] rounded-xl text-[var(--on-surface)]" onClick={() => setMobileMenuOpen(true)}>
+                        <Menu size={20} />
+                      </button>
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 md:w-11 md:h-11 bg-primary/10 rounded-2xl flex items-center justify-center shadow-sm shrink-0 overflow-hidden">
+                          {appLogo ? (
+                            <img src={appLogo} alt="Logo" className="w-full h-full object-contain p-1" />
+                          ) : (
+                            <Newspaper className="text-primary" size={20} />
+                          )}
                         </div>
-                      )}
+                        <h1 className="text-xl font-display font-black tracking-tighter text-[var(--on-surface)]">AdManager<span className="text-primary">.</span></h1>
+                      </div>
                     </div>
+                  </div>
 
-                    {/* Desktop Top Menu */}
-                    {(user.menu_layout || 'TOP') === 'TOP' && (
-                      <nav className="hidden md:flex items-center gap-1">
-                        {[
-                          { id: 'PLANILLA', label: 'Planilla', icon: FileSpreadsheet },
-                          { id: 'CAMPAÑAS', label: 'Campañas', icon: Megaphone },
-                          { id: 'EDICIONES', label: 'Ediciones', icon: Newspaper },
-                          { id: 'CLIENTES', label: 'Clientes', icon: Users },
-                          ...(user?.role === Role.ADMIN ? [{ id: 'USUARIOS', label: 'Usuarios', icon: UserPlus }] : []),
-                          { id: 'CONFIG', label: 'Ajustes', icon: Settings },
-                        ].map(item => (
-                          <button 
-                            key={item.id}
-                            onClick={() => setCurrentScreen(item.id as Screen)}
-                            className={`px-4 py-2 rounded-xl transition-all flex items-center gap-2 group ${
-                              currentScreen === item.id 
-                              ? 'bg-primary/5 text-primary shadow-sm' 
-                              : 'text-[var(--on-surface-variant)] hover:bg-[var(--surface)] hover:text-[var(--on-surface)]'
-                            }`}
-                          >
-                            <item.icon size={18} className={currentScreen === item.id ? 'opacity-100' : 'opacity-60 group-hover:opacity-100'} />
-                            <span className="text-[13px] font-black tracking-tight">{item.label}</span>
-                          </button>
-                        ))}
-                      </nav>
-                    )}
-                 </div>
-
-                 <div className="flex items-center gap-6">
+                  <div className="flex items-center gap-6">
                     <div className="hidden lg:flex relative">
-                       <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--on-surface-variant)]" size={16} />
-                       <input className="pl-11 pr-6 py-2.5 bg-[var(--surface)] border border-transparent rounded-2xl text-xs font-medium w-64 shadow-sm outline-none focus:ring-4 focus:ring-primary/5 transition-all text-[var(--on-surface)]" placeholder="Buscar..." />
+                      <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--on-surface-variant)]" size={16} />
+                      <input className="pl-11 pr-6 py-2.5 bg-[var(--surface)] border border-transparent rounded-2xl text-xs font-medium w-64 shadow-sm outline-none focus:ring-4 focus:ring-primary/5 transition-all text-[var(--on-surface)]" placeholder="Buscar..." />
                     </div>
 
                     <div className="flex items-center gap-4 pl-6 border-l border-white/5">
-                       {(user.menu_layout || 'TOP') === 'TOP' && (
-                         <button className="md:hidden p-3 bg-[var(--surface)] rounded-xl text-[var(--on-surface)]" onClick={() => setMobileMenuOpen(true)}>
-                            <Menu size={20} />
-                         </button>
-                       )}
-                       <div className="hidden md:flex items-center gap-5">
-                          <div className="flex items-center gap-3 pr-1">
-                            <div className="text-right">
-                              <p className="text-[13px] font-display font-bold text-[var(--on-surface)] tracking-tight leading-none uppercase">{user.username}</p>
-                              <p className="text-[9px] font-black text-primary uppercase tracking-[0.1em] mt-1 opacity-70">Sístema {user.role}</p>
-                            </div>
-                            <div className="w-10 h-10 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-black text-xs">
-                              {user.username.substring(0, 2).toUpperCase()}
-                            </div>
+                      <div className="hidden md:flex items-center gap-5">
+                        <div className="flex items-center gap-3 pr-1">
+                          <div className="text-right">
+                            <p className="text-[13px] font-display font-bold text-[var(--on-surface)] tracking-tight leading-none uppercase">{user.username}</p>
+                            <p className="text-[9px] font-black text-primary uppercase tracking-[0.1em] mt-1 opacity-70">Sistema {user.role}</p>
                           </div>
-                          <button onClick={logout} className="p-2.5 bg-[var(--surface-card)] hover:bg-rose-500 hover:text-white text-[var(--on-surface-variant)] rounded-2xl transition-all border border-transparent shadow-sm group">
-                            <LogOut size={16} className="group-hover:-translate-x-0.5 transition-transform" />
-                          </button>
-                       </div>
+                          <div className="w-10 h-10 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-black text-xs">
+                            {user.username.substring(0, 2).toUpperCase()}
+                          </div>
+                        </div>
+                        <button onClick={logout} className="p-2.5 bg-[var(--surface-card)] hover:bg-rose-500 hover:text-white text-[var(--on-surface-variant)] rounded-2xl transition-all border border-transparent shadow-sm group">
+                          <LogOut size={16} className="group-hover:-translate-x-0.5 transition-transform" />
+                        </button>
+                      </div>
                     </div>
-                 </div>
-              </header>
+                  </div>
+                </header>
+              )}
+
+              {/* Mobile Toggle for SIDE layout */}
+              {(user.menu_layout || 'TOP') === 'SIDE' && (
+                <button 
+                  onClick={() => setMobileMenuOpen(true)}
+                  className="md:hidden fixed top-6 right-6 z-[70] p-4 bg-primary text-white rounded-2xl shadow-xl shadow-primary/30"
+                >
+                  <Menu size={24} />
+                </button>
+              )}
 
               {/* Main Content Area */}
               <main className="flex-1 p-4 md:p-10 relative z-10">
@@ -719,8 +823,10 @@ export default function App() {
                         avisos={avisos}
                         campañas={campañas}
                         feriados={feriados}
-                        rows={planillaRows}
-                        setRows={setPlanillaRows}
+                        masterEdId={planillaMasterEdId}
+                        setMasterEdId={setPlanillaMasterEdId}
+                        rows={getRowsForEdition(planillaMasterEdId || '')}
+                        setRows={(rows: any[]) => updateRowsForEdition(planillaMasterEdId || '', rows)}
                         onSaveCampaña={(c, a) => {
                           const campId = Math.random().toString(36).slice(2, 11);
                           setCampañas(prev => [...prev, { ...c, id: campId }]);

@@ -2130,7 +2130,7 @@ export function ScreenUsuarios({ users, onUpsert, onDelete }: any) {
 }
 
 // --- PLANILLA ---
-export function ScreenPlanilla({ ediciones, clientes, avisos, campañas, feriados, rows, setRows, onSaveCampaña, onAddCliente, onNavigateToCampaña }: any) {
+export function ScreenPlanilla({ ediciones, clientes, avisos, campañas, feriados, masterEdId, setMasterEdId, rows, setRows, onSaveCampaña, onAddCliente, onNavigateToCampaña }: any) {
   // Encontrar la edición del día siguiente a hoy (o la más cercana futura)
   const suggestedEdition = useMemo(() => {
     if (!ediciones || ediciones.length === 0) return null;
@@ -2145,13 +2145,16 @@ export function ScreenPlanilla({ ediciones, clientes, avisos, campañas, feriado
     return futureEditions[0] || null;
   }, [ediciones]);
 
-  const [masterEd, setMasterEd] = useState<any>(suggestedEdition);
+  const masterEd = useMemo(() => {
+    if (!masterEdId) return null;
+    return ediciones.find((e: any) => e.id === masterEdId) || null;
+  }, [ediciones, masterEdId]);
   
   useEffect(() => {
-    if (suggestedEdition && !masterEd) {
-      setMasterEd(suggestedEdition);
+    if (suggestedEdition && !masterEdId) {
+      setMasterEdId(suggestedEdition.id);
     }
-  }, [suggestedEdition, masterEd]);
+  }, [suggestedEdition, masterEdId, setMasterEdId]);
 
   const handleGenerateRow = (rowId: string) => {
     const row = rows.find(r => r.id === rowId);
@@ -2167,7 +2170,7 @@ export function ScreenPlanilla({ ediciones, clientes, avisos, campañas, feriado
     
     // Generar fechas para la campaña (usando la lógica de planilla: consecutivas)
     const startDate = new Date(masterEd.fecha + 'T12:00:00');
-    const validDates = generateValidDates(startDate, cantSalidas, feriados, [0,1,2,3,4,5,6]); // Todos los días
+    const validDates = generateValidDates(startDate, cantSalidas, feriados, [1, 2, 3, 4, 5]); // Lunes a Viernes únicamente
 
     // Crear la campaña
     const newCamp = {
@@ -2218,11 +2221,11 @@ export function ScreenPlanilla({ ediciones, clientes, avisos, campañas, feriado
            <div className="flex flex-col min-w-[280px]">
               <span className="text-[10px] font-black uppercase text-primary tracking-widest mb-2">Edición Trabajo</span>
               <CustomSelect 
-                value={masterEd?.id || ''}
-                onChange={(val) => setMasterEd(ediciones.find((ed: any) => ed.id === val))}
+                value={masterEdId}
+                onChange={(val) => setMasterEdId(val)}
                 options={[
                   { value: '', label: 'Seleccionar Edición...' },
-                  ...ediciones.sort((a: any, b: any) => b.fecha.localeCompare(a.fecha)).map((e: any) => ({
+                  ...ediciones.sort((a: any, b: any) => a.fecha.localeCompare(b.fecha)).map((e: any) => ({
                     value: e.id,
                     label: `N° ${e.numero} (${formatDateES(e.fecha)})`
                   }))
