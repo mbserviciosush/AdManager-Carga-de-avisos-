@@ -37,6 +37,20 @@ import {
   Usuario
 } from '../types';
 import { generateValidDates, formatDateES } from '../lib/dateUtils';
+import { 
+  format, 
+  addMonths, 
+  subMonths, 
+  startOfMonth, 
+  endOfMonth, 
+  startOfWeek, 
+  endOfWeek, 
+  eachDayOfInterval, 
+  isSameMonth, 
+  isSameDay, 
+  isToday,
+  parseISO
+} from 'date-fns';
 import { exportEdicionPDF, exportCampañaPDF, previewEdicionPDF, previewCampañaPDF } from '../lib/pdfUtils';
 import { motion, AnimatePresence } from 'motion/react';
 import { CustomDatePicker } from '../components/CustomDatePicker';
@@ -2213,6 +2227,134 @@ function PDFPreviewModal({ isOpen, onClose, pdfUrl, title }: any) {
   );
 }
 
+function CalendarEditionSelect({ value, onChange, ediciones }: any) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [currentMonth, setCurrentMonth] = useState(new Date());
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  const selectedEd = ediciones.find((e: any) => e.id === value);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const suggestedEdition = useMemo(() => {
+    if (!ediciones || ediciones.length === 0) return null;
+    const futureEditions = ediciones
+      .filter((e: any) => new Date(e.fecha + 'T12:00:00') > today)
+      .sort((a: any, b: any) => a.fecha.localeCompare(b.fecha));
+    return futureEditions[0] || null;
+  }, [ediciones]);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const days = useMemo(() => {
+    const start = startOfWeek(startOfMonth(currentMonth), { weekStartsOn: 1 });
+    const end = endOfWeek(endOfMonth(currentMonth), { weekStartsOn: 1 });
+    return eachDayOfInterval({ start, end });
+  }, [currentMonth]);
+
+  return (
+    <div className="relative w-full" ref={containerRef}>
+      <button 
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full h-14 bg-white/5 border border-white/10 rounded-2xl px-5 flex items-center justify-between text-[var(--on-surface)] hover:bg-white/10 transition-all group"
+      >
+        <div className="flex items-center gap-3">
+          <Calendar size={18} className="text-primary" />
+          <span className="font-bold text-sm">
+            {selectedEd ? `N° ${selectedEd.numero} (${formatDateES(selectedEd.fecha)})` : 'Seleccionar Edición...'}
+          </span>
+        </div>
+        <ChevronRight size={16} className={`transition-transform duration-300 ${isOpen ? 'rotate-90' : ''}`} />
+      </button>
+
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div 
+            initial={{ opacity: 0, y: 10, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 10, scale: 0.95 }}
+            className="absolute top-full left-0 mt-3 w-[320px] bg-[var(--surface-card)] border border-white/10 rounded-3xl shadow-2xl z-[200] overflow-hidden backdrop-blur-xl"
+          >
+            <div className="p-5">
+              <div className="flex items-center justify-between mb-6">
+                <h4 className="font-display font-black text-[var(--on-surface)] capitalize">
+                  {format(currentMonth, 'MMMM yyyy', { locale: undefined })}
+                </h4>
+                <div className="flex gap-1">
+                  <button onClick={() => setCurrentMonth(subMonths(currentMonth, 1))} className="p-2 hover:bg-white/5 rounded-xl text-[var(--on-surface-variant)]"><ChevronLeft size={18}/></button>
+                  <button onClick={() => setCurrentMonth(addMonths(currentMonth, 1))} className="p-2 hover:bg-white/5 rounded-xl text-[var(--on-surface-variant)]"><ChevronRight size={18}/></button>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-7 gap-1 mb-2">
+                {['L', 'M', 'M', 'J', 'V', 'S', 'D'].map(d => (
+                  <div key={d} className="text-[10px] font-black text-primary text-center uppercase tracking-widest">{d}</div>
+                ))}
+              </div>
+
+              <div className="grid grid-cols-7 gap-1">
+                {days.map((day, idx) => {
+                  const dateStr = format(day, 'yyyy-MM-dd');
+                  const edOnDay = ediciones.find((e: any) => e.fecha === dateStr);
+                  const isSelected = selectedEd?.fecha === dateStr;
+                  const isSuggested = suggestedEdition?.fecha === dateStr;
+                  const isCurrentMonth = isSameMonth(day, currentMonth);
+
+                  return (
+                    <button
+                      key={idx}
+                      disabled={!edOnDay}
+                      onClick={() => {
+                        onChange(edOnDay.id);
+                        setIsOpen(false);
+                      }}
+                      className={`
+                        relative h-10 w-full rounded-xl flex items-center justify-center text-xs font-bold transition-all
+                        ${!isCurrentMonth ? 'opacity-20' : ''}
+                        ${edOnDay ? 'hover:bg-primary hover:text-slate-900 cursor-pointer' : 'cursor-default opacity-30'}
+                        ${isSelected ? 'bg-primary text-slate-900 shadow-lg shadow-primary/20 scale-110 z-10' : ''}
+                        ${isSuggested && !isSelected ? 'ring-2 ring-primary ring-offset-2 ring-offset-[var(--surface-card)]' : ''}
+                        ${isToday(day) && !isSelected ? 'text-primary' : 'text-[var(--on-surface)]'}
+                      `}
+                    >
+                      {format(day, 'd')}
+                      {isSuggested && (
+                        <span className="absolute -top-1 -right-1 flex h-3 w-3">
+                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+                          <span className="relative inline-flex rounded-full h-3 w-3 bg-primary"></span>
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+
+              <div className="mt-6 pt-4 border-t border-white/5 flex flex-col gap-2">
+                 <div className="flex items-center gap-2 text-[9px] font-black uppercase text-[var(--on-surface-variant)]">
+                    <div className="w-2 h-2 rounded-full bg-primary shadow-[0_0_8px_var(--primary)]"></div>
+                    <span>Edición Sugerida (Próxima)</span>
+                 </div>
+                 <div className="flex items-center gap-2 text-[9px] font-black uppercase text-[var(--on-surface-variant)] opacity-50">
+                    <div className="w-2 h-2 rounded-full bg-white/20"></div>
+                    <span>Días sin edición</span>
+                 </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
 // --- PLANILLA ---
 export function ScreenPlanilla({ ediciones, clientes, avisos, campañas, feriados, masterEdId, setMasterEdId, rows, setRows, onSaveCampaña, onAddCliente, onNavigateToCampaña, userRole, appLogo }: any) {
   const isReadOnly = userRole === Role.DIAGRAMACION;
@@ -2311,17 +2453,10 @@ export function ScreenPlanilla({ ediciones, clientes, avisos, campañas, feriado
            <div className="flex flex-col min-w-[280px]">
               <span className="text-[10px] font-black uppercase text-primary tracking-widest mb-2">Edición Trabajo</span>
               <div className="flex gap-2">
-                <CustomSelect 
+                <CalendarEditionSelect 
                   value={masterEdId}
                   onChange={(val: any) => setMasterEdId(val)}
-                  options={[
-                    { value: '', label: 'Seleccionar Edición...' },
-                    ...ediciones.sort((a: any, b: any) => a.fecha.localeCompare(b.fecha)).map((e: any) => ({
-                      value: e.id,
-                      label: `N° ${e.numero} (${formatDateES(e.fecha)})`
-                    }))
-                  ]}
-                  className="w-full"
+                  ediciones={ediciones}
                 />
                 {masterEd && (
                   <button 
