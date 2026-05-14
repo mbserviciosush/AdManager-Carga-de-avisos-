@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { 
   Plus, 
   Trash2, 
@@ -717,10 +718,12 @@ export function ScreenNuevaCampaña({
                           onKeyDown={e => {
                             if(e.key === 'Enter' && quickClientName.trim()) {
                               const newC = onAddCliente(quickClientName.trim());
-                              if(newC) setClienteId(newC.id);
-                              setQuickClientName('');
-                              setShowQuickAdd(false);
-                              setTimeout(() => nombreRef.current?.focus(), 10);
+                              if(newC) {
+                                setClienteId(newC.id);
+                                setQuickClientName('');
+                                setShowQuickAdd(false);
+                                setTimeout(() => nombreRef.current?.focus(), 10);
+                              }
                             }
                           }}
                           className="modern-input h-10 text-sm"
@@ -729,9 +732,11 @@ export function ScreenNuevaCampaña({
                           onClick={() => {
                             if (quickClientName.trim()) {
                               const newC = onAddCliente(quickClientName.trim());
-                              if(newC) setClienteId(newC.id);
-                              setQuickClientName('');
-                              setShowQuickAdd(false);
+                              if(newC) {
+                                setClienteId(newC.id);
+                                setQuickClientName('');
+                                setShowQuickAdd(false);
+                              }
                             }
                           }}
                           className="w-10 h-10 modern-button-primary !p-0 flex items-center justify-center shrink-0"
@@ -1586,7 +1591,10 @@ export function ScreenClientes({ clientes, campañas, avisos, onNavigateToCampa�
                   
                   <div className="flex gap-4 pt-4">
                     <button onClick={()=>setEditing(null)} className="flex-1 py-5 modern-button-secondary border-none !bg-slate-100 !text-slate-500">Cancelar</button>
-                    <button onClick={()=>{onUpsert(editing); setEditing(null)}} className="flex-1 py-5 modern-button-primary">Guardar Registro</button>
+                    <button onClick={()=>{
+                      const success = onUpsert(editing);
+                      if (success) setEditing(null);
+                    }} className="flex-1 py-5 modern-button-primary">Guardar Registro</button>
                   </div>
                </div>
             </motion.div>
@@ -2153,8 +2161,9 @@ export function ScreenUsuarios({ users, onUpsert, onDelete }: any) {
 // --- SHARED COMPONENTS ---
 function PDFPreviewModal({ isOpen, onClose, pdfUrl, title }: any) {
   if (!isOpen) return null;
-  return (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 md:p-10">
+
+  return createPortal(
+    <div className="fixed inset-0 z-[10000] flex items-center justify-center p-4 md:p-10">
       <motion.div 
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -2199,7 +2208,8 @@ function PDFPreviewModal({ isOpen, onClose, pdfUrl, title }: any) {
            </a>
         </div>
       </motion.div>
-    </div>
+    </div>,
+    document.body
   );
 }
 
@@ -2282,9 +2292,11 @@ export function ScreenPlanilla({ ediciones, clientes, avisos, campañas, feriado
     const row = rows.find(r => r.id === rowId);
     if (!row || !row.new_cliente_name) return;
     
-    onAddCliente(row.new_cliente_name);
-    alert(`Cliente "${row.new_cliente_name}" creado.`);
-    setRows(prev => prev.map(r => r.id === rowId ? { ...r, new_cliente_name: '' } : r));
+    const newC = onAddCliente(row.new_cliente_name);
+    if (newC) {
+      alert(`Cliente "${row.new_cliente_name}" creado.`);
+      setRows(prev => prev.map(r => r.id === rowId ? { ...r, new_cliente_name: '' } : r));
+    }
   };
 
   return (

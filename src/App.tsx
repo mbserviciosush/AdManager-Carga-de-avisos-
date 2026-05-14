@@ -860,7 +860,16 @@ export default function App() {
                           setCampañas(prev => [...prev, { ...c, id: campId }]);
                           setAvisos(prev => [...prev, ...a.map(av => ({ ...av, campaña_id: campId }))]);
                         }}
-                        onAddCliente={(n) => setClientes(prev => [...prev, { id: Math.random().toString(36), nombre: n }])}
+                        onAddCliente={(n) => {
+                          const exists = clientes.some((c: any) => c.nombre.toLowerCase() === n.toLowerCase());
+                          if (exists) {
+                            alert(`El cliente "${n}" ya existe.`);
+                            return null;
+                          }
+                          const newClient = { id: Math.random().toString(36), nombre: n };
+                          setClientes(prev => [...prev, newClient]);
+                          return newClient;
+                        }}
                         onNavigateToCampaña={(id: string) => {
                           setTargetCampañaId(id);
                           setCurrentScreen('CAMPAÑAS');
@@ -876,8 +885,14 @@ export default function App() {
                         avisos={avisos}
                         onNavigateToCampaña={(id) => { setTargetCampañaId(id); setCurrentScreen('CAMPAÑAS'); }}
                         onUpsert={(c) => {
+                          const exists = clientes.some((x: any) => x.id !== c.id && x.nombre.toLowerCase() === c.nombre.toLowerCase());
+                          if (exists) {
+                            alert(`El cliente "${c.nombre}" ya existe.`);
+                            return false;
+                          }
                           if (c.id) setClientes(prev => prev.map(x => x.id === c.id ? c : x));
                           else setClientes(prev => [...prev, { ...c, id: Math.random().toString(36) }]);
+                          return true;
                         }}
                         onDelete={(id) => setClientes(prev => prev.filter(c => c.id !== id))}
                       />
