@@ -731,6 +731,30 @@ export default function App() {
                         <h1 className="text-xl font-display font-black tracking-tighter text-[var(--on-surface)]">AdManager<span className="text-primary">.</span></h1>
                       </div>
                     </div>
+
+                    <nav className="hidden md:flex items-center gap-1">
+                      {[
+                        { id: 'PLANILLA', label: 'Planilla', icon: FileSpreadsheet },
+                        { id: 'CAMPAÑAS', label: 'Campañas', icon: Megaphone },
+                        { id: 'EDICIONES', label: 'Ediciones', icon: Newspaper },
+                        { id: 'CLIENTES', label: 'Clientes', icon: Users },
+                        ...(user?.role === Role.ADMIN ? [{ id: 'USUARIOS', label: 'Usuarios', icon: UserPlus }] : []),
+                        { id: 'CONFIG', label: 'Ajustes', icon: Settings },
+                      ].map(item => (
+                        <button 
+                          key={item.id}
+                          onClick={() => setCurrentScreen(item.id as Screen)}
+                          className={`px-4 py-2 rounded-xl transition-all flex items-center gap-2 group ${
+                            currentScreen === item.id 
+                            ? 'bg-primary/5 text-primary shadow-sm' 
+                            : 'text-[var(--on-surface-variant)] hover:bg-white/5 hover:text-primary'
+                          }`}
+                        >
+                          <item.icon size={18} className={currentScreen === item.id ? 'opacity-100' : 'opacity-60 group-hover:opacity-100'} />
+                          <span className="text-sm font-display font-bold tracking-tight">{item.label}</span>
+                        </button>
+                      ))}
+                    </nav>
                   </div>
 
                   <div className="flex items-center gap-6">
