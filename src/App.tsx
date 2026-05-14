@@ -72,7 +72,7 @@ export default function App() {
   const getRowsForEdition = useMemo(() => (edId: string) => {
     const key = edId || 'default';
     if (planillaRowsByEdition[key]) return planillaRowsByEdition[key];
-    return Array(15).fill(null).map(() => ({
+    return Array(8).fill(null).map(() => ({
       id: Math.random().toString(36).slice(2, 9),
       archivo: '',
       producto: PRODUCTOS[0],
@@ -88,7 +88,7 @@ export default function App() {
   const updateRowsForEdition = (edId: string, rowsOrFn: any | ((prev: any[]) => any[])) => {
     const key = edId || 'default';
     setPlanillaRowsByEdition(prevMap => {
-      const currentRows = prevMap[key] || Array(15).fill(null).map(() => ({
+      const currentRows = prevMap[key] || Array(8).fill(null).map(() => ({
         id: Math.random().toString(36).slice(2, 9),
         archivo: '',
         producto: PRODUCTOS[0],

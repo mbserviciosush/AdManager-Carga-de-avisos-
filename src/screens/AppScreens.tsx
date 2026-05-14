@@ -2505,7 +2505,7 @@ export function ScreenPlanilla({ ediciones, clientes, avisos, campañas, feriado
                       value={row.archivo}
                       onChange={e => setRows(prev => prev.map(r => r.id === row.id ? { ...r, archivo: e.target.value } : r))}
                       placeholder="Nombre del aviso..."
-                      className="w-full bg-transparent border-none outline-none font-bold text-[var(--on-surface)] placeholder:text-slate-300 dark:placeholder:text-slate-700"
+                      className="w-full bg-slate-50 dark:bg-white/5 px-4 py-2 rounded-xl border border-transparent focus:border-primary/30 outline-none font-bold text-[var(--on-surface)] placeholder:text-slate-300 dark:placeholder:text-slate-700 transition-all"
                     />
                   </td>
                   <td className="px-6 py-4">
@@ -2530,7 +2530,8 @@ export function ScreenPlanilla({ ediciones, clientes, avisos, campañas, feriado
                       disabled={row.status === 'DONE' || isReadOnly}
                       value={row.ubicacion}
                       onChange={e => setRows(prev => prev.map(r => r.id === row.id ? { ...r, ubicacion: e.target.value } : r))}
-                      className="w-full bg-transparent border-none outline-none font-medium text-[var(--on-surface-variant)]"
+                      placeholder="Ej: Página 3..."
+                      className="w-full bg-slate-50 dark:bg-white/5 px-4 py-2 rounded-xl border border-transparent focus:border-primary/30 outline-none font-medium text-[var(--on-surface-variant)] placeholder:text-slate-300 dark:placeholder:text-slate-600 transition-all"
                     />
                   </td>
                   <td className="px-6 py-4">
@@ -2592,7 +2593,8 @@ export function ScreenPlanilla({ ediciones, clientes, avisos, campañas, feriado
                       disabled={row.status === 'DONE' || isReadOnly}
                       value={row.observaciones}
                       onChange={e => setRows(prev => prev.map(r => r.id === row.id ? { ...r, observaciones: e.target.value } : r))}
-                      className="w-full bg-transparent border-none outline-none font-medium text-[var(--on-surface-variant)]"
+                      placeholder="Notas adicionales..."
+                      className="w-full bg-slate-50 dark:bg-white/5 px-4 py-2 rounded-xl border border-transparent focus:border-primary/30 outline-none font-medium text-[var(--on-surface-variant)] placeholder:text-slate-300 dark:placeholder:text-slate-600 transition-all"
                     />
                   </td>
                   <td className="px-6 py-4">
@@ -2629,22 +2631,22 @@ export function ScreenPlanilla({ ediciones, clientes, avisos, campañas, feriado
          {!isReadOnly && (
            <div className="p-6 bg-[var(--surface)] flex justify-end">
               <button 
-               onClick={() => setRows(prev => [...prev, ...Array(5).fill(null).map(() => ({
-                 id: Math.random().toString(36).slice(2, 9),
-                 archivo: '',
-                 producto: PRODUCTOS[0],
-                 salidas: '1',
-                 ubicacion: '',
-                 cliente_id: '',
-                 new_cliente_name: '',
-                 observaciones: '',
-                 status: 'PENDING' as 'PENDING' | 'DONE'
-               }))])}
-               className="flex items-center gap-2 px-6 py-3 bg-[var(--surface-card)] text-[var(--on-surface)] rounded-2xl font-bold hover:bg-slate-50 dark:hover:bg-white/5 transition-all border border-transparent"
-              >
-                 <Plus size={18} />
-                 Agregar más filas
-              </button>
+                onClick={() => setRows(prev => [...prev, {
+                  id: Math.random().toString(36).slice(2, 9),
+                  archivo: '',
+                  producto: PRODUCTOS[0],
+                  salidas: '1',
+                  ubicacion: '',
+                  cliente_id: '',
+                  new_cliente_name: '',
+                  observaciones: '',
+                  status: 'PENDING' as 'PENDING' | 'DONE'
+                }])}
+                className="flex items-center gap-2 px-6 py-3 bg-[var(--surface-card)] text-[var(--on-surface)] rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-primary hover:text-slate-900 transition-all border border-white/5 shadow-lg"
+               >
+                  <PlusCircle size={18} />
+                  Agregar Fila Nueva
+               </button>
            </div>
          )}
       </div>
