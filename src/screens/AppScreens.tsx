@@ -2232,17 +2232,23 @@ function CalendarEditionSelect({ value, onChange, ediciones }: any) {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const selectedEd = ediciones.find((e: any) => e.id === value);
   const today = new Date();
-  today.setHours(0, 0, 0, 0);
+  const selectedEd = ediciones.find((e: any) => e.id === value);
+  const now = new Date();
 
   const suggestedEdition = useMemo(() => {
     if (!ediciones || ediciones.length === 0) return null;
+    // Comparamos contra el inicio del día de la edición. 
+    // Si la edición es 'hoy' (14) pero ya son las 2 AM, 
+    // la edición del 14 se considera 'pasada' y sugerimos la del 15.
     const futureEditions = ediciones
-      .filter((e: any) => new Date(e.fecha + 'T12:00:00') > today)
+      .filter((e: any) => {
+        const edDate = new Date(e.fecha + 'T00:00:00');
+        return edDate > now;
+      })
       .sort((a: any, b: any) => a.fecha.localeCompare(b.fecha));
     return futureEditions[0] || null;
-  }, [ediciones]);
+  }, [ediciones, now]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -2255,8 +2261,8 @@ function CalendarEditionSelect({ value, onChange, ediciones }: any) {
   }, []);
 
   const days = useMemo(() => {
-    const start = startOfWeek(startOfMonth(currentMonth), { weekStartsOn: 1 });
-    const end = endOfWeek(endOfMonth(currentMonth), { weekStartsOn: 1 });
+    const start = startOfWeek(startOfMonth(currentMonth), { weekStartsOn: 0 });
+    const end = endOfWeek(endOfMonth(currentMonth), { weekStartsOn: 0 });
     return eachDayOfInterval({ start, end });
   }, [currentMonth]);
 
@@ -2295,7 +2301,7 @@ function CalendarEditionSelect({ value, onChange, ediciones }: any) {
               </div>
 
               <div className="grid grid-cols-7 gap-1 mb-2">
-                {['L', 'M', 'M', 'J', 'V', 'S', 'D'].map(d => (
+                {['D', 'L', 'M', 'M', 'J', 'V', 'S'].map(d => (
                   <div key={d} className="text-[10px] font-black text-primary text-center uppercase tracking-widest">{d}</div>
                 ))}
               </div>
