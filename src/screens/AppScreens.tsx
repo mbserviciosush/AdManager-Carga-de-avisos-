@@ -1313,12 +1313,12 @@ function CalendarView({ ediciones, avisos, feriados, onViewDetail, onExportPDF }
           return (
             <div 
               key={idx} 
-              className={`min-h-[160px] p-4 transition-all relative group flex flex-col justify-between ${!isSelectedMonth ? 'bg-slate-50/30 dark:bg-slate-900/10 opacity-20' : 'bg-[#0f172a] hover:bg-[#1e293b]/30'}`}
+              className={`min-h-[160px] p-4 transition-all relative group flex flex-col justify-between ${!isSelectedMonth ? 'bg-[var(--surface)]/30 opacity-20' : 'bg-[var(--surface-card)] hover:bg-primary/5'}`}
             >
                {/* Top Section: Day + Edition Info */}
                <div className="flex items-start gap-4">
                   {/* Day Number */}
-                  <span className={`text-4xl font-display font-black leading-none tracking-tighter ${isSameDay(day, new Date()) ? 'text-primary' : isRed ? 'text-rose-500/80' : 'text-white'}`}>
+                  <span className={`text-4xl font-display font-black leading-none tracking-tighter ${isSameDay(day, new Date()) ? 'text-primary' : isRed ? 'text-rose-500/80' : 'text-[var(--on-surface)]'}`}>
                     {format(day, 'd')}
                   </span>
 
@@ -1343,15 +1343,15 @@ function CalendarView({ ediciones, avisos, feriados, onViewDetail, onExportPDF }
                  {ed ? (
                     <div 
                       onClick={() => onViewDetail(ed)}
-                      className="w-full py-5 rounded-full border border-slate-700/50 bg-slate-800/20 flex items-center justify-center cursor-pointer hover:border-primary/50 hover:bg-primary/10 transition-all group/pill"
+                      className="w-full py-5 rounded-full border border-[var(--outline)]/20 bg-[var(--surface)]/30 flex items-center justify-center cursor-pointer hover:border-primary/50 hover:bg-primary/10 transition-all group/pill shadow-sm"
                     >
-                       <span className="text-lg font-bold text-slate-400 group-hover/pill:text-slate-100 transition-colors">
+                       <span className="text-lg font-bold text-[var(--on-surface-variant)] group-hover/pill:text-primary transition-colors">
                          {edAvisos.length} Avisos
                        </span>
                     </div>
                  ) : (
-                    <div className="w-full py-5 rounded-full border border-slate-800/30 border-dashed flex items-center justify-center">
-                       <span className="text-xs font-bold text-slate-700 uppercase tracking-widest">Sin Edición</span>
+                    <div className="w-full py-5 rounded-full border border-[var(--outline)]/20 border-dashed flex items-center justify-center opacity-40">
+                       <span className="text-[10px] font-black text-[var(--on-surface-variant)] uppercase tracking-widest">Sin Edición</span>
                     </div>
                  )}
                </div>

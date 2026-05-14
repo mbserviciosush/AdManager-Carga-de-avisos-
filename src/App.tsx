@@ -714,14 +714,14 @@ export default function App() {
             <div className="flex-1 flex flex-col min-h-screen">
               {/* --- HEADER (Only for TOP layout) --- */}
               {(user.menu_layout || 'TOP') === 'TOP' && (
-                <header className="sticky top-0 bg-[var(--surface-card)]/80 backdrop-blur-xl h-20 md:h-24 flex items-center justify-between px-4 md:px-8 z-50 border-b border-white/5">
-                  <div className="flex items-center gap-4 md:gap-10">
-                    <div className="flex items-center gap-4">
+                <header className="sticky top-0 bg-[var(--surface-card)]/95 backdrop-blur-2xl h-20 md:h-24 flex items-center justify-between px-4 md:px-8 z-50 border-b border-white/10 shadow-lg">
+                  <div className="flex items-center gap-4 md:gap-12 w-full">
+                    <div className="flex items-center gap-4 shrink-0">
                       <button className="md:hidden p-3 bg-[var(--surface)] rounded-xl text-[var(--on-surface)]" onClick={() => setMobileMenuOpen(true)}>
                         <Menu size={20} />
                       </button>
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 md:w-11 md:h-11 bg-primary/10 rounded-2xl flex items-center justify-center shadow-sm shrink-0 overflow-hidden">
+                        <div className="w-10 h-10 md:w-11 md:h-11 bg-primary/20 rounded-2xl flex items-center justify-center shadow-sm shrink-0 overflow-hidden border border-primary/30">
                           {appLogo ? (
                             <img src={appLogo} alt="Logo" className="w-full h-full object-contain p-1" />
                           ) : (
@@ -732,7 +732,7 @@ export default function App() {
                       </div>
                     </div>
 
-                    <nav className="hidden md:flex items-center gap-1">
+                    <nav className="hidden md:flex items-center gap-2">
                       {[
                         { id: 'PLANILLA', label: 'Planilla', icon: FileSpreadsheet },
                         { id: 'CAMPAÑAS', label: 'Campañas', icon: Megaphone },
@@ -744,14 +744,14 @@ export default function App() {
                         <button 
                           key={item.id}
                           onClick={() => setCurrentScreen(item.id as Screen)}
-                          className={`px-4 py-2 rounded-xl transition-all flex items-center gap-2 group ${
+                          className={`px-5 py-2.5 rounded-2xl transition-all flex items-center gap-2.5 group ${
                             currentScreen === item.id 
-                            ? 'bg-primary/5 text-primary shadow-sm' 
+                            ? 'bg-primary text-white shadow-md shadow-primary/20' 
                             : 'text-[var(--on-surface-variant)] hover:bg-white/5 hover:text-primary'
                           }`}
                         >
-                          <item.icon size={18} className={currentScreen === item.id ? 'opacity-100' : 'opacity-60 group-hover:opacity-100'} />
-                          <span className="text-sm font-display font-bold tracking-tight">{item.label}</span>
+                          <item.icon size={18} className={currentScreen === item.id ? 'text-white' : 'opacity-60 group-hover:opacity-100'} />
+                          <span className="text-sm font-display font-black tracking-tight">{item.label}</span>
                         </button>
                       ))}
                     </nav>
