@@ -1455,6 +1455,9 @@ export function ScreenClientes({ clientes, campañas, avisos, onNavigateToCampa�
                        <div className="flex flex-col">
                           <span className="font-display font-bold text-[var(--on-surface)] text-lg leading-tight">{c.nombre}</span>
                           <div className="flex items-center gap-3 mt-1">
+                             <th className="px-6 py-4 text-left text-[10px] font-black text-[var(--on-surface-variant)] uppercase tracking-[0.2em] opacity-60">
+                    ARCHIVO !!! TEST !!!
+                  </th>
                              <div className="flex items-center gap-1.5 px-2 py-0.5 bg-[var(--surface)]/50 group-hover:bg-primary/20 group-hover:text-primary group-hover:shadow-[0_0_10px_var(--primary)] rounded-lg text-[10px] font-black text-[var(--on-surface-variant)] uppercase tracking-tighter transition-all">
                                <Megaphone size={10} className="text-primary group-hover:opacity-100 opacity-70" />
                                {clientCampañas.length} Campañas
@@ -2507,7 +2510,7 @@ export function ScreenPlanilla({ ediciones, clientes, avisos, campañas, feriado
                         onChange={e => setRows(prev => prev.map(r => r.id === row.id ? { ...r, archivo: e.target.value } : r))}
                         className="w-full bg-transparent outline-none font-bold text-[var(--on-surface)] focus:text-primary transition-all px-0"
                       />
-                      <div className="h-[4px] w-full bg-red-600 mt-1" />
+                      <div className="h-[1px] w-full bg-slate-400 dark:bg-white/10 mt-1" />
                     </div>
                   </td>
                   <td className="px-6 py-4">
@@ -2535,7 +2538,7 @@ export function ScreenPlanilla({ ediciones, clientes, avisos, campañas, feriado
                         onChange={e => setRows(prev => prev.map(r => r.id === row.id ? { ...r, ubicacion: e.target.value } : r))}
                         className="w-full bg-transparent outline-none font-medium text-[var(--on-surface-variant)] focus:text-primary transition-all px-0"
                       />
-                      <div className="h-[4px] w-full bg-red-600 mt-1" />
+                      <div className="h-[1px] w-full bg-slate-400 dark:bg-white/10 mt-1" />
                     </div>
                   </td>
                   <td className="px-6 py-4">
@@ -2600,7 +2603,7 @@ export function ScreenPlanilla({ ediciones, clientes, avisos, campañas, feriado
                         onChange={e => setRows(prev => prev.map(r => r.id === row.id ? { ...r, observaciones: e.target.value } : r))}
                         className="w-full bg-transparent outline-none font-medium text-[var(--on-surface-variant)] focus:text-primary transition-all px-0"
                       />
-                      <div className="h-[4px] w-full bg-red-600 mt-1" />
+                      <div className="h-[1px] w-full bg-slate-400 dark:bg-white/10 mt-1" />
                     </div>
                   </td>
                   <td className="px-6 py-4">
