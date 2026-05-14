@@ -2500,13 +2500,14 @@ export function ScreenPlanilla({ ediciones, clientes, avisos, campañas, feriado
               {rows.map((row) => (
                 <tr key={row.id} className={`group transition-colors ${row.status === 'DONE' ? 'bg-emerald-50/10' : 'hover:bg-slate-50/50 dark:hover:bg-white/5'}`}>
                   <td className="px-6 py-4">
-                    <div className="border-b-2 border-slate-800 dark:border-white/20 pb-1">
+                    <div className="flex flex-col">
                       <input 
                         disabled={row.status === 'DONE' || isReadOnly}
                         value={row.archivo}
                         onChange={e => setRows(prev => prev.map(r => r.id === row.id ? { ...r, archivo: e.target.value } : r))}
                         className="w-full bg-transparent outline-none font-bold text-[var(--on-surface)] focus:text-primary transition-all px-0"
                       />
+                      <div className="h-[2px] w-full bg-slate-900/80 dark:bg-white/20 mt-1" />
                     </div>
                   </td>
                   <td className="px-6 py-4">
@@ -2527,13 +2528,14 @@ export function ScreenPlanilla({ ediciones, clientes, avisos, campañas, feriado
                     />
                   </td>
                   <td className="px-6 py-4">
-                    <div className="border-b-2 border-slate-800 dark:border-white/20 pb-1">
+                    <div className="flex flex-col">
                       <input 
                         disabled={row.status === 'DONE' || isReadOnly}
                         value={row.ubicacion}
                         onChange={e => setRows(prev => prev.map(r => r.id === row.id ? { ...r, ubicacion: e.target.value } : r))}
                         className="w-full bg-transparent outline-none font-medium text-[var(--on-surface-variant)] focus:text-primary transition-all px-0"
                       />
+                      <div className="h-[2px] w-full bg-slate-900/80 dark:bg-white/20 mt-1" />
                     </div>
                   </td>
                   <td className="px-6 py-4">
@@ -2591,13 +2593,14 @@ export function ScreenPlanilla({ ediciones, clientes, avisos, campañas, feriado
                     </div>
                   </td>
                   <td className="px-6 py-4">
-                    <div className="border-b-2 border-slate-800 dark:border-white/20 pb-1">
+                    <div className="flex flex-col">
                       <input 
                         disabled={row.status === 'DONE' || isReadOnly}
                         value={row.observaciones}
                         onChange={e => setRows(prev => prev.map(r => r.id === row.id ? { ...r, observaciones: e.target.value } : r))}
                         className="w-full bg-transparent outline-none font-medium text-[var(--on-surface-variant)] focus:text-primary transition-all px-0"
                       />
+                      <div className="h-[2px] w-full bg-slate-900/80 dark:bg-white/20 mt-1" />
                     </div>
                   </td>
                   <td className="px-6 py-4">
