@@ -6,18 +6,19 @@ import { formatDateES } from './dateUtils';
 function createEdicionDoc(edicion: Edición, avisosEnEdicion: Aviso[], clientes: Cliente[], campañas: Campaña[], allAvisos: Aviso[], logoUrl?: string | null) {
   const doc = new jsPDF();
   
-  if (logoUrl) {
-    try {
-      doc.addImage(logoUrl, 'PNG', 160, 10, 35, 20); // Logo en la esquina superior derecha
-    } catch (e) {
-      console.warn("Error adding logo to PDF", e);
-    }
-  }
-  
-  // Header
-  doc.setFontSize(16);
-  doc.text(`Salida para el ${formatDateES(edicion.fecha)}`, 14, 15);
-  doc.text(`Edición Nº ${edicion.numero}`, 14, 25);
+  // Header Minimalista
+  doc.setTextColor(20, 20, 20);
+  doc.setFontSize(20);
+  doc.text(`Salida: ${formatDateES(edicion.fecha)}`, 14, 20);
+
+  const edicionText = `Edición Nº ${edicion.numero}`;
+  const edicionWidth = doc.getTextWidth(edicionText);
+  doc.text(edicionText, 196 - edicionWidth, 20);
+
+  // Línea decorativa
+  doc.setDrawColor(200, 200, 200);
+  doc.setLineWidth(0.5);
+  doc.line(14, 28, 196, 28);
   
   const body = avisosEnEdicion.map(a => {
     const campaña = campañas.find(c => c.id === a.campaña_id);
@@ -41,7 +42,8 @@ function createEdicionDoc(edicion: Edición, avisosEnEdicion: Aviso[], clientes:
     head: [['Cliente', 'Producto', 'Aviso', 'Número de salida', 'Salidas restantes']],
     body: body,
     theme: 'grid',
-    headStyles: { fillColor: [200, 200, 200], textColor: 20 },
+    headStyles: { fillColor: [63, 81, 181], textColor: 255, fontStyle: 'bold' },
+    styles: { fontSize: 9 },
   });
 
   return doc;
@@ -60,18 +62,19 @@ export function previewEdicionPDF(edicion: Edición, avisosEnEdicion: Aviso[], c
 function createCampañaDoc(campaña: Campaña, avisos: Aviso[], clienteNombre: string, logoUrl?: string | null) {
   const doc = new jsPDF();
   
-  if (logoUrl) {
-    try {
-      doc.addImage(logoUrl, 'PNG', 160, 10, 35, 20);
-    } catch (e) {
-      console.warn("Error adding logo to PDF", e);
-    }
-  }
+  // Header Minimalista
+  doc.setTextColor(20, 20, 20);
+  doc.setFontSize(20);
+  doc.text(`${campaña.nombre_campaña}`, 14, 20);
   
-  doc.setFontSize(16);
-  doc.text(`Campaña: ${campaña.nombre_campaña}`, 14, 15);
-  doc.text(`Cliente: ${clienteNombre}`, 14, 25);
-  doc.text(`Fecha Inicio: ${formatDateES(campaña.fecha_inicio)}`, 14, 35);
+  doc.setFontSize(11);
+  doc.text(`Cliente: ${clienteNombre}`, 14, 30);
+  doc.text(`Inicio: ${formatDateES(campaña.fecha_inicio)}`, 14, 37);
+
+  // Línea decorativa
+  doc.setDrawColor(200, 200, 200);
+  doc.setLineWidth(0.5);
+  doc.line(14, 42, 196, 42);
   
   const body = avisos.sort((a,b) => a.numero_salida - b.numero_salida).map(a => [
     a.nombre,
@@ -80,10 +83,12 @@ function createCampañaDoc(campaña: Campaña, avisos: Aviso[], clienteNombre: s
   ]);
 
   autoTable(doc, {
-    startY: 45,
+    startY: 48,
     head: [['Nombre', 'Producto', 'Fecha']],
     body: body,
     theme: 'grid',
+    headStyles: { fillColor: [63, 81, 181], textColor: 255, fontStyle: 'bold' },
+    styles: { fontSize: 9 },
   });
 
   return doc;

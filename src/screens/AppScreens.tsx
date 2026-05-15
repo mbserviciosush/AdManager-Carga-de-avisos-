@@ -1611,7 +1611,7 @@ export function ScreenClientes({ clientes, campañas, avisos, onNavigateToCampa�
 }
 
 // --- CONFIG ---
-export function ScreenConfig({ user, onUpdateUser, onBatchGenerate, onSyncEdiciones, feriados, onAddFeriado, onDeleteFeriado, onBulkAddFeriados, ediciones, onLoadDemo, onClearEdiciones, appLogo, onUpdateLogo, productos, onUpdateProductos }: any) {
+export function ScreenConfig({ user, onUpdateUser, onBatchGenerate, onSyncEdiciones, feriados, onAddFeriado, onDeleteFeriado, onBulkAddFeriados, ediciones, onLoadDemo, onClearEdiciones, appLogo, onUpdateLogo, appName, onUpdateAppName, productos, onUpdateProductos }: any) {
   const sortedFeriados = useMemo(() => {
     return [...feriados].sort((a: any, b: any) => a.fecha.localeCompare(b.fecha));
   }, [feriados]);
@@ -1903,18 +1903,29 @@ export function ScreenConfig({ user, onUpdateUser, onBatchGenerate, onSyncEdicio
                  <div className="w-8 h-8 rounded-lg bg-indigo-500/10 text-indigo-500 flex items-center justify-center"><Layout size={16}/></div>
                  <h3 className="text-sm font-black uppercase tracking-[0.15em] text-[var(--on-surface)]">Identidad Visual</h3>
               </div>
-              <p className="text-[var(--on-surface-variant)] text-xs font-medium">Logo corporativo para PDFs y cabecera.</p>
-              <div className="flex items-center gap-4 bg-[var(--surface)] p-4 rounded-2xl border border-[var(--outline)]">
-                 <div className="w-14 h-14 rounded-xl bg-[var(--surface-card)] border-2 border-dashed border-[var(--outline)] flex items-center justify-center overflow-hidden shrink-0">
-                    {appLogo ? <img src={appLogo} alt="Logo" className="w-full h-full object-contain" /> : <p className="text-[8px] font-bold text-[var(--outline)] uppercase text-center leading-tight">Sin Logo</p>}
-                 </div>
-                 <div className="flex-1 space-y-2">
-                    <label className="cursor-pointer block">
-                       <input type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if(f){ const r = new FileReader(); r.onloadend = () => onUpdateLogo(r.result as string); r.readAsDataURL(f); } }} />
-                       <span className="modern-button-secondary w-full text-[10px] !py-1.5 font-black uppercase tracking-widest"><Plus size={12} /> Subir</span>
-                    </label>
-                    {appLogo && <button onClick={() => onUpdateLogo(null)} className="text-[10px] font-black uppercase tracking-widest text-rose-500 w-full text-center hover:underline">Eliminar</button>}
-                 </div>
+              <div className="space-y-4 bg-[var(--surface)] p-4 rounded-2xl border border-[var(--outline)]">
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-[var(--on-surface-variant)] ml-1">Nombre de la Aplicación</label>
+                    <input 
+                      type="text" 
+                      value={appName} 
+                      onChange={e => onUpdateAppName(e.target.value)} 
+                      className="modern-input h-10 w-full"
+                    />
+                  </div>
+                  <p className="text-[var(--on-surface-variant)] text-[10px] font-medium px-1">Logo corporativo para PDFs y cabecera.</p>
+                  <div className="flex items-center gap-4 pt-2 border-t border-[var(--outline)]/50">
+                    <div className="w-14 h-14 rounded-xl bg-[var(--surface-card)] border-2 border-dashed border-[var(--outline)] flex items-center justify-center overflow-hidden shrink-0">
+                        {appLogo ? <img src={appLogo} alt="Logo" className="w-full h-full object-contain" /> : <p className="text-[8px] font-bold text-[var(--outline)] uppercase text-center leading-tight">Sin Logo</p>}
+                    </div>
+                    <div className="flex-1 space-y-2">
+                        <label className="cursor-pointer block">
+                          <input type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if(f){ const r = new FileReader(); r.onloadend = () => onUpdateLogo(r.result as string); r.readAsDataURL(f); } }} />
+                          <span className="modern-button-secondary w-full text-[10px] !py-1.5 font-black uppercase tracking-widest"><Plus size={12} /> Subir Logo</span>
+                        </label>
+                        {appLogo && <button onClick={() => onUpdateLogo(null)} className="text-[10px] font-black uppercase tracking-widest text-rose-500 w-full text-center hover:underline">Eliminar Logo</button>}
+                    </div>
+                  </div>
               </div>
             </div>
           )}
