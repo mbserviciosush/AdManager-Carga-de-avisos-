@@ -63,6 +63,7 @@ export default function App() {
   const [avisos, setAvisos] = useState<Aviso[]>([]);
   const [feriados, setFeriados] = useState<Feriado[]>([]);
   const [appLogo, setAppLogo] = useState<string | null>(null);
+  const [appName, setAppName] = useState<string>('AdManager Pro');
   const [productos, setProductos] = useState<string[]>(PRODUCTOS);
   
   const [currentScreen, setCurrentScreen] = useState<Screen>('PLANILLA');
@@ -122,6 +123,7 @@ export default function App() {
       setAvisos(data.avisos || []);
       setFeriados(data.feriados || []);
       setAppLogo(data.appLogo || null);
+      setAppName(data.appName || 'AdManager Pro');
       setProductos(data.productos || PRODUCTOS);
       setPlanillaRowsByEdition(data.planillaRowsByEdition || {});
         if (data.user) {
@@ -556,9 +558,9 @@ export default function App() {
               >
                 <div className="h-20 flex items-center px-5 mt-2 mb-2 justify-between shrink-0 overflow-hidden relative">
                   <div className="flex items-center gap-4 relative z-10">
-                    <div className="w-10 h-10 bg-primary/10 text-primary rounded-xl flex items-center justify-center shrink-0 overflow-hidden">
+                    <div className="w-10 h-10 bg-primary/10 text-primary rounded-full flex items-center justify-center shrink-0 overflow-hidden ring-2 ring-primary/20 shadow-inner">
                       {appLogo ? (
-                        <img src={appLogo} alt="Logo" className="w-full h-full object-contain p-1" />
+                        <img src={appLogo} alt="Logo" className="w-full h-full object-cover" />
                       ) : (
                         <Layout size={20} />
                       )}
@@ -571,7 +573,7 @@ export default function App() {
                           exit={{ opacity: 0, x: -10 }}
                           className="text-xl font-display font-black tracking-tighter text-[var(--on-surface)] truncate"
                         >
-                          AMP<span className="text-primary text-2xl leading-none">.</span>
+                          {appName}
                         </motion.h1>
                       )}
                     </AnimatePresence>
@@ -675,11 +677,11 @@ export default function App() {
                 <header className={`${user.menu_layout === 'TOP' ? 'flex' : 'flex lg:hidden'} h-16 lg:h-20 border-b border-[var(--outline)] bg-[var(--surface-card)] sticky top-0 z-[100] px-4 lg:px-8 items-center justify-between shadow-md`}>
                    <div className="flex items-center gap-8">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-primary/10 text-primary rounded-xl flex items-center justify-center shrink-0">
-                          {appLogo ? <img src={appLogo} alt="Logo" className="w-full h-full object-contain p-1" /> : <Layout size={20} />}
+                        <div className="w-10 h-10 bg-primary/10 text-primary rounded-full flex items-center justify-center shrink-0 overflow-hidden ring-2 ring-primary/20 shadow-inner">
+                          {appLogo ? <img src={appLogo} alt="Logo" className="w-full h-full object-cover" /> : <Layout size={20} />}
                         </div>
                         <h1 className="text-xl font-display font-black tracking-tighter text-[var(--on-surface)] hidden md:block">
-                          AMP<span className="text-primary text-2xl leading-none">.</span>
+                          {appName}
                         </h1>
                       </div>
 
@@ -780,6 +782,8 @@ export default function App() {
                         avisos={avisos}
                         campañas={campañas}
                         feriados={feriados}
+                        appLogo={appLogo}
+                        appName={appName}
                         productos={productos}
                         masterEdId={planillaMasterEdId}
                         setMasterEdId={setPlanillaMasterEdId}
@@ -847,6 +851,8 @@ export default function App() {
                         onDeleteFeriado={(id) => setFeriados(prev => prev.filter(f => f.id !== id))}
                         onBulkAddFeriados={(nh) => setFeriados(prev => [...prev, ...nh])}
                         onLoadDemo={loadDemoData}
+                        appName={appName}
+                        onUpdateAppName={setAppName}
                         onClearEdiciones={clearEdicionesFrom}
                         productos={productos}
                         onUpdateProductos={setProductos}
